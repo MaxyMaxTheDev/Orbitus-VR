@@ -27,7 +27,7 @@ export function HandCursors() {
   return (
     <>
       <Hand
-        className="text-accent/70 w-8 h-8 fixed pointer-events-none transition-transform duration-75 ease-out z-50"
+        className="text-accent/70 w-8 h-8 fixed pointer-events-none transition-transform duration-75 ease-out z-50 drop-shadow-[0_0_8px_hsl(var(--accent))]"
         style={{
           left: position.x,
           top: position.y,
@@ -36,7 +36,7 @@ export function HandCursors() {
         strokeWidth={1.5}
       />
       <Hand
-        className="text-accent/50 w-6 h-6 fixed pointer-events-none transition-transform duration-150 ease-out z-50"
+        className="text-accent/50 w-6 h-6 fixed pointer-events-none transition-transform duration-150 ease-out z-50 drop-shadow-[0_0_4px_hsl(var(--accent))]"
         style={{
           left: position.x,
           top: position.y,
