@@ -23,6 +23,7 @@ import {
     Bot,
     X,
 } from "lucide-react";
+import { AIAssistant } from './apps/ai-assistant';
 
 const apps = [
     { name: "Dashboard", icon: LayoutGrid },
@@ -95,9 +96,23 @@ export function AppLauncher() {
     
     const AppWindow = () => {
         if (!selectedApp) return null;
+        
+        const renderContent = () => {
+            switch(selectedApp.name) {
+                case "AI Assistant":
+                    return <AIAssistant />;
+                default:
+                    return (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-muted-foreground">Application content for {selectedApp.name} would be here.</p>
+                        </div>
+                    );
+            }
+        }
+
         return (
-            <div className={`w-full h-[400px] flex flex-col rounded-lg overflow-hidden bg-background/50 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
-                <header className="flex items-center justify-between p-2 pl-4 border-b border-primary/30 bg-black/20">
+            <div className={`w-full max-w-3xl h-[70vh] flex flex-col rounded-2xl overflow-hidden bg-card/80 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
+                <header className="flex items-center justify-between p-2 pl-4 border-b border-primary/30 bg-black/20 cursor-grab">
                     <div className="flex items-center gap-3">
                         <selectedApp.icon className="w-5 h-5 text-accent" />
                         <span className="font-bold text-foreground">{selectedApp.name}</span>
@@ -106,21 +121,21 @@ export function AppLauncher() {
                         <X className="w-4 h-4" />
                     </Button>
                 </header>
-                <main className="flex-1 p-6 bg-black/20 flex items-center justify-center">
-                    <p className="text-muted-foreground">Application content for {selectedApp.name} would be here.</p>
+                <main className="flex-1 bg-black/20">
+                    {renderContent()}
                 </main>
             </div>
         )
     };
     
   return (
-    <Card className="w-full max-w-5xl bg-card/60 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/20 transition-all duration-500 ease-in-out animate-float">
+    <Card className="w-full max-w-5xl bg-card/60 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/20 transition-all duration-500 ease-in-out">
       <CardHeader>
         <CardTitle className="text-center text-2xl font-headline text-accent tracking-widest">
           APP LAUNCHER
         </CardTitle>
       </CardHeader>
-      <CardContent className="min-h-[440px] flex items-center justify-center transition-all duration-300">
+      <CardContent className="min-h-[75vh] flex items-center justify-center transition-all duration-300">
         {!selectedApp ? <AppGrid /> : (
             isLoading ? <LoadingScreen /> : <AppWindow />
         )}
