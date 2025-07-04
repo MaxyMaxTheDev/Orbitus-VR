@@ -18,16 +18,17 @@ type AppLibraryProps = {
 function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appName: string) => void; }) {
     const [bannerUrl, setBannerUrl] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBanner = async () => {
             setIsLoading(true);
+            setError(null);
             try {
                 const result = await generateAppBanner({ appName: app.name, description: app.description });
                 setBannerUrl(result.imageUrl);
-            } catch (error) {
-                console.error(`Failed to generate banner for ${app.name}:`, error);
-                // Errors are logged to the console, but not shown to the user as a toast.
+            } catch (e: any) {
+                setError(e.message || 'The AI failed to generate the banner.');
             } finally {
                 setIsLoading(false);
             }
@@ -40,19 +41,35 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
             className="group bg-secondary/50 rounded-2xl border border-border hover:border-accent transition-all duration-300 flex flex-col overflow-hidden"
             onClick={() => onSelectApp(app.name)}
         >
-            <div className={cn("relative w-full aspect-video bg-black/20 flex items-center justify-center transition-opacity duration-500",
-                isLoading ? "opacity-100" : "opacity-0"
-            )}>
-                <Loader2 className="w-6 h-6 text-accent animate-spin" />
-            </div>
-
-            {bannerUrl && (
-                <div className={cn("relative w-full aspect-video -mt-[100%] transition-opacity duration-1000",
-                    !isLoading ? 'opacity-100' : 'opacity-0'
+            <div className="relative w-full aspect-video bg-black/20 flex items-center justify-center text-center">
+                {/* Loading State */}
+                <div className={cn(
+                    "absolute inset-0 flex items-center justify-center transition-opacity duration-500",
+                    isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}>
-                    <Image src={bannerUrl} alt={`${app.name} banner`} layout="fill" objectFit="cover" />
+                    <Loader2 className="w-6 h-6 text-accent animate-spin" />
                 </div>
-            )}
+
+                {/* Banner Image State */}
+                {bannerUrl && !error && (
+                    <div className={cn(
+                        "absolute inset-0 transition-opacity duration-1000",
+                        !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}>
+                        <Image src={bannerUrl} alt={`${app.name} banner`} layout="fill" objectFit="cover" />
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                     <div className={cn(
+                        "absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-1000",
+                        !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}>
+                        <p className="text-xs bg-destructive text-destructive-foreground p-2 rounded-md">{error}</p>
+                    </div>
+                )}
+            </div>
 
             <div className="flex items-center gap-4 p-4">
                 <div className="w-12 h-12 rounded-lg bg-black/30 flex items-center justify-center flex-shrink-0">

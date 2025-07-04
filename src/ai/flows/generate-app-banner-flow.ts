@@ -50,7 +50,6 @@ The image should be a conceptual, high-tech, cyberpunk-style representation of t
       if (e.message?.includes('429')) {
         throw new Error('You have exceeded your daily image generation quota. Please try again tomorrow.');
       }
-      console.error("Banner generation error:", e);
       throw new Error('The AI failed to generate the banner. Please try a different prompt.');
     }
   }
