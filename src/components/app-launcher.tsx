@@ -4,7 +4,6 @@
 import { motion } from 'framer-motion';
 import { allApps, App } from '@/lib/apps-config';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
-import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
@@ -19,7 +18,6 @@ type AppLibraryProps = {
 function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appName: string) => void; }) {
     const [bannerUrl, setBannerUrl] = useState('');
     const [isLoading, setIsLoading] = useState(true);
-    const { toast } = useToast();
 
     useEffect(() => {
         const fetchBanner = async () => {
@@ -29,18 +27,13 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
                 setBannerUrl(result.imageUrl);
             } catch (error) {
                 console.error(`Failed to generate banner for ${app.name}:`, error);
-                const description = error instanceof Error ? error.message : 'The AI failed to generate the banner.';
-                toast({
-                    variant: 'destructive',
-                    title: `Banner Error: ${app.name}`,
-                    description,
-                });
+                // Errors are logged to the console, but not shown to the user as a toast.
             } finally {
                 setIsLoading(false);
             }
         };
         fetchBanner();
-    }, [app.name, app.description, toast]);
+    }, [app.name, app.description]);
 
     return (
         <div
@@ -48,7 +41,7 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
             onClick={() => onSelectApp(app.name)}
         >
             <div className={cn("relative w-full aspect-video bg-black/20 flex items-center justify-center transition-opacity duration-500",
-                (isLoading || !bannerUrl) ? "opacity-100" : "opacity-0"
+                isLoading ? "opacity-100" : "opacity-0"
             )}>
                 <Loader2 className="w-6 h-6 text-accent animate-spin" />
             </div>
