@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -11,9 +10,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['var(--font-chakra-petch)', 'sans-serif'],
-        headline: ['var(--font-orbitron)', 'sans-serif'],
-        code: ['monospace'],
+        sans: ['var(--font-sans)', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -79,19 +76,10 @@ export default {
             height: '0',
           },
         },
-        'spin-slow': {
-            'to': { transform: 'rotate(360deg)' }
-        },
-        'scanline': {
-          '0%': { transform: 'translateY(-10%)' },
-          '100%': { transform: 'translateY(110%)' },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'spin-slow': 'spin-slow 10s linear infinite',
-        'scanline': 'scanline 10s linear infinite',
       },
     },
   },

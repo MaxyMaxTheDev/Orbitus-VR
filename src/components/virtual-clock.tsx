@@ -18,15 +18,15 @@ export function VirtualClock() {
 
   if (!time) {
     return (
-      <div className="font-headline tracking-widest">
-        <p className="text-base text-muted-foreground font-bold tabular-nums">--:--</p>
+      <div className="w-20 text-center">
+        <p className="text-xl text-muted-foreground font-bold tabular-nums">--:--</p>
       </div>
     );
   }
 
   return (
-    <div className="font-headline tracking-widest">
-      <p className="text-base text-foreground font-bold tabular-nums">
+    <div className="w-20 text-center">
+      <p className="text-xl text-foreground font-bold tabular-nums">
         {time}
       </p>
     </div>

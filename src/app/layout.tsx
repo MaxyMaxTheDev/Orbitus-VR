@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { Orbitron, Chakra_Petch } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -9,17 +9,10 @@ export const metadata: Metadata = {
   description: 'A customizable virtual home environment',
 };
 
-const orbitron = Orbitron({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-orbitron',
-  weight: ['400', '500', '700', '900']
+  variable: '--font-sans',
 });
-
-const chakraPetch = Chakra_Petch({
-  subsets: ['latin'],
-  variable: '--font-chakra-petch',
-  weight: ['400', '500', '700']
-})
 
 export default function RootLayout({
   children,
@@ -29,9 +22,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn(
-        "font-body antialiased",
-        orbitron.variable,
-        chakraPetch.variable
+        "font-sans antialiased",
+        inter.variable
       )}>
         {children}
         <Toaster />

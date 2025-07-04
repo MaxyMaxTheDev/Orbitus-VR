@@ -33,23 +33,23 @@ export function Dashboard() {
   }, []);
 
   return (
-    <div className="h-full w-full p-4 sm:p-6 overflow-y-auto bg-black/20">
+    <div className="h-full w-full p-4 sm:p-6 overflow-y-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <Card className="bg-transparent border-primary/20">
+        <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent font-headline">SYSTEM TIME</CardTitle>
+            <CardTitle className="text-sm font-medium text-accent">SYSTEM TIME</CardTitle>
             <Calendar className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold font-headline text-foreground">{time}</div>
+            <div className="text-4xl font-bold text-foreground">{time}</div>
             <p className="text-xs text-muted-foreground">{date}</p>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 bg-transparent border-primary/20">
+        <Card className="lg:col-span-2 bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent font-headline">AI INSIGHT</CardTitle>
+            <CardTitle className="text-sm font-medium text-accent">AI INSIGHT</CardTitle>
             <Bot className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -67,18 +67,18 @@ export function Dashboard() {
           </CardContent>
         </Card>
         
-        <Card className="md:col-span-3 bg-transparent border-primary/20">
+        <Card className="md:col-span-3 bg-card/50 border-border">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-accent font-headline">WELCOME TO NEXUSVR</CardTitle>
+            <CardTitle className="text-sm font-medium text-accent">WELCOME TO NEXUSVR</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-foreground/80">Your virtual space is ready. Launch apps from the main screen to begin your immersive experience. Customize your environment in the Theme Studio or chat with the AI Assistant.</p>
+            <p className="text-foreground/80">Your virtual space is ready. Launch apps from the dock below to begin your immersive experience. Customize your environment in the Theme Studio or chat with the AI Assistant.</p>
           </CardContent>
         </Card>
 
-         <Card className="bg-transparent border-primary/20">
+         <Card className="bg-card/50 border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent font-headline">SYSTEM STATUS</CardTitle>
+            <CardTitle className="text-sm font-medium text-accent">SYSTEM STATUS</CardTitle>
             <Cpu className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

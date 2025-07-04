@@ -4,35 +4,35 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
+    --background: 220 13% 18%; /* Dark Slate Gray */
+    --foreground: 210 20% 98%; /* Almost White */
 
-    --card: 222 84% 5%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 13% 22%; /* Slightly lighter than bg */
+    --card-foreground: 210 20% 98%;
 
-    --popover: 222 84% 5%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 13% 18%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 198 93% 60%; /* Electric Blue/Cyan */
-    --primary-foreground: 222 84% 5%;
+    --primary: 217 91% 60%; /* Oculus-like Blue */
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 13% 28%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 13% 28%;
+    --muted-foreground: 220 9% 61%;
 
-    --accent: 54 100% 50%; /* Vibrant Yellow */
-    --accent-foreground: 222 84% 5%;
+    --accent: 217 91% 60%; /* Same as primary */
+    --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 198 93% 60%;
+    --border: 220 13% 31%;
+    --input: 220 13% 31%;
+    --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 }
 
@@ -41,10 +41,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground cursor-none;
+    @apply bg-background text-foreground;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    cursor: none;
+  }
+  button,
+  a,
+  [role="button"],
+  input,
+  textarea {
+    cursor: none;
   }
 }
