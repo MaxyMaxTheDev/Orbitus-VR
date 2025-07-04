@@ -76,7 +76,7 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
 
     return (
         <Card
-            className="w-full bg-black/30 border-2 border-primary/20 hover:border-accent group transition-all duration-300 overflow-hidden cursor-pointer shadow-lg hover:shadow-accent/20"
+            className="w-full bg-black/30 border-2 border-primary/20 hover:border-accent group transition-all duration-300 overflow-hidden shadow-lg hover:shadow-accent/20"
             onClick={() => onClick(app)}
         >
             <CardContent className="p-0">
@@ -156,7 +156,7 @@ export function AppLauncher() {
 
         return (
             <div className={`w-full max-w-6xl mx-auto h-[85vh] flex flex-col bg-card/80 backdrop-blur-xl border border-border rounded-xl shadow-2xl shadow-primary/20 transition-all duration-300 ${isClosing ? 'animate-out fade-out ' : 'animate-in fade-in'}`}>
-                <header className="flex items-center justify-between p-2 pl-4 border-b border-border bg-card/50 cursor-grab rounded-t-xl">
+                <header className="flex items-center justify-between p-2 pl-4 border-b border-border bg-card/50 rounded-t-xl">
                     <div className="flex items-center gap-3">
                         <selectedApp.icon className="w-5 h-5 text-accent" />
                         <span className="font-bold font-headline tracking-wider text-foreground">{selectedApp.name}</span>

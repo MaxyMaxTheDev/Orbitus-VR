@@ -78,7 +78,7 @@ export function ImportModelDialog() {
           <div className="flex items-center justify-center w-full">
             <label
               htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer border-border hover:border-accent hover:bg-black/20"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg border-border hover:border-accent hover:bg-black/20"
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />

@@ -101,7 +101,7 @@ export function Workspace() {
                   <label
                     htmlFor={`task-${task.id}`}
                     className={cn(
-                      "flex-1 cursor-pointer",
+                      "flex-1",
                       task.completed ? "line-through text-muted-foreground" : "text-foreground"
                     )}
                   >

@@ -63,7 +63,7 @@ export function MailApp() {
                 key={mail.id}
                 onClick={() => handleSelectMail(mail)}
                 className={cn(
-                  'flex flex-col gap-1 p-3 rounded-lg cursor-pointer transition-colors duration-200',
+                  'flex flex-col gap-1 p-3 rounded-lg transition-colors duration-200',
                   selectedMail?.id === mail.id ? 'bg-primary/50' : 'hover:bg-primary/20'
                 )}
               >
