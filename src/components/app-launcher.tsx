@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
+import { PlaceholderApp } from './apps/placeholder-app';
 
 const apps = [
     { name: "Dashboard", icon: LayoutGrid },
@@ -106,9 +107,7 @@ export function AppLauncher() {
                     return <ThemeStudio />;
                 default:
                     return (
-                        <div className="flex items-center justify-center h-full">
-                            <p className="text-muted-foreground">Application content for {selectedApp.name} would be here.</p>
-                        </div>
+                        <PlaceholderApp name={selectedApp.name} icon={selectedApp.icon} />
                     );
             }
         }
