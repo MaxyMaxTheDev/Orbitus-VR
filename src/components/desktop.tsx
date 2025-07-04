@@ -142,10 +142,24 @@ function DesktopContent() {
             </AnimatePresence>
 
             {/* Dock */}
-            <Dock
-                onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                onOpenApp={openApp}
-            />
+            <AnimatePresence>
+                {!isLibraryOpen && (
+                    <motion.div
+                        className="w-full flex justify-center p-4 z-30"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <Dock
+                            onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                            onOpenApp={openApp}
+                            selectedApp={selectedApp}
+                            onCloseApp={closeApp}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
