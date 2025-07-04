@@ -41,3 +41,8 @@ export async function del(key: string): Promise<void> {
   const db = await getDb();
   return db.delete(STORE_NAME, key);
 }
+
+export async function clearAll(): Promise<void> {
+  const db = await getDb();
+  return db.clear(STORE_NAME);
+}

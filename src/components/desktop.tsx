@@ -8,12 +8,13 @@ import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
 import { SettingsProvider } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
+import { NexusVRLogo } from './icons/logo';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -24,10 +25,13 @@ function DesktopContent() {
     useEffect(() => {
         const checkSetupStatus = async () => {
             const setupFlag = await get<boolean>('nexus-vr-setup-complete');
-            if (setupFlag === true) {
-                setIsSetupComplete(true);
-            }
-            setIsLoading(false);
+            // Add a small delay to make the boot screen visible
+            setTimeout(() => {
+                if (setupFlag === true) {
+                    setIsSetupComplete(true);
+                }
+                setIsLoading(false);
+            }, 1500);
         };
         checkSetupStatus();
     }, []);
@@ -83,8 +87,16 @@ function DesktopContent() {
     
     if (isLoading) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                    className="flex flex-col items-center gap-4"
+                >
+                    <NexusVRLogo className="w-24 h-24 text-primary animate-pulse" />
+                    <p className="text-muted-foreground tracking-widest font-headline">BOOTING NEXUSVR...</p>
+                </motion.div>
             </div>
         );
     }
