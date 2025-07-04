@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, LogIn, User } from 'lucide-react';
 import { NexusVRLogo } from './icons/logo';
 
 type SetupProps = {
@@ -17,7 +17,9 @@ type SetupProps = {
 
 export function OsSetup({ onComplete }: SetupProps) {
   const [step, setStep] = useState(0);
+  const [accountStep, setAccountStep] = useState<'choice' | 'login' | 'register'>('choice');
   const { username, setUsername, showAppBanners, setShowAppBanners } = useSettings();
+  const [password, setPassword] = useState('');
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -34,6 +36,80 @@ export function OsSetup({ onComplete }: SetupProps) {
     initial: { opacity: 0, y: 20 },
   };
 
+  const renderAccountStep = () => {
+    switch (accountStep) {
+        case 'choice':
+            return (
+                <motion.div key="choice" initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
+                    <h1 className="text-3xl font-bold font-headline">Setup Your Profile</h1>
+                    <p className="text-muted-foreground">Choose how you want to save your NexusVR data.</p>
+                    <div className="flex flex-col gap-4">
+                        <Button size="lg" variant="outline" className="h-20 flex flex-col items-start text-left" onClick={handleNext}>
+                            <div className="flex items-center gap-3">
+                                <User className="w-6 h-6 text-accent" />
+                                <span className="text-lg font-bold">Create a Local Profile</span>
+                            </div>
+                            <p className="font-normal text-muted-foreground text-sm whitespace-normal">Your data will be saved only on this device. Simple and private.</p>
+                        </Button>
+                        <Button size="lg" variant="outline" className="h-20 flex flex-col items-start text-left" onClick={() => setAccountStep('login')}>
+                             <div className="flex items-center gap-3">
+                                <LogIn className="w-6 h-6 text-accent" />
+                                <span className="text-lg font-bold">NexusVR Account</span>
+                            </div>
+                            <p className="font-normal text-muted-foreground text-sm whitespace-normal">Sign in to sync your data across devices (feature coming soon).</p>
+                        </Button>
+                    </div>
+                </motion.div>
+            );
+        case 'login':
+            return (
+                <motion.div key="login" initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
+                    <h1 className="text-3xl font-bold font-headline">Sign In</h1>
+                    <div className="space-y-4 text-left">
+                        <div>
+                            <Label htmlFor="username-login">Username</Label>
+                            <Input id="username-login" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" />
+                        </div>
+                        <div>
+                            <Label htmlFor="password-login">Password</Label>
+                            <Input id="password-login" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                        </div>
+                    </div>
+                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
+                        Sign In
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                        Don't have an account?{' '}
+                        <Button variant="link" className="p-0" onClick={() => setAccountStep('register')}>Create one</Button>
+                    </p>
+                </motion.div>
+            );
+        case 'register':
+            return (
+                <motion.div key="register" initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
+                    <h1 className="text-3xl font-bold font-headline">Create Account</h1>
+                     <div className="space-y-4 text-left">
+                        <div>
+                            <Label htmlFor="username-reg">Username</Label>
+                            <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+                        </div>
+                        <div>
+                            <Label htmlFor="password-reg">Password</Label>
+                            <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" />
+                        </div>
+                     </div>
+                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
+                        Create Account
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                        Already have an account?{' '}
+                        <Button variant="link" className="p-0" onClick={() => setAccountStep('login')}>Sign In</Button>
+                    </p>
+                </motion.div>
+            );
+    }
+  }
+
   const renderStep = () => {
     switch (step) {
       case 0: // Welcome
@@ -47,9 +123,11 @@ export function OsSetup({ onComplete }: SetupProps) {
             </Button>
           </motion.div>
         );
-      case 1: // Username
+      case 1: // Account choice / Login / Register
+        return renderAccountStep();
+      case 2: // Username for Local Profile
         return (
-          <motion.div key={1} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
+          <motion.div key={2} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
             <h1 className="text-3xl font-bold font-headline">What should we call you?</h1>
             <p className="text-muted-foreground">This will be your display name within NexusVR.</p>
             <Input
@@ -69,9 +147,9 @@ export function OsSetup({ onComplete }: SetupProps) {
             </Button>
           </motion.div>
         );
-      case 2: // Preferences
+      case 3: // Preferences
         return (
-          <motion.div key={2} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
+          <motion.div key={3} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
             <h1 className="text-3xl font-bold font-headline">Personalize Your Experience</h1>
             <p className="text-muted-foreground">Choose how you want your app library to look.</p>
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-border">
@@ -91,9 +169,9 @@ export function OsSetup({ onComplete }: SetupProps) {
             </Button>
           </motion.div>
         );
-      case 3: // Finish
+      case 4: // Finish
         return (
-          <motion.div key={3} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
+          <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
             <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
                 <Check className="w-12 h-12 text-green-400" />
             </div>
