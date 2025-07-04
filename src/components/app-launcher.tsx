@@ -53,25 +53,60 @@ type App = {
     component: React.FC;
 }
 
+const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => void }) => {
+    const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+    const [isBannerLoading, setIsBannerLoading] = useState(true);
+
+    useEffect(() => {
+        // Use a timeout to stagger API requests slightly to avoid rate-limiting issues on page load
+        const timer = setTimeout(() => {
+            setIsBannerLoading(true);
+            generateAppBanner({ appName: app.name })
+                .then(result => setBannerUrl(result.imageUrl))
+                .catch(err => {
+                    console.error(`Failed to generate banner for ${app.name}:`, err);
+                    setBannerUrl('https://placehold.co/200x200.png'); // Fallback placeholder
+                })
+                .finally(() => setIsBannerLoading(false));
+        }, Math.random() * 500); // Stagger requests up to 500ms
+
+        return () => clearTimeout(timer);
+    }, [app.name]);
+
+    return (
+        <div
+            className="flex flex-col items-center gap-3 text-center cursor-pointer group"
+            onClick={() => onClick(app)}
+        >
+            <div className="w-24 h-24 rounded-2xl bg-black/30 border-2 border-primary/20 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg relative overflow-hidden">
+                {isBannerLoading ? (
+                    <Skeleton className="w-full h-full" />
+                ) : (
+                    bannerUrl && (
+                        <Image 
+                            src={bannerUrl} 
+                            alt={`${app.name} banner`} 
+                            layout="fill" 
+                            objectFit="cover" 
+                            className="opacity-40 group-hover:opacity-70 transition-opacity duration-300" 
+                            data-ai-hint="futuristic abstract"
+                        />
+                    )
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <app.icon className="w-12 h-12 text-foreground/80 group-hover:text-accent transition-colors z-10 drop-shadow-lg" />
+            </div>
+            <span className="font-body text-sm text-foreground/90 group-hover:text-accent transition-colors">{app.name}</span>
+        </div>
+    );
+};
+
+
 export function AppLauncher() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [isClosing, setIsClosing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [bannerUrl, setBannerUrl] = useState<string | null>(null);
-    const [isBannerLoading, setIsBannerLoading] = useState(true);
     
-    useEffect(() => {
-        setIsBannerLoading(true);
-        generateAppBanner({ appName: 'NexusVR Mainframe' })
-            .then(result => setBannerUrl(result.imageUrl))
-            .catch(err => {
-                console.error("Failed to generate launcher banner:", err);
-                setBannerUrl('https://placehold.co/1200x300.png'); 
-            })
-            .finally(() => setIsBannerLoading(false));
-    }, []);
-
-
     const handleAppClick = (app: App) => {
         setIsLoading(true);
         setSelectedApp(app);
@@ -87,29 +122,10 @@ export function AppLauncher() {
     };
 
     const AppGrid = () => (
-      <div className="w-full max-w-7xl mx-auto flex flex-col items-center animate-in fade-in duration-500">
-        <div className="w-full h-52 mb-8 rounded-lg overflow-hidden bg-black/20 border border-primary/20 shadow-lg relative">
-            {isBannerLoading ? (
-                <Skeleton className="w-full h-full" />
-            ) : bannerUrl ? (
-                <Image src={bannerUrl} alt="NexusVR Launcher Banner" layout="fill" objectFit="cover" data-ai-hint="futuristic cyberpunk" />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center bg-black/10" />
-            )}
-        </div>
-
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-8 gap-y-12 p-8 pt-0">
+      <div className="w-full max-w-7xl mx-auto flex flex-col items-center animate-in fade-in duration-500 p-8">
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-8 gap-y-12">
             {apps.map((app) => (
-            <div
-                key={app.name}
-                className="flex flex-col items-center gap-3 text-center cursor-pointer group"
-                onClick={() => handleAppClick(app)}
-            >
-                <div className="w-24 h-24 rounded-2xl bg-black/30 border-2 border-primary/20 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg">
-                <app.icon className="w-12 h-12 text-foreground/80 group-hover:text-accent transition-colors" />
-                </div>
-                <span className="font-body text-sm text-foreground/90 group-hover:text-accent transition-colors">{app.name}</span>
-            </div>
+                <AppIconWithBanner key={app.name} app={app} onClick={handleAppClick} />
             ))}
         </div>
       </div>
