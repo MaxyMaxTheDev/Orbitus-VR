@@ -15,12 +15,14 @@ import { SettingsProvider } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
 import { NexusVRLogo } from './icons/logo';
+import { Progress } from './ui/progress';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [isLibraryOpen, setLibraryOpen] = useState(false);
     const [isSetupComplete, setIsSetupComplete] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         const checkSetupStatus = async () => {
@@ -35,6 +37,21 @@ function DesktopContent() {
         };
         checkSetupStatus();
     }, []);
+
+    useEffect(() => {
+        if (!isLoading) return;
+        const interval = setInterval(() => {
+            setProgress(prev => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    return 100;
+                }
+                // Update progress to fill up in 1.5 seconds
+                return prev + 100 / (1500 / 50); 
+            });
+        }, 50);
+        return () => clearInterval(interval);
+    }, [isLoading]);
 
     const handleSetupComplete = async () => {
         await set('nexus-vr-setup-complete', true);
@@ -92,10 +109,11 @@ function DesktopContent() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-4"
+                    className="flex flex-col items-center gap-4 w-full max-w-xs"
                 >
-                    <NexusVRLogo className="w-24 h-24 text-primary animate-pulse" />
-                    <p className="text-muted-foreground tracking-widest font-headline">BOOTING NEXUSVR...</p>
+                    <NexusVRLogo className="w-24 h-24 text-primary" />
+                    <p className="text-muted-foreground tracking-widest font-headline">INITIALIZING...</p>
+                    <Progress value={progress} className="w-full h-2" />
                 </motion.div>
             </div>
         );
