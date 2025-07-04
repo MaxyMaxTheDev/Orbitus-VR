@@ -26,6 +26,8 @@ import {
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
 import { PlaceholderApp } from './apps/placeholder-app';
+import { MediaPlayer } from './apps/media-player';
+import { Gallery360 } from './apps/360-gallery';
 
 const apps = [
     { name: "Dashboard", icon: LayoutGrid },
@@ -105,6 +107,10 @@ export function AppLauncher() {
                     return <AIAssistant />;
                 case "Theme Studio":
                     return <ThemeStudio />;
+                case "Media Player":
+                    return <MediaPlayer />;
+                case "360 Gallery":
+                    return <Gallery360 />;
                 default:
                     return (
                         <PlaceholderApp name={selectedApp.name} icon={selectedApp.icon} />
