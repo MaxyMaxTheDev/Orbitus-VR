@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
-    Code, Bot, X,
+    Code, Bot, X, Loader2,
 } from "lucide-react";
 import Image from 'next/image';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
@@ -81,7 +81,9 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
             <CardContent className="p-0">
                 <div className="relative aspect-video bg-secondary">
                     {isBannerLoading ? (
-                        <Skeleton className="w-full h-full" />
+                        <div className="w-full h-full flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 text-accent animate-spin" />
+                        </div>
                     ) : (
                         bannerUrl && (
                             <Image
@@ -89,13 +91,16 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
                                 alt={`${app.name} banner`}
                                 layout="fill"
                                 objectFit="cover"
-                                className="group-hover:scale-105 transition-transform duration-300"
+                                className="group-hover:scale-105 transition-transform duration-300 animate-in fade-in"
                                 data-ai-hint="futuristic abstract"
                             />
                         )
                     )}
                 </div>
-                <div className="p-3 flex items-center gap-3">
+                <div className={cn("p-3 flex items-center gap-3", {
+                    "opacity-0": isBannerLoading,
+                    "animate-in fade-in": !isBannerLoading,
+                })}>
                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-accent/20 transition-colors flex-shrink-0">
                         <app.icon className="w-6 h-6 text-foreground/80 group-hover:text-accent transition-colors" />
                      </div>
