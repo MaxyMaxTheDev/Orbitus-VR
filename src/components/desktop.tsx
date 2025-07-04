@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -10,6 +11,7 @@ import { Button } from './ui/button';
 import { X } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
+import { SettingsProvider } from '@/contexts/settings-context';
 
 export function Desktop() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -60,29 +62,31 @@ export function Desktop() {
     };
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center">
-            {/* Main Content Area */}
-            <div className="flex-1 w-full relative">
+        <SettingsProvider>
+            <div className="flex-1 flex flex-col items-center justify-center">
+                {/* Main Content Area */}
+                <div className="flex-1 w-full relative">
+                    <AnimatePresence>
+                        {selectedApp ? <AppWindow /> : <Dashboard />}
+                    </AnimatePresence>
+                </div>
+
+                {/* App Library Overlay */}
                 <AnimatePresence>
-                    {selectedApp ? <AppWindow /> : <Dashboard />}
+                    {isLibraryOpen && (
+                        <AppLauncher
+                            onSelectApp={openApp}
+                            onClose={() => setLibraryOpen(false)}
+                        />
+                    )}
                 </AnimatePresence>
+
+                {/* Dock */}
+                <Dock
+                    onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                    onOpenApp={openApp}
+                />
             </div>
-
-            {/* App Library Overlay */}
-            <AnimatePresence>
-                {isLibraryOpen && (
-                    <AppLauncher 
-                        onSelectApp={openApp} 
-                        onClose={() => setLibraryOpen(false)}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* Dock */}
-            <Dock 
-                onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                onOpenApp={openApp}
-            />
-        </div>
+        </SettingsProvider>
     );
 }
