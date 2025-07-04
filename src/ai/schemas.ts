@@ -67,3 +67,14 @@ export const VRChatOutputSchema = z.object({
   responses: z.array(MessageSchema),
 });
 export type VRChatOutput = z.infer<typeof VRChatOutputSchema>;
+
+// For generate-app-banner-flow.ts
+export const GenerateAppBannerInputSchema = z.object({
+  appName: z.string().describe('The name of the application.'),
+});
+export type GenerateAppBannerInput = z.infer<typeof GenerateAppBannerInputSchema>;
+
+export const GenerateAppBannerOutputSchema = z.object({
+  imageUrl: z.string().describe('The data URI of the generated banner image.'),
+});
+export type GenerateAppBannerOutput = z.infer<typeof GenerateAppBannerOutputSchema>;

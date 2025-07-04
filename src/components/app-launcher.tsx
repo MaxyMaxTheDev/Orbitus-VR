@@ -9,6 +9,9 @@ import {
     View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
     Code, Bot, X,
 } from "lucide-react";
+import Image from 'next/image';
+import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
@@ -55,6 +58,8 @@ export function AppLauncher() {
     const [isClosing, setIsClosing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [appPositions, setAppPositions] = useState<{ x: number, y: number }[]>([]);
+    const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+    const [isBannerLoading, setIsBannerLoading] = useState(false);
 
     useEffect(() => {
         const positions = apps.map((_, index) => {
@@ -66,6 +71,20 @@ export function AppLauncher() {
         });
         setAppPositions(positions);
     }, []);
+
+    useEffect(() => {
+        if (selectedApp && !isLoading) {
+            setIsBannerLoading(true);
+            setBannerUrl(null);
+            generateAppBanner({ appName: selectedApp.name })
+                .then(result => setBannerUrl(result.imageUrl))
+                .catch(err => {
+                    console.error("Failed to generate banner:", err);
+                    setBannerUrl('https://placehold.co/1024x200.png'); 
+                })
+                .finally(() => setIsBannerLoading(false));
+        }
+    }, [selectedApp, isLoading]);
 
 
     const handleAppClick = (app: App) => {
@@ -79,6 +98,7 @@ export function AppLauncher() {
         setTimeout(() => {
             setSelectedApp(null);
             setIsClosing(false);
+            setBannerUrl(null);
         }, 300);
     };
 
@@ -132,6 +152,17 @@ export function AppLauncher() {
                         <X className="w-4 h-4" />
                     </Button>
                 </header>
+
+                <div className="w-full h-32 bg-black/20 border-b border-primary/30 relative flex-shrink-0">
+                    {isBannerLoading ? (
+                        <Skeleton className="w-full h-full" />
+                    ) : bannerUrl ? (
+                        <Image src={bannerUrl} alt={`${selectedApp.name} Banner`} layout="fill" objectFit="cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-black/10" />
+                    )}
+                </div>
+
                 <main className="flex-1 bg-black/20 overflow-hidden">
                     <AppContent />
                 </main>
