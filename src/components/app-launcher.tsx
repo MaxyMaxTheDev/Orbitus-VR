@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
@@ -54,6 +54,19 @@ export function AppLauncher() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [isClosing, setIsClosing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [appPositions, setAppPositions] = useState<{ x: number, y: number }[]>([]);
+
+    useEffect(() => {
+        const positions = apps.map((_, index) => {
+            const angle = (index / apps.length) * 2 * Math.PI;
+            const radius = 200;
+            const x = Math.cos(angle) * radius;
+            const y = Math.sin(angle) * radius;
+            return { x, y };
+        });
+        setAppPositions(positions);
+    }, []);
+
 
     const handleAppClick = (app: App) => {
         setIsLoading(true);
@@ -71,19 +84,16 @@ export function AppLauncher() {
 
     const AppGrid = () => (
       <div className="relative w-[500px] h-[500px] flex items-center justify-center animate-fade-in">
-        {apps.map((app, index) => {
-          const angle = (index / apps.length) * 2 * Math.PI;
-          const radius = 200;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
+        {appPositions.length > 0 && apps.map((app, index) => {
+          const position = appPositions[index];
           return (
             <Button
               key={app.name}
               variant="ghost"
               onClick={() => handleAppClick(app)}
-              className="absolute flex flex-col items-center justify-center h-28 w-28 text-foreground/80 hover:text-accent hover:bg-transparent transition-all duration-300 rounded-full group"
+              className="absolute flex flex-col items-center justify-center h-28 w-28 text-foreground/80 hover:text-accent hover:bg-transparent transition-all duration-300 group"
               style={{
-                transform: `translate(${x}px, ${y}px)`,
+                transform: `translate(${position.x}px, ${position.y}px)`,
               }}
             >
               <div className="w-20 h-20 rounded-full bg-black/30 border-2 border-primary/30 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:animate-pulse">
