@@ -24,6 +24,7 @@ import {
     X,
 } from "lucide-react";
 import { AIAssistant } from './apps/ai-assistant';
+import { ThemeStudio } from './apps/theme-studio';
 
 const apps = [
     { name: "Dashboard", icon: LayoutGrid },
@@ -101,6 +102,8 @@ export function AppLauncher() {
             switch(selectedApp.name) {
                 case "AI Assistant":
                     return <AIAssistant />;
+                case "Theme Studio":
+                    return <ThemeStudio />;
                 default:
                     return (
                         <div className="flex items-center justify-center h-full">
@@ -111,7 +114,7 @@ export function AppLauncher() {
         }
 
         return (
-            <div className={`w-full max-w-3xl h-[70vh] flex flex-col rounded-2xl overflow-hidden bg-card/80 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
+            <div className={`w-full max-w-4xl h-[70vh] flex flex-col rounded-2xl overflow-hidden bg-card/80 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
                 <header className="flex items-center justify-between p-2 pl-4 border-b border-primary/30 bg-black/20 cursor-grab">
                     <div className="flex items-center gap-3">
                         <selectedApp.icon className="w-5 h-5 text-accent" />
