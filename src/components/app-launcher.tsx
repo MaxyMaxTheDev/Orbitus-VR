@@ -12,6 +12,7 @@ import {
 import Image from 'next/image';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
@@ -58,46 +59,50 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
     const [isBannerLoading, setIsBannerLoading] = useState(true);
 
     useEffect(() => {
-        // Use a timeout to stagger API requests slightly to avoid rate-limiting issues on page load
         const timer = setTimeout(() => {
             setIsBannerLoading(true);
             generateAppBanner({ appName: app.name })
                 .then(result => setBannerUrl(result.imageUrl))
                 .catch(err => {
                     console.error(`Failed to generate banner for ${app.name}:`, err);
-                    setBannerUrl('https://placehold.co/200x200.png'); // Fallback placeholder
+                    setBannerUrl('https://placehold.co/400x225.png'); // Fallback placeholder
                 })
                 .finally(() => setIsBannerLoading(false));
-        }, Math.random() * 500); // Stagger requests up to 500ms
+        }, Math.random() * 500);
 
         return () => clearTimeout(timer);
     }, [app.name]);
 
     return (
-        <div
-            className="flex flex-col items-center gap-3 text-center cursor-pointer group"
+        <Card
+            className="w-full bg-black/30 border-2 border-primary/20 hover:border-accent group transition-all duration-300 overflow-hidden cursor-pointer shadow-lg hover:shadow-accent/20"
             onClick={() => onClick(app)}
         >
-            <div className="w-24 h-24 rounded-2xl bg-black/30 border-2 border-primary/20 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg relative overflow-hidden">
-                {isBannerLoading ? (
-                    <Skeleton className="w-full h-full" />
-                ) : (
-                    bannerUrl && (
-                        <Image 
-                            src={bannerUrl} 
-                            alt={`${app.name} banner`} 
-                            layout="fill" 
-                            objectFit="cover" 
-                            className="opacity-40 group-hover:opacity-70 transition-opacity duration-300" 
-                            data-ai-hint="futuristic abstract"
-                        />
-                    )
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <app.icon className="w-12 h-12 text-foreground/80 group-hover:text-accent transition-colors z-10 drop-shadow-lg" />
-            </div>
-            <span className="font-body text-sm text-foreground/90 group-hover:text-accent transition-colors">{app.name}</span>
-        </div>
+            <CardContent className="p-0">
+                <div className="relative aspect-video bg-secondary">
+                    {isBannerLoading ? (
+                        <Skeleton className="w-full h-full" />
+                    ) : (
+                        bannerUrl && (
+                            <Image
+                                src={bannerUrl}
+                                alt={`${app.name} banner`}
+                                layout="fill"
+                                objectFit="cover"
+                                className="group-hover:scale-105 transition-transform duration-300"
+                                data-ai-hint="futuristic abstract"
+                            />
+                        )
+                    )}
+                </div>
+                <div className="p-3 flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-accent/20 transition-colors flex-shrink-0">
+                        <app.icon className="w-6 h-6 text-foreground/80 group-hover:text-accent transition-colors" />
+                     </div>
+                    <span className="font-headline text-base text-foreground/90 group-hover:text-accent transition-colors truncate">{app.name}</span>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 
@@ -123,7 +128,7 @@ export function AppLauncher() {
 
     const AppGrid = () => (
       <div className="w-full max-w-7xl mx-auto flex flex-col items-center animate-in fade-in duration-500 p-8">
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-8 gap-y-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {apps.map((app) => (
                 <AppIconWithBanner key={app.name} app={app} onClick={handleAppClick} />
             ))}
