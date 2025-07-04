@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -119,17 +118,24 @@ export function OsSetup({ onComplete }: SetupProps) {
                      <div className="space-y-4 text-left">
                         <div>
                             <Label htmlFor="username-reg">Username</Label>
-                            <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+                            <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" 
+                             onKeyDown={(e) => {
+                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') setStep(3);
+                            }}
+                            />
                         </div>
                         <div>
                             <Label htmlFor="password-reg">Password</Label>
-                            <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" />
+                            <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" 
+                             onKeyDown={(e) => {
+                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') setStep(3);
+                            }}
+                            />
                         </div>
                      </div>
-                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled>
+                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
                         Create Account
                     </Button>
-                    <p className="text-muted-foreground text-xs">Registration is currently disabled.</p>
                     <p className="text-sm text-muted-foreground">
                         Already have an account?{' '}
                         <Button variant="link" className="p-0" onClick={() => setAccountStep('login')}>Sign In</Button>
