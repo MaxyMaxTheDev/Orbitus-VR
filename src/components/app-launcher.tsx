@@ -6,9 +6,10 @@ import { allApps, App } from '@/lib/apps-config';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/contexts/settings-context';
+import { Button } from './ui/button';
 
 type AppLibraryProps = {
     onSelectApp: (appName: string) => void;
@@ -111,6 +112,10 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
             className="absolute inset-0 z-20 bg-card/90 backdrop-blur-2xl"
             onClick={onClose}
         >
+             <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-30 w-12 h-12 rounded-full hover:bg-white/10" onClick={onClose}>
+                <X className="w-8 h-8" />
+            </Button>
+
             <div
                 className="relative w-full h-full p-8 overflow-y-auto"
                 onClick={stopPropagation}

@@ -154,8 +154,6 @@ function DesktopContent() {
                         <Dock
                             onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
                             onOpenApp={openApp}
-                            selectedApp={selectedApp}
-                            onCloseApp={closeApp}
                         />
                     </motion.div>
                 )}
