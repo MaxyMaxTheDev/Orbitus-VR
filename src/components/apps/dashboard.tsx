@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuote, QuoteOutput } from '@/ai/flows/quote-flow';
-import { Calendar, Bot, Loader2, Cpu } from 'lucide-react';
+import { Calendar, Bot, Loader2 } from 'lucide-react';
 
 export function Dashboard() {
   const [date, setDate] = useState('');
@@ -73,17 +73,6 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="text-foreground/80">Your virtual space is ready. Launch apps from the dock below to begin your immersive experience. Customize your environment in the Theme Studio or chat with the AI Assistant.</p>
-          </CardContent>
-        </Card>
-
-         <Card className="bg-card/50 border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent">SYSTEM STATUS</CardTitle>
-            <Cpu className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-400">ALL SYSTEMS NOMINAL</div>
-            <p className="text-xs text-muted-foreground">Last check: {time}</p>
           </CardContent>
         </Card>
       </div>
