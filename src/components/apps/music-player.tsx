@@ -24,7 +24,16 @@ export function MusicPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const handlePlayPause = () => {
     if (isPlaying) {
@@ -42,6 +51,10 @@ export function MusicPlayer() {
   }
 
   const handlePrev = () => {
+    if (audioRef.current && audioRef.current.currentTime > 3) {
+        audioRef.current.currentTime = 0;
+        return;
+    }
     const currentIndex = playlist.findIndex(t => t.id === currentTrack.id);
     const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
     setCurrentTrack(playlist[prevIndex]);
@@ -49,7 +62,7 @@ export function MusicPlayer() {
 
   useEffect(() => {
     if (isPlaying) {
-        audioRef.current?.play();
+        audioRef.current?.play().catch(e => console.error("Audio play failed:", e));
     }
   }, [currentTrack, isPlaying]);
 
@@ -57,32 +70,45 @@ export function MusicPlayer() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateProgress = () => setProgress((audio.currentTime / audio.duration) * 100);
+    const updateProgress = () => {
+        const newProgress = (audio.currentTime / audio.duration) * 100;
+        if (isFinite(newProgress)) {
+            setProgress(newProgress);
+        }
+        setCurrentTime(audio.currentTime);
+    }
+    const handleMetadata = () => setDuration(audio.duration);
     const handleEnd = () => handleNext();
 
     audio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('loadedmetadata', handleMetadata);
     audio.addEventListener('ended', handleEnd);
     return () => {
       audio.removeEventListener('timeupdate', updateProgress);
+      audio.removeEventListener('loadedmetadata', handleMetadata);
       audio.removeEventListener('ended', handleEnd);
     };
   }, [currentTrack.id]);
   
   return (
-    <div className="flex h-full w-full p-4 gap-4">
-      <audio ref={audioRef} src={currentTrack.src} muted={isMuted} />
+    <div className="flex h-full w-full p-4 gap-4 bg-black/20">
+      <audio ref={audioRef} src={currentTrack.src} muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
       <div className="flex-[2] flex flex-col gap-4 items-center justify-center">
-        <Card className="w-64 h-64 bg-black rounded-lg overflow-hidden border-primary/30 relative shadow-2xl shadow-primary/20">
-          <Image src={currentTrack.cover} alt={currentTrack.title} layout="fill" objectFit="cover" data-ai-hint={currentTrack.hint} />
+        <Card className="w-64 h-64 bg-black rounded-lg overflow-hidden border-2 border-primary/30 relative shadow-2xl shadow-accent/10">
+          <Image src={currentTrack.cover} alt={currentTrack.title} layout="fill" objectFit="cover" data-ai-hint={currentTrack.hint} className={cn(isPlaying && "animate-spin-slow")}/>
         </Card>
         <div>
-            <h2 className="text-2xl font-bold text-foreground text-center">{currentTrack.title}</h2>
+            <h2 className="text-2xl font-bold text-foreground text-center font-headline tracking-wider">{currentTrack.title}</h2>
             <p className="text-md text-muted-foreground text-center">{currentTrack.artist}</p>
         </div>
         <div className="w-full max-w-sm flex flex-col gap-3">
             <Slider value={[progress]} onValueChange={(value) => {
                 if(audioRef.current) audioRef.current.currentTime = (value[0] / 100) * audioRef.current.duration;
             }} />
+            <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+            </div>
             <div className="flex items-center justify-center gap-4">
                 <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-full hover:bg-white/20">
                     <SkipBack />
@@ -101,8 +127,8 @@ export function MusicPlayer() {
       </div>
 
       <div className="flex-[2] flex flex-col">
-        <h3 className="text-xl font-bold mb-2 text-accent tracking-wider">Playlist</h3>
-        <Card className="flex-1 bg-transparent border-primary/30">
+        <h3 className="text-xl font-bold mb-2 text-accent tracking-wider font-headline">PLAYLIST</h3>
+        <Card className="flex-1 bg-transparent border-primary/20">
           <ScrollArea className="h-full w-full">
             <CardContent className="p-2">
                 <div className="flex flex-col gap-2">
@@ -111,8 +137,8 @@ export function MusicPlayer() {
                     key={track.id}
                     onClick={() => setCurrentTrack(track)}
                     className={cn(
-                        'flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors duration-200',
-                        currentTrack.id === track.id ? 'bg-primary/50' : 'hover:bg-primary/20'
+                        'flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors duration-200 border border-transparent',
+                        currentTrack.id === track.id ? 'bg-primary/20 border-primary' : 'hover:bg-primary/10'
                     )}
                     >
                     <div className="relative w-12 h-12 bg-secondary rounded-md overflow-hidden flex-shrink-0">
@@ -123,7 +149,7 @@ export function MusicPlayer() {
                         <p className="text-xs text-muted-foreground">{track.artist}</p>
                     </div>
                      {currentTrack.id === track.id && isPlaying && (
-                        <Music4 className="w-5 h-5 text-accent animate-float" />
+                        <Music4 className="w-5 h-5 text-accent animate-pulse" />
                     )}
                     </div>
                 ))}

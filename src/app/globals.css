@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 13%; /* #212121 */
-    --foreground: 0 0% 98%;
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 15%;
-    --card-foreground: 0 0% 98%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 261 44% 68%; /* #7E57C2 */
-    --primary-foreground: 0 0% 98%;
+    --primary: 198 93% 60%; /* Electric Blue/Cyan */
+    --primary-foreground: 222 84% 5%;
 
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 149 81% 67%; /* #69F0AE */
-    --accent-foreground: 0 0% 13%;
+    --accent: 54 100% 50%; /* Vibrant Yellow */
+    --accent-foreground: 222 84% 5%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 149 81% 67%; /* accent color */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 198 93% 60%;
 
     --radius: 0.5rem;
   }
@@ -42,5 +42,18 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .clip-path-polygon-1 {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+  }
+  .clip-path-polygon-2 {
+    clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);
   }
 }

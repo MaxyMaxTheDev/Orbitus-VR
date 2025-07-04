@@ -3,25 +3,11 @@
 
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-    Clapperboard, 
-    Globe, 
-    LayoutGrid, 
-    Mail, 
-    Music, 
-    Settings,
-    View,
-    Users,
-    BoxSelect,
-    Gamepad2,
-    Heart,
-    Briefcase,
-    Palette,
-    Code,
-    Bot,
-    X,
+    Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
+    View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
+    Code, Bot, X,
 } from "lucide-react";
 
 import { AIAssistant } from './apps/ai-assistant';
@@ -70,12 +56,9 @@ export function AppLauncher() {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAppClick = (app: App) => {
-        setSelectedApp(app);
         setIsLoading(true);
-        // Simulate loading time for a better UX
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 1000);
+        setSelectedApp(app);
+        setTimeout(() => setIsLoading(false), 1000);
     };
 
     const handleCloseApp = () => {
@@ -83,32 +66,44 @@ export function AppLauncher() {
         setTimeout(() => {
             setSelectedApp(null);
             setIsClosing(false);
-        }, 300); // Corresponds to zoom-out animation duration
+        }, 300);
     };
 
     const AppGrid = () => (
-        <div className="flex justify-center animate-fade-in">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6 p-4">
-            {apps.map((app) => (
-                <Button
-                key={app.name}
-                variant="ghost"
-                onClick={() => handleAppClick(app)}
-                className="flex flex-col items-center justify-center h-32 w-32 gap-2 text-foreground/80 hover:text-accent hover:bg-primary/20 transition-all duration-300 rounded-2xl group"
-                >
-                <app.icon className="w-12 h-12 transition-transform duration-300 group-hover:scale-110" />
-                <span className="font-body text-sm text-center">{app.name}</span>
-                </Button>
-            ))}
-            </div>
+      <div className="relative w-[500px] h-[500px] flex items-center justify-center animate-fade-in">
+        {apps.map((app, index) => {
+          const angle = (index / apps.length) * 2 * Math.PI;
+          const radius = 200;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          return (
+            <Button
+              key={app.name}
+              variant="ghost"
+              onClick={() => handleAppClick(app)}
+              className="absolute flex flex-col items-center justify-center h-28 w-28 text-foreground/80 hover:text-accent hover:bg-transparent transition-all duration-300 rounded-full group"
+              style={{
+                transform: `translate(${x}px, ${y}px)`,
+              }}
+            >
+              <div className="w-20 h-20 rounded-full bg-black/30 border-2 border-primary/30 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:animate-pulse">
+                <app.icon className="w-10 h-10 transition-transform duration-300" />
+              </div>
+              <span className="font-body text-sm text-center mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">{app.name}</span>
+            </Button>
+          );
+        })}
+        <div className="w-48 h-48 rounded-full bg-black/20 border-2 border-primary/10 flex items-center justify-center text-center font-headline text-primary/50">
+          NEXUS OS
         </div>
+      </div>
     );
 
     const LoadingScreen = () => (
-        <div className="flex flex-col items-center justify-center h-[400px] animate-fade-in">
-            <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin-slow border-accent mb-4"></div>
-            <p className="text-lg text-accent animate-pulse">Loading {selectedApp?.name}...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-full animate-fade-in">
+          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin-slow border-accent mb-4"></div>
+          <p className="text-lg text-accent animate-pulse font-headline tracking-widest">INITIATING: {selectedApp?.name}...</p>
+      </div>
     );
     
     const AppWindow = () => {
@@ -117,35 +112,28 @@ export function AppLauncher() {
         const AppContent = selectedApp.component;
 
         return (
-            <div className={`w-full max-w-4xl h-[70vh] flex flex-col rounded-2xl overflow-hidden bg-card/80 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
+            <div className={`w-full max-w-5xl h-[80vh] flex flex-col bg-black/50 backdrop-blur-xl border border-primary/30 shadow-2xl shadow-primary/20 transition-all duration-300 ${isClosing ? 'animate-glitch-out' : 'animate-glitch-in'}`} style={{clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%)'}}>
                 <header className="flex items-center justify-between p-2 pl-4 border-b border-primary/30 bg-black/20 cursor-grab">
                     <div className="flex items-center gap-3">
-                        <selectedApp.icon className="w-5 h-5 text-accent" />
-                        <span className="font-bold text-foreground">{selectedApp.name}</span>
+                        <selectedApp.icon className="w-5 h-5 text-accent animate-pulse" />
+                        <span className="font-bold font-headline tracking-wider text-foreground">{selectedApp.name}</span>
                     </div>
-                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-white/20" onClick={handleCloseApp}>
+                    <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-accent hover:text-accent-foreground" onClick={handleCloseApp}>
                         <X className="w-4 h-4" />
                     </Button>
                 </header>
-                <main className="flex-1 bg-black/20">
+                <main className="flex-1 bg-black/20 overflow-hidden">
                     <AppContent />
                 </main>
             </div>
         )
     };
     
-  return (
-    <Card className="w-full max-w-5xl bg-card/60 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/20 transition-all duration-500 ease-in-out">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl font-headline text-accent tracking-widest">
-          APP LAUNCHER
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="min-h-[75vh] flex items-center justify-center transition-all duration-300">
+    return (
+      <div className="w-full max-w-6xl min-h-[85vh] flex items-center justify-center transition-all duration-500 ease-in-out">
         {!selectedApp ? <AppGrid /> : (
             isLoading ? <LoadingScreen /> : <AppWindow />
         )}
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
 }

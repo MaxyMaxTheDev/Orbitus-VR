@@ -37,25 +37,17 @@ export function HandCursors() {
     <>
       <Hand
         className={cn(
-          "text-accent w-8 h-8 fixed pointer-events-none transition-transform duration-75 ease-out z-50 drop-shadow-[0_0_8px_hsl(var(--accent))]",
+          "text-accent w-10 h-10 fixed pointer-events-none transition-transform duration-75 ease-out z-50",
+          "drop-shadow-[0_0_8px_hsl(var(--accent))] animate-pulse",
           isClicking && "scale-90"
-          )}
+        )}
         style={{
           left: position.x,
           top: position.y,
           transform: `translate(-20%, -20%)`,
         }}
         strokeWidth={1.5}
-      />
-      <div 
-        className="w-10 h-10 fixed pointer-events-none transition-all duration-300 ease-out z-40 rounded-full"
-        style={{
-          left: position.x,
-          top: position.y,
-          transform: `translate(-50%, -50%)`,
-          background: isClicking ? 'hsla(var(--accent), 0.3)' : 'hsla(var(--accent), 0)',
-          scale: isClicking ? 1 : 0,
-        }}
+        fill="hsla(var(--accent), 0.2)"
       />
     </>
   );

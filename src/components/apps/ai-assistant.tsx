@@ -68,7 +68,7 @@ export function AIAssistant() {
               )}
             >
               {message.role === "assistant" && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-primary-foreground/50">
                   <Bot className="w-5 h-5 text-primary-foreground" />
                 </div>
               )}
@@ -76,14 +76,14 @@ export function AIAssistant() {
                 className={cn(
                   "p-3 rounded-lg max-w-[80%]",
                   message.role === "user"
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-secondary"
+                    ? "bg-accent text-accent-foreground rounded-tr-none"
+                    : "bg-secondary rounded-tl-none"
                 )}
               >
                 <p className="text-sm">{message.content}</p>
               </div>
               {message.role === "user" && (
-                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center border-2 border-accent-foreground/50">
                     <User className="w-5 h-5 text-accent-foreground" />
                 </div>
               )}
@@ -91,10 +91,10 @@ export function AIAssistant() {
           ))}
           {isLoading && (
             <div className="flex items-start gap-3">
-               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-primary-foreground/50">
                   <Bot className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <div className="p-3 rounded-lg bg-secondary flex items-center">
+                <div className="p-3 rounded-lg bg-secondary rounded-tl-none flex items-center">
                     <Loader2 className="w-5 h-5 animate-spin"/>
                 </div>
             </div>
@@ -105,12 +105,12 @@ export function AIAssistant() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
           <Input
             {...register("message")}
-            placeholder="Ask the assistant..."
+            placeholder="Engage with the AI..."
             autoComplete="off"
             className="flex-1 bg-black/30 border-primary/50 focus:ring-accent"
             disabled={isLoading}
           />
-          <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/80">
+          <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/80 text-accent-foreground">
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </form>

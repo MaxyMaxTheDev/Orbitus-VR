@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Search, ServerCrash } from 'lucide-react';
+import { Loader2, Search, Globe2 } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { useToast } from '@/hooks/use-toast';
 import type { SummarizeUrlInput } from '@/ai/schemas';
@@ -54,7 +54,7 @@ export function Browser() {
             className="flex-1 bg-black/30 border-primary/50 focus:ring-accent"
             disabled={isLoading}
           />
-          <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/80">
+          <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/80 text-accent-foreground">
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
         </form>
@@ -64,18 +64,19 @@ export function Browser() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
             <Loader2 className="w-8 h-8 animate-spin text-accent" />
-            <p>Summarizing page...</p>
+            <p className="font-headline tracking-wider">Parsing Datastream...</p>
           </div>
         )}
         {summary && (
-          <div className="prose prose-invert prose-sm max-w-none text-foreground">
-            <h3 className="text-accent">Summary</h3>
+          <div className="prose prose-invert prose-sm max-w-none text-foreground prose-p:text-foreground/80 prose-headings:text-accent prose-headings:font-headline prose-strong:text-primary">
+            <h3>Summary</h3>
             <p>{summary}</p>
           </div>
         )}
         {!isLoading && !summary && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
-            <Search className="w-16 h-16 text-primary/30" strokeWidth={1}/>
+            <Globe2 className="w-24 h-24 text-primary/10" strokeWidth={0.5}/>
+            <p className="font-headline text-lg">AI Web Summarizer</p>
             <p>Enter a URL to get an AI-powered summary.</p>
           </div>
         )}

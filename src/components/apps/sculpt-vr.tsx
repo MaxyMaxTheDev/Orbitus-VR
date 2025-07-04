@@ -46,20 +46,20 @@ export function SculptVR() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full p-4 gap-4 items-center">
+    <div className="flex flex-col h-full w-full p-4 gap-4 items-center bg-black/20">
       <Card className="w-full max-w-2xl bg-transparent border-none shadow-none">
         <CardContent className="p-0">
           <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
             <Input
               {...register('prompt')}
-              placeholder="Describe what you want to sculpt..."
+              placeholder="Describe your creation..."
               autoComplete="off"
               className="flex-1 bg-black/30 border-primary/50 focus:ring-accent h-12 text-base"
               disabled={isLoading}
             />
-            <Button type="submit" size="lg" disabled={isLoading} className="bg-accent hover:bg-accent/80 h-12">
+            <Button type="submit" size="lg" disabled={isLoading} className="bg-accent hover:bg-accent/80 text-accent-foreground h-12 font-bold font-headline tracking-wider">
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
-              Sculpt
+              SCULPT
             </Button>
           </form>
           {errors.prompt && <p className="text-destructive text-xs mt-1">{errors.prompt.message}</p>}
@@ -67,11 +67,11 @@ export function SculptVR() {
       </Card>
 
       <div className="flex-1 w-full flex items-center justify-center">
-        <Card className="w-full max-w-xl aspect-square bg-black/20 border-primary/30 flex items-center justify-center overflow-hidden">
+        <Card className="w-full max-w-xl aspect-square bg-black/20 border-2 border-dashed border-primary/30 flex items-center justify-center overflow-hidden">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
-              <p className="text-lg">AI is sculpting...</p>
+              <p className="text-lg font-headline tracking-widest text-accent">AI IS SCULPTING...</p>
             </div>
           ) : imageUrl ? (
             <div className="relative w-full h-full">
@@ -80,7 +80,7 @@ export function SculptVR() {
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4 text-center p-4">
               <BoxSelect className="w-24 h-24 text-primary/30" strokeWidth={1}/>
-              <h3 className="text-xl font-bold">Welcome to SculptVR</h3>
+              <h3 className="text-xl font-bold font-headline">Welcome to SculptVR</h3>
               <p>Use the power of AI to bring your ideas to life. Describe an object, and the AI will generate a 3D model for you.</p>
             </div>
           )}

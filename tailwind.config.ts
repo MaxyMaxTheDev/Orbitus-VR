@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Roboto', 'sans-serif'],
-        headline: ['Roboto', 'sans-serif'],
+        body: ['var(--font-chakra-petch)', 'sans-serif'],
+        headline: ['var(--font-orbitron)', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -79,34 +79,57 @@ export default {
             height: '0',
           },
         },
-        'float': {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
         'fade-in': {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
-        'zoom-in': {
-            '0%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
-            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
-        },
-        'zoom-out': {
-            '0%': { opacity: '1', transform: 'scale(1) translateY(0)' },
-            '100%': { opacity: '0', transform: 'scale(0.95) translateY(10px)' },
-        },
         'spin-slow': {
             'to': { transform: 'rotate(360deg)' }
-        }
+        },
+        'scanline': {
+          '0%': { transform: 'translateY(-10%)' },
+          '100%': { transform: 'translateY(110%)' },
+        },
+        'glitch-in': {
+          '0%': { 
+            opacity: '0',
+            transform: 'scale(0.9) skew(5deg, 5deg)',
+            clipPath: 'polygon(0 0, 100% 0, 100% 0, 0 0)'
+          },
+          '50%': { 
+            opacity: '0.8',
+            transform: 'scale(1.02) skew(0, 0)',
+          },
+          '100%': { 
+            opacity: '1',
+            transform: 'scale(1) skew(0, 0)',
+            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)'
+          },
+        },
+        'glitch-out': {
+          '0%': { 
+            opacity: '1',
+            transform: 'scale(1) skew(0, 0)',
+          },
+          '50%': { 
+            opacity: '0.5',
+            transform: 'scale(1.02) skew(-5deg, -5deg)',
+            clipPath: 'polygon(0 100%, 100% 100%, 100% 100%, 0 100%)'
+          },
+          '100%': { 
+            opacity: '0',
+            transform: 'scale(0.9)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'float': 'float 6s ease-in-out infinite',
         'fade-in': 'fade-in 0.5s ease-out forwards',
-        'zoom-in': 'zoom-in 0.3s ease-out forwards',
-        'zoom-out': 'zoom-out 0.3s ease-in forwards',
-        'spin-slow': 'spin-slow 2s linear infinite',
+        'spin-slow': 'spin-slow 10s linear infinite',
+        'scanline': 'scanline 10s linear infinite',
+        'glitch-in': 'glitch-in 0.5s ease-out forwards',
+        'glitch-out': 'glitch-out 0.3s ease-in forwards',
       },
     },
   },

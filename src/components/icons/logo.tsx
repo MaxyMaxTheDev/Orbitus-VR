@@ -4,18 +4,39 @@ export function NexusVRLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
     >
-      <path d="M7 14.5c0 3.5 2.5 5.5 5 5.5s5-2 5-5.5V12" />
-      <path d="M12 9.5V2" />
-      <path d="M15.5 12c0-3-1.5-5-3.5-5s-3.5 2-3.5 5" />
-      <path d="M2 12h5m10 0h5" />
+      <path
+        d="M50 2.5L95.5 27.5V72.5L50 97.5L4.5 72.5V27.5L50 2.5Z"
+        stroke="currentColor"
+        strokeWidth="5"
+      />
+      <path
+        d="M50 22V50L73 36L50 22Z"
+        stroke="currentColor"
+        strokeOpacity="0.7"
+        strokeWidth="4"
+      />
+       <path
+        d="M50 50L73 64L50 78V50Z"
+        stroke="currentColor"
+        strokeOpacity="0.7"
+        strokeWidth="4"
+      />
+       <path
+        d="M50 50L27 64L50 78V50Z"
+        stroke="currentColor"
+        strokeOpacity="0.7"
+        strokeWidth="4"
+      />
+      <path
+        d="M50 22L27 36L50 50V22Z"
+        stroke="currentColor"
+        strokeOpacity="0.7"
+        strokeWidth="4"
+      />
     </svg>
   );
 }
