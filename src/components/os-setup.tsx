@@ -56,7 +56,7 @@ export function OsSetup({ onComplete }: SetupProps) {
                                 <LogIn className="w-6 h-6 text-accent" />
                                 <span className="text-lg font-bold">NexusVR Account</span>
                             </div>
-                            <p className="font-normal text-muted-foreground text-sm whitespace-normal">Sign in to sync your data across devices (feature coming soon).</p>
+                            <p className="font-normal text-muted-foreground text-sm whitespace-normal">Sign in to sync your data across devices.</p>
                         </Button>
                     </div>
                 </motion.div>
