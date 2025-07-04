@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { RotateCcw } from 'lucide-react';
 
 const ColorSetting = ({ label, value, onChange }: { label: string; value: number[]; onChange: (value: number[]) => void }) => {
   const [h, s, l] = value;
@@ -32,37 +34,31 @@ const ColorSetting = ({ label, value, onChange }: { label: string; value: number
   );
 };
 
+const defaultTheme = {
+  primary: [217, 91, 60],
+  accent: [217, 91, 60],
+  background: [220, 13, 18],
+};
+
 export function ThemeStudio() {
-    const [primaryColor, setPrimaryColor] = useState([198, 93, 60]);
-    const [accentColor, setAccentColor] = useState([54, 100, 50]);
-    const [backgroundColor, setBackgroundColor] = useState([224, 71, 4]);
+    const [primaryColor, setPrimaryColor] = useState(defaultTheme.primary);
+    const [accentColor, setAccentColor] = useState(defaultTheme.accent);
+    const [backgroundColor, setBackgroundColor] = useState(defaultTheme.background);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
-        const rootStyle = getComputedStyle(document.documentElement);
-        
-        const parseHsl = (prop: string) => {
-            const val = rootStyle.getPropertyValue(prop).trim();
-            if (!val) return null;
-            const parts = val.split(' ').map(parseFloat);
-            return parts.length === 3 ? parts : null;
-        }
-        
-        const initialPrimary = parseHsl('--primary');
-        if (initialPrimary) setPrimaryColor(initialPrimary);
-        
-        const initialAccent = parseHsl('--accent');
-        if (initialAccent) setAccentColor(initialAccent);
-
-        const initialBackground = parseHsl('--background');
-        if (initialBackground) setBackgroundColor(initialBackground);
-
     }, []);
 
     const updateCssVar = (varName: string, hsl: number[]) => {
         document.documentElement.style.setProperty(varName, `${hsl[0]} ${hsl[1]}% ${hsl[2]}%`);
     }
+
+    const handleReset = () => {
+        setPrimaryColor(defaultTheme.primary);
+        setAccentColor(defaultTheme.accent);
+        setBackgroundColor(defaultTheme.background);
+    };
 
     useEffect(() => {
         if (!isClient) return;
@@ -87,10 +83,10 @@ export function ThemeStudio() {
         
         const calculateLightness = (base: number, offset: number) => Math.max(0, Math.min(100, base + (isDark ? offset : -offset)));
 
-        updateCssVar('--card', [hue, sat, calculateLightness(backgroundColor[2], 1)]);
-        updateCssVar('--popover', [hue, sat, calculateLightness(backgroundColor[2], 1)]);
-        updateCssVar('--secondary', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
-        updateCssVar('--muted', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
+        updateCssVar('--card', [hue, sat, calculateLightness(backgroundColor[2], 4)]);
+        updateCssVar('--popover', [hue, sat, calculateLightness(backgroundColor[2], 4)]);
+        updateCssVar('--secondary', [hue, sat, calculateLightness(backgroundColor[2], 10)]);
+        updateCssVar('--muted', [hue, sat, calculateLightness(backgroundColor[2], 10)]);
         updateCssVar('--muted-foreground', [215, 20, calculateLightness(foregroundLightness, -33)]);
         updateCssVar('--border', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
         updateCssVar('--input', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
@@ -109,6 +105,12 @@ export function ThemeStudio() {
 
   return (
     <div className="p-4 sm:p-6 h-full w-full overflow-y-auto bg-black/20">
+        <div className="flex justify-end mb-6">
+            <Button onClick={handleReset} variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset to Default
+            </Button>
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="bg-transparent border-primary/20">
                 <CardHeader>
