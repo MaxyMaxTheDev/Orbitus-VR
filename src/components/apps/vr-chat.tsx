@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -12,6 +13,7 @@ import { vrChat } from "@/ai/flows/vr-chat-flow";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Message } from "@/ai/schemas";
+import { get, set } from "@/lib/idb";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message cannot be empty"),
@@ -19,13 +21,40 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const initialMessages: Message[] = [
+  { author: 'SynthRider', text: "What's up? The vibes in this lobby are rad." },
+  { author: 'Oracle', text: "The data streams converge. Welcome, traveler." }
+];
+
 export function VRChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    { author: 'SynthRider', text: "What's up? The vibes in this lobby are rad." },
-    { author: 'Oracle', text: "The data streams converge. Welcome, traveler." }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const storedMessages = await get<Message[]>('vr-chat-messages');
+        if (storedMessages && storedMessages.length > 0) {
+          setMessages(storedMessages);
+        }
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+      } finally {
+        setIsHistoryLoaded(true);
+      }
+    };
+    loadHistory();
+  }, []);
+
+  useEffect(() => {
+    if (isHistoryLoaded) {
+      set('vr-chat-messages', messages).catch(error => {
+        console.error("Failed to save chat history:", error);
+      });
+    }
+  }, [messages, isHistoryLoaded]);
 
   const {
     register,
