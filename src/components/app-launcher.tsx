@@ -31,27 +31,28 @@ import { MusicPlayer } from './apps/music-player';
 import { SettingsApp } from './apps/settings-app';
 
 const apps = [
-    { name: "Dashboard", icon: LayoutGrid, component: Dashboard },
-    { name: "Browser", icon: Globe, component: Browser },
-    { name: "Media Player", icon: Clapperboard, component: MediaPlayer },
-    { name: "VR Chat", icon: Users, component: VRChat },
-    { name: "360 Gallery", icon: View, component: Gallery360 },
-    { name: "SculptVR", icon: BoxSelect, component: SculptVR },
-    { name: "Game Hub", icon: Gamepad2, component: GameHub },
-    { name: "Wellness", icon: Heart, component: Wellness },
-    { name: "Workspace", icon: Briefcase, component: Workspace },
-    { name: "Theme Studio", icon: Palette, component: ThemeStudio },
-    { name: "DevKit", icon: Code, component: DevKit },
-    { name: "AI Assistant", icon: Bot, component: AIAssistant },
-    { name: "Mail", icon: Mail, component: MailApp },
-    { name: "Music Player", icon: Music, component: MusicPlayer },
-    { name: "Settings", icon: Settings, component: SettingsApp },
+    { name: "Dashboard", icon: LayoutGrid, component: Dashboard, description: "A central hub displaying system status, AI insights, and the current time." },
+    { name: "Browser", icon: Globe, component: Browser, description: "A web browser that can access and summarize content from URLs using AI." },
+    { name: "Media Player", icon: Clapperboard, component: MediaPlayer, description: "A video player for watching trailers, movies, and VR content." },
+    { name: "VR Chat", icon: Users, component: VRChat, description: "A social chat room with AI personalities to interact with." },
+    { name: "360 Gallery", icon: View, component: Gallery360, description: "An immersive gallery for viewing 360-degree panoramic images." },
+    { name: "SculptVR", icon: BoxSelect, component: SculptVR, description: "A creative tool to generate 3D models from text descriptions using AI." },
+    { name: "Game Hub", icon: Gamepad2, component: GameHub, description: "A portal for playing simple, fun mini-games." },
+    { name: "Wellness", icon: Heart, component: Wellness, description: "A relaxation and mindfulness app with guided breathing exercises." },
+    { name: "Workspace", icon: Briefcase, component: Workspace, description: "A productivity app with a to-do list for managing tasks." },
+    { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
+    { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
+    { name: "AI Assistant", icon: Bot, component: AIAssistant, description: "A conversational AI chatbot for asking questions and getting help." },
+    { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
+    { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
+    { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
 ];
 
 type App = {
     name: string;
     icon: LucideIcon;
     component: React.FC;
+    description: string;
 }
 
 const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => void }) => {
@@ -61,7 +62,7 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsBannerLoading(true);
-            generateAppBanner({ appName: app.name })
+            generateAppBanner({ appName: app.name, description: app.description })
                 .then(result => setBannerUrl(result.imageUrl))
                 .catch(err => {
                     console.error(`Failed to generate banner for ${app.name}:`, err);
@@ -71,7 +72,7 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
         }, Math.random() * 500);
 
         return () => clearTimeout(timer);
-    }, [app.name]);
+    }, [app.name, app.description]);
 
     return (
         <Card
@@ -91,7 +92,7 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
                                 alt={`${app.name} banner`}
                                 layout="fill"
                                 objectFit="cover"
-                                className="group-hover:scale-105 transition-transform duration-300 animate-in fade-in"
+                                className="group-hover:scale-105 transition-transform duration-300 animate-in fade-in duration-500"
                                 data-ai-hint="futuristic abstract"
                             />
                         )
@@ -99,7 +100,7 @@ const AppIconWithBanner = ({ app, onClick }: { app: App; onClick: (app: App) => 
                 </div>
                 <div className={cn("p-3 flex items-center gap-3", {
                     "opacity-0": isBannerLoading,
-                    "animate-in fade-in": !isBannerLoading,
+                    "animate-in fade-in duration-500": !isBannerLoading,
                 })}>
                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-accent/20 transition-colors flex-shrink-0">
                         <app.icon className="w-6 h-6 text-foreground/80 group-hover:text-accent transition-colors" />

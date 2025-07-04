@@ -71,6 +71,7 @@ export type VRChatOutput = z.infer<typeof VRChatOutputSchema>;
 // For generate-app-banner-flow.ts
 export const GenerateAppBannerInputSchema = z.object({
   appName: z.string().describe('The name of the application.'),
+  description: z.string().describe('A description of what the application does.'),
 });
 export type GenerateAppBannerInput = z.infer<typeof GenerateAppBannerInputSchema>;
 

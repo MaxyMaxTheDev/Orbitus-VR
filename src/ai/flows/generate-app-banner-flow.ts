@@ -30,7 +30,10 @@ const generateAppBannerFlow = ai.defineFlow(
     try {
       const { media } = await ai.generate({
         model: 'googleai/gemini-2.0-flash-preview-image-generation',
-        prompt: `A futuristic, abstract banner image (16:9 aspect ratio) for a virtual reality app called "${input.appName}". The style should be cyberpunk, with glowing neon geometric patterns and a dark, tech-focused aesthetic. Minimalist and abstract, not a literal representation of the app.`,
+        prompt: `Create a futuristic, abstract banner image (16:9 aspect ratio) for an app.
+App Name: "${input.appName}"
+App Description: "${input.description}"
+The image should be a conceptual, high-tech, cyberpunk-style representation of the app's function. Use glowing neon geometric patterns and a dark, tech-focused aesthetic. The banner should be visually exciting and abstract, not a literal depiction.`,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],
         },
