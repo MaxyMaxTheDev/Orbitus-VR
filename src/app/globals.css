@@ -48,12 +48,3 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
-
-@layer utilities {
-  .clip-path-polygon-1 {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-  }
-  .clip-path-polygon-2 {
-    clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);
-  }
-}

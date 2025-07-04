@@ -36,7 +36,7 @@ export function SettingsPanel({ children }: { children: React.ReactNode }) {
           <SheetDescription>Customize your NexusVR experience.</SheetDescription>
         </SheetHeader>
         <div className="grid gap-8 py-8">
-          <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
             <Label htmlFor="spatial-audio" className="text-lg font-medium">
               Spatial Audio
             </Label>
@@ -44,10 +44,11 @@ export function SettingsPanel({ children }: { children: React.ReactNode }) {
               id="spatial-audio"
               checked={isSpatialAudio}
               onCheckedChange={setIsSpatialAudio}
+              className="data-[state=checked]:bg-accent"
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
             <Label className="text-lg font-medium">Custom Environment</Label>
             <ImportModelDialog />
           </div>
@@ -77,11 +78,11 @@ export function ImportModelDialog() {
           <div className="flex items-center justify-center w-full">
             <label
               htmlFor="dropzone-file"
-              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer border-border hover:border-accent hover:bg-white/5"
+              className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer border-border hover:border-accent hover:bg-black/20"
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <UploadCloud className="w-10 h-10 mb-3 text-gray-400" />
-                <p className="mb-2 text-sm text-gray-400">
+                <UploadCloud className="w-10 h-10 mb-3 text-muted-foreground" />
+                <p className="mb-2 text-sm text-muted-foreground">
                   <span className="font-semibold text-accent">Click to upload</span> or drag and drop
                 </p>
                 <p className="text-xs text-gray-500">GLTF, GLB (MAX. 10MB)</p>

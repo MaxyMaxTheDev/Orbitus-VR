@@ -10,31 +10,31 @@ import { HexGrid } from '@/components/hex-grid';
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen w-full bg-background overflow-hidden font-body">
+    <div className="relative min-h-screen w-full bg-background overflow-hidden font-body text-foreground">
       <HexGrid />
       <ScanLine />
-
       <HandCursors />
 
-      <header className="fixed top-0 left-0 right-0 p-4 z-20 flex justify-between items-center">
-        <div className="flex items-center gap-3 group cursor-pointer">
-          <NexusVRLogo className="h-9 w-9 text-primary transition-all duration-500 ease-in-out group-hover:text-accent group-hover:animate-pulse" />
-          <h1 className="text-3xl font-bold font-headline tracking-widest text-foreground transition-all duration-500 ease-in-out group-hover:text-accent">
+      <header className="fixed top-0 left-0 right-0 p-2 px-4 z-20 flex justify-between items-center bg-background/50 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center gap-3">
+          <NexusVRLogo className="h-7 w-7 text-primary" />
+          <h1 className="text-xl font-bold font-headline tracking-wider">
             NexusVR
           </h1>
         </div>
-        <SettingsPanel>
-            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-accent hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-110 hover:animate-pulse">
-                <Settings className="h-6 w-6" />
+        <div className="flex items-center gap-4">
+          <VirtualClock />
+          <SettingsPanel>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-accent hover:bg-black/20 rounded-full">
+              <Settings className="h-5 w-5" />
             </Button>
-        </SettingsPanel>
+          </SettingsPanel>
+        </div>
       </header>
 
-      <main className="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <main className="relative z-10 pt-16">
         <AppLauncher />
       </main>
-
-      <VirtualClock />
     </div>
   );
 }

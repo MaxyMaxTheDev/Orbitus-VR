@@ -7,10 +7,10 @@ export function VirtualClock() {
 
   useEffect(() => {
     const updateClock = () => {
-      setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
+      setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     };
 
-    const timerId = setInterval(updateClock, 1000);
+    const timerId = setInterval(updateClock, 1000 * 30); // Update every 30s is enough
     updateClock();
 
     return () => clearInterval(timerId);
@@ -18,15 +18,15 @@ export function VirtualClock() {
 
   if (!time) {
     return (
-      <div className="fixed bottom-4 left-4 z-10 font-headline tracking-widest">
-        <p className="text-4xl text-accent/80 font-bold tabular-nums drop-shadow-[0_0_10px_hsl(var(--accent))]">--:--:--</p>
+      <div className="font-headline tracking-widest">
+        <p className="text-base text-muted-foreground font-bold tabular-nums">--:--</p>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-10 font-headline tracking-widest">
-      <p className="text-4xl text-accent font-bold tabular-nums drop-shadow-[0_0_10px_hsl(var(--accent))]">
+    <div className="font-headline tracking-widest">
+      <p className="text-base text-foreground font-bold tabular-nums">
         {time}
       </p>
     </div>
