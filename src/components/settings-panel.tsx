@@ -58,7 +58,7 @@ export function SettingsPanel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ImportModelDialog() {
+export function ImportModelDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>

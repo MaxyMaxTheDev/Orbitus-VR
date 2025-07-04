@@ -3,17 +3,14 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bot, User, Send, Loader2 } from "lucide-react";
-import { chat, ChatInput } from "@/ai/flows/chat";
+import { chat } from "@/ai/flows/chat";
 import { cn } from "@/lib/utils";
-
-const formSchema = z.object({
-  message: z.string().min(1, "Message cannot be empty"),
-});
+import { ChatInputSchema } from "@/ai/schemas";
+import type { ChatInput } from "@/ai/schemas";
 
 type Message = {
   role: "user" | "assistant";
@@ -30,7 +27,7 @@ export function AIAssistant() {
     reset,
     formState: { errors },
   } = useForm<ChatInput>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(ChatInputSchema),
   });
 
   const onSubmit: SubmitHandler<ChatInput> = async (data) => {

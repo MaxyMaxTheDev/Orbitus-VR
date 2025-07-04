@@ -8,17 +8,13 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {
+  ChatInputSchema,
+  ChatOutputSchema,
+} from '../schemas';
+import type { ChatInput, ChatOutput } from '../schemas';
 
-const ChatInputSchema = z.object({
-  message: z.string().describe('The user message.'),
-});
-export type ChatInput = z.infer<typeof ChatInputSchema>;
-
-const ChatOutputSchema = z.object({
-  message: z.string().describe('The AI response.'),
-});
-export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+export type { ChatInput, ChatOutput };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
   return chatFlow(input);

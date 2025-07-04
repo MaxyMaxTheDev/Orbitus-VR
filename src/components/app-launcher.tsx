@@ -23,35 +23,45 @@ import {
     Bot,
     X,
 } from "lucide-react";
+
 import { AIAssistant } from './apps/ai-assistant';
 import { ThemeStudio } from './apps/theme-studio';
-import { PlaceholderApp } from './apps/placeholder-app';
 import { MediaPlayer } from './apps/media-player';
 import { Gallery360 } from './apps/360-gallery';
 import { Workspace } from './apps/workspace';
 import { Wellness } from './apps/wellness';
+import { Dashboard } from './apps/dashboard';
+import { Browser } from './apps/browser';
+import { VRChat } from './apps/vr-chat';
+import { SculptVR } from './apps/sculpt-vr';
+import { GameHub } from './apps/game-hub';
+import { DevKit } from './apps/devkit';
+import { MailApp } from './apps/mail';
+import { MusicPlayer } from './apps/music-player';
+import { SettingsApp } from './apps/settings-app';
 
 const apps = [
-    { name: "Dashboard", icon: LayoutGrid },
-    { name: "Browser", icon: Globe },
-    { name: "Media Player", icon: Clapperboard },
-    { name: "VR Chat", icon: Users },
-    { name: "360 Gallery", icon: View },
-    { name: "SculptVR", icon: BoxSelect },
-    { name: "Game Hub", icon: Gamepad2 },
-    { name: "Wellness", icon: Heart },
-    { name: "Workspace", icon: Briefcase },
-    { name: "Theme Studio", icon: Palette },
-    { name: "DevKit", icon: Code },
-    { name: "AI Assistant", icon: Bot },
-    { name: "Mail", icon: Mail },
-    { name: "Music", icon: Music },
-    { name: "Settings", icon: Settings },
+    { name: "Dashboard", icon: LayoutGrid, component: Dashboard },
+    { name: "Browser", icon: Globe, component: Browser },
+    { name: "Media Player", icon: Clapperboard, component: MediaPlayer },
+    { name: "VR Chat", icon: Users, component: VRChat },
+    { name: "360 Gallery", icon: View, component: Gallery360 },
+    { name: "SculptVR", icon: BoxSelect, component: SculptVR },
+    { name: "Game Hub", icon: Gamepad2, component: GameHub },
+    { name: "Wellness", icon: Heart, component: Wellness },
+    { name: "Workspace", icon: Briefcase, component: Workspace },
+    { name: "Theme Studio", icon: Palette, component: ThemeStudio },
+    { name: "DevKit", icon: Code, component: DevKit },
+    { name: "AI Assistant", icon: Bot, component: AIAssistant },
+    { name: "Mail", icon: Mail, component: MailApp },
+    { name: "Music Player", icon: Music, component: MusicPlayer },
+    { name: "Settings", icon: Settings, component: SettingsApp },
 ];
 
 type App = {
     name: string;
     icon: LucideIcon;
+    component: React.FC;
 }
 
 export function AppLauncher() {
@@ -62,9 +72,10 @@ export function AppLauncher() {
     const handleAppClick = (app: App) => {
         setSelectedApp(app);
         setIsLoading(true);
+        // Simulate loading time for a better UX
         setTimeout(() => {
             setIsLoading(false);
-        }, 1500); // Simulate loading time
+        }, 1000);
     };
 
     const handleCloseApp = () => {
@@ -77,16 +88,16 @@ export function AppLauncher() {
 
     const AppGrid = () => (
         <div className="flex justify-center animate-fade-in">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6 p-4">
             {apps.map((app) => (
                 <Button
                 key={app.name}
                 variant="ghost"
                 onClick={() => handleAppClick(app)}
-                className="flex flex-col items-center justify-center h-32 w-32 gap-2 text-foreground/80 hover:text-accent hover:bg-primary/20 transition-all duration-300 rounded-full group"
+                className="flex flex-col items-center justify-center h-32 w-32 gap-2 text-foreground/80 hover:text-accent hover:bg-primary/20 transition-all duration-300 rounded-2xl group"
                 >
                 <app.icon className="w-12 h-12 transition-transform duration-300 group-hover:scale-110" />
-                <span className="font-body text-sm">{app.name}</span>
+                <span className="font-body text-sm text-center">{app.name}</span>
                 </Button>
             ))}
             </div>
@@ -103,26 +114,7 @@ export function AppLauncher() {
     const AppWindow = () => {
         if (!selectedApp) return null;
         
-        const renderContent = () => {
-            switch(selectedApp.name) {
-                case "AI Assistant":
-                    return <AIAssistant />;
-                case "Theme Studio":
-                    return <ThemeStudio />;
-                case "Media Player":
-                    return <MediaPlayer />;
-                case "360 Gallery":
-                    return <Gallery360 />;
-                case "Workspace":
-                    return <Workspace />;
-                case "Wellness":
-                    return <Wellness />;
-                default:
-                    return (
-                        <PlaceholderApp name={selectedApp.name} icon={selectedApp.icon} />
-                    );
-            }
-        }
+        const AppContent = selectedApp.component;
 
         return (
             <div className={`w-full max-w-4xl h-[70vh] flex flex-col rounded-2xl overflow-hidden bg-card/80 backdrop-blur-xl border-primary/30 shadow-2xl shadow-primary/20 ${isClosing ? 'animate-zoom-out' : 'animate-zoom-in'}`}>
@@ -136,7 +128,7 @@ export function AppLauncher() {
                     </Button>
                 </header>
                 <main className="flex-1 bg-black/20">
-                    {renderContent()}
+                    <AppContent />
                 </main>
             </div>
         )
