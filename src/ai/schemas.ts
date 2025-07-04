@@ -91,3 +91,15 @@ export const LoginOutputSchema = z.object({
   message: z.string().describe('A message indicating the result of the login attempt.'),
 });
 export type LoginOutput = z.infer<typeof LoginOutputSchema>;
+
+// For signup-flow.ts
+export const SignupInputSchema = z.object({
+  username: z.string().describe("The user's desired username."),
+  password: z.string().describe("The user's desired password."),
+});
+export type SignupInput = z.infer<typeof SignupInputSchema>;
+export const SignupOutputSchema = z.object({
+  success: z.boolean().describe('Whether the signup was successful.'),
+  message: z.string().describe('A message indicating the result of the signup attempt.'),
+});
+export type SignupOutput = z.infer<typeof SignupOutputSchema>;

@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, LogIn, User, Loader2 } from 'lucide-react';
 import { NexusVRLogo } from './icons/logo';
 import { login } from '@/ai/flows/login-flow';
+import { signup } from '@/ai/flows/signup-flow';
 
 type SetupProps = {
   onComplete: () => void;
@@ -20,8 +21,12 @@ export function OsSetup({ onComplete }: SetupProps) {
   const [accountStep, setAccountStep] = useState<'choice' | 'login' | 'register'>('choice');
   const { username, setUsername, showAppBanners, setShowAppBanners } = useSettings();
   const [password, setPassword] = useState('');
+  
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -39,7 +44,6 @@ export function OsSetup({ onComplete }: SetupProps) {
     try {
       const result = await login({ username, password });
       if (result.success) {
-        // Login successful, move to preferences
         setStep(3);
       } else {
         setLoginError(result.message);
@@ -49,6 +53,25 @@ export function OsSetup({ onComplete }: SetupProps) {
       setLoginError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const handleSignUp = async () => {
+    if (username.trim() === '' || password.trim() === '') return;
+    setIsSigningUp(true);
+    setSignupError(null);
+    try {
+      const result = await signup({ username, password });
+      if (result.success) {
+        setStep(3);
+      } else {
+        setSignupError(result.message);
+      }
+    } catch (error) {
+      console.error("Signup flow error:", error);
+      setSignupError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSigningUp(false);
     }
   };
 
@@ -120,7 +143,7 @@ export function OsSetup({ onComplete }: SetupProps) {
                             <Label htmlFor="username-reg">Username</Label>
                             <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" 
                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') setStep(3);
+                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') handleSignUp();
                             }}
                             />
                         </div>
@@ -128,14 +151,15 @@ export function OsSetup({ onComplete }: SetupProps) {
                             <Label htmlFor="password-reg">Password</Label>
                             <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" 
                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') setStep(3);
+                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') handleSignUp();
                             }}
                             />
                         </div>
                      </div>
-                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
-                        Create Account
+                    <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || isSigningUp}>
+                        {isSigningUp ? <Loader2 className="animate-spin" /> : 'Create Account'}
                     </Button>
+                    {signupError && <p className="text-sm text-destructive">{signupError}</p>}
                     <p className="text-sm text-muted-foreground">
                         Already have an account?{' '}
                         <Button variant="link" className="p-0" onClick={() => setAccountStep('login')}>Sign In</Button>
