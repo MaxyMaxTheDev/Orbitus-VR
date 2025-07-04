@@ -26,20 +26,28 @@ const imageGenerationFlow = ai.defineFlow(
     outputSchema: ImageGenerationOutputSchema,
   },
   async (input) => {
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: `A high-resolution 3D render of the following object, suitable for a virtual reality sculpting app: ${input.prompt}`,
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
-    });
+    try {
+      const { media } = await ai.generate({
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
+        prompt: `A high-resolution 3D render of the following object, suitable for a virtual reality sculpting app: ${input.prompt}`,
+        config: {
+          responseModalities: ['TEXT', 'IMAGE'],
+        },
+      });
 
-    if (!media) {
-      throw new Error('Image generation failed.');
+      if (!media) {
+        throw new Error('Image generation failed. The prompt may have been blocked due to safety settings.');
+      }
+
+      return {
+        imageUrl: media.url,
+      };
+    } catch (e: any) {
+      if (e.message?.includes('429')) {
+        throw new Error('You have exceeded your daily image generation quota. Please try again tomorrow.');
+      }
+      console.error("Image generation error:", e);
+      throw new Error('The AI failed to generate the model. Please try a different prompt.');
     }
-
-    return {
-      imageUrl: media.url,
-    };
   }
 );
