@@ -1,21 +1,37 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
-import { SettingsProvider } from '@/contexts/settings-context';
+import { SettingsProvider, useSettings } from '@/contexts/settings-context';
+import { OsSetup } from './os-setup';
 
-export function Desktop() {
+function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [isLibraryOpen, setLibraryOpen] = useState(false);
+    const [isSetupComplete, setIsSetupComplete] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const setupFlag = localStorage.getItem('nexus-vr-setup-complete');
+        if (setupFlag === 'true') {
+            setIsSetupComplete(true);
+        }
+        setIsLoading(false);
+    }, []);
+
+    const handleSetupComplete = () => {
+        localStorage.setItem('nexus-vr-setup-complete', 'true');
+        setIsSetupComplete(true);
+    };
 
     const openApp = (appName: string) => {
         const app = allApps.find(app => app.name === appName);
@@ -60,33 +76,51 @@ export function Desktop() {
             </motion.div>
         )
     };
+    
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen">
+                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            </div>
+        );
+    }
+    
+    if (!isSetupComplete) {
+        return <OsSetup onComplete={handleSetupComplete} />;
+    }
 
     return (
-        <SettingsProvider>
-            <div className="flex-1 flex flex-col items-center justify-center">
-                {/* Main Content Area */}
-                <div className="flex-1 w-full relative">
-                    <AnimatePresence>
-                        {selectedApp ? <AppWindow /> : <Dashboard />}
-                    </AnimatePresence>
-                </div>
-
-                {/* App Library Overlay */}
+        <div className="flex-1 flex flex-col items-center justify-center">
+            {/* Main Content Area */}
+            <div className="flex-1 w-full relative">
                 <AnimatePresence>
-                    {isLibraryOpen && (
-                        <AppLauncher
-                            onSelectApp={openApp}
-                            onClose={() => setLibraryOpen(false)}
-                        />
-                    )}
+                    {selectedApp ? <AppWindow /> : <Dashboard />}
                 </AnimatePresence>
-
-                {/* Dock */}
-                <Dock
-                    onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                    onOpenApp={openApp}
-                />
             </div>
+
+            {/* App Library Overlay */}
+            <AnimatePresence>
+                {isLibraryOpen && (
+                    <AppLauncher
+                        onSelectApp={openApp}
+                        onClose={() => setLibraryOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Dock */}
+            <Dock
+                onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                onOpenApp={openApp}
+            />
+        </div>
+    );
+}
+
+export function Desktop() {
+    return (
+        <SettingsProvider>
+            <DesktopContent />
         </SettingsProvider>
     );
 }

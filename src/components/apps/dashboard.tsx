@@ -1,15 +1,18 @@
+
 "use client";
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuote, QuoteOutput } from '@/ai/flows/quote-flow';
 import { Calendar, Bot, Loader2 } from 'lucide-react';
+import { useSettings } from '@/contexts/settings-context';
 
 export function Dashboard() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [quote, setQuote] = useState<QuoteOutput | null>(null);
   const [isQuoteLoading, setIsQuoteLoading] = useState(true);
+  const { username } = useSettings();
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -69,7 +72,7 @@ export function Dashboard() {
         
         <Card className="md:col-span-3 bg-card/50 border-border">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-accent">WELCOME TO NEXUSVR</CardTitle>
+            <CardTitle className="text-sm font-medium text-accent">WELCOME, {username.toUpperCase()}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-foreground/80">Your virtual space is ready. Launch apps from the dock below to begin your immersive experience. Customize your environment in the Theme Studio or chat with the AI Assistant.</p>
