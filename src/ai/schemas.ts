@@ -79,3 +79,15 @@ export const GenerateAppBannerOutputSchema = z.object({
   imageUrl: z.string().describe('The data URI of the generated banner image.'),
 });
 export type GenerateAppBannerOutput = z.infer<typeof GenerateAppBannerOutputSchema>;
+
+// For login-flow.ts
+export const LoginInputSchema = z.object({
+  username: z.string().describe("The user's username."),
+  password: z.string().describe("The user's password."),
+});
+export type LoginInput = z.infer<typeof LoginInputSchema>;
+export const LoginOutputSchema = z.object({
+  success: z.boolean().describe('Whether the login was successful.'),
+  message: z.string().describe('A message indicating the result of the login attempt.'),
+});
+export type LoginOutput = z.infer<typeof LoginOutputSchema>;

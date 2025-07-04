@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, LogIn, User } from 'lucide-react';
+import { ArrowRight, Check, LogIn, User, Loader2 } from 'lucide-react';
 import { NexusVRLogo } from './icons/logo';
+import { login } from '@/ai/flows/login-flow';
 
 type SetupProps = {
   onComplete: () => void;
@@ -20,6 +21,8 @@ export function OsSetup({ onComplete }: SetupProps) {
   const [accountStep, setAccountStep] = useState<'choice' | 'login' | 'register'>('choice');
   const { username, setUsername, showAppBanners, setShowAppBanners } = useSettings();
   const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -28,6 +31,26 @@ export function OsSetup({ onComplete }: SetupProps) {
         setUsername('User');
     }
     onComplete();
+  };
+
+  const handleSignIn = async () => {
+    if (username.trim() === '' || password.trim() === '') return;
+    setIsLoggingIn(true);
+    setLoginError(null);
+    try {
+      const result = await login({ username, password });
+      if (result.success) {
+        // Login successful, move to preferences
+        setStep(3);
+      } else {
+        setLoginError(result.message);
+      }
+    } catch (error) {
+      console.error("Login flow error:", error);
+      setLoginError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   const variants = {
@@ -72,12 +95,17 @@ export function OsSetup({ onComplete }: SetupProps) {
                         </div>
                         <div>
                             <Label htmlFor="password-login">Password</Label>
-                            <Input id="password-login" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
+                            <Input id="password-login" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" 
+                             onKeyDown={(e) => {
+                                if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') handleSignIn();
+                            }}
+                            />
                         </div>
                     </div>
-                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
-                        Sign In
+                    <Button size="lg" className="w-full" onClick={handleSignIn} disabled={username.trim() === '' || password.trim() === '' || isLoggingIn}>
+                        {isLoggingIn ? <Loader2 className="animate-spin" /> : 'Sign In'}
                     </Button>
+                    {loginError && <p className="text-sm text-destructive">{loginError}</p>}
                     <p className="text-sm text-muted-foreground">
                         Don't have an account?{' '}
                         <Button variant="link" className="p-0" onClick={() => setAccountStep('register')}>Create one</Button>
@@ -98,9 +126,10 @@ export function OsSetup({ onComplete }: SetupProps) {
                             <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" />
                         </div>
                      </div>
-                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled={username.trim() === '' || password.trim() === ''}>
+                    <Button size="lg" className="w-full" onClick={() => setStep(3)} disabled>
                         Create Account
                     </Button>
+                    <p className="text-muted-foreground text-xs">Registration is currently disabled.</p>
                     <p className="text-sm text-muted-foreground">
                         Already have an account?{' '}
                         <Button variant="link" className="p-0" onClick={() => setAccountStep('login')}>Sign In</Button>
