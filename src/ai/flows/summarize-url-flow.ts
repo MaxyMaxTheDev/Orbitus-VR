@@ -13,6 +13,11 @@ import type { SummarizeUrlInput, SummarizeUrlOutput } from '../schemas';
 export type { SummarizeUrlInput, SummarizeUrlOutput };
 
 export async function summarizeUrl(input: SummarizeUrlInput): Promise<SummarizeUrlOutput> {
+  if (!process.env.GOOGLE_API_KEY) {
+    return {
+      summary: "AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.",
+    };
+  }
   return summarizeUrlFlow(input);
 }
 

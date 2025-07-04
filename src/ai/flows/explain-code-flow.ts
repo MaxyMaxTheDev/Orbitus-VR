@@ -13,6 +13,11 @@ import type { ExplainCodeInput, ExplainCodeOutput } from '../schemas';
 export type { ExplainCodeInput, ExplainCodeOutput };
 
 export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeOutput> {
+  if (!process.env.GOOGLE_API_KEY) {
+    return {
+      explanation: "AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.",
+    };
+  }
   return explainCodeFlow(input);
 }
 

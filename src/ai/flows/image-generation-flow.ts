@@ -13,6 +13,9 @@ import type { ImageGenerationInput, ImageGenerationOutput } from '../schemas';
 export type { ImageGenerationInput, ImageGenerationOutput };
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationOutput> {
+  if (!process.env.GOOGLE_API_KEY) {
+    throw new Error('AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.');
+  }
   return imageGenerationFlow(input);
 }
 

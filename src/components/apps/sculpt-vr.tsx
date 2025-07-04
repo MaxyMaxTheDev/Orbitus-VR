@@ -34,10 +34,11 @@ export function SculptVR() {
       setImageUrl(result.imageUrl);
     } catch (error) {
       console.error('Error generating image:', error);
+      const description = error instanceof Error ? error.message : 'The AI failed to generate the model. Please try a different prompt.';
       toast({
         variant: 'destructive',
         title: 'Sculpting Error',
-        description: 'The AI failed to generate the model. Please try a different prompt.',
+        description,
       });
     } finally {
       setIsLoading(false);
