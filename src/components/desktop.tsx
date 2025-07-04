@@ -109,10 +109,9 @@ function DesktopContent() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-4 w-full max-w-xs"
+                    className="flex flex-col items-center gap-6 w-full max-w-xs"
                 >
                     <NexusVRLogo className="w-24 h-24 text-primary" />
-                    <p className="text-muted-foreground tracking-widest font-headline">INITIALIZING...</p>
                     <Progress value={progress} className="w-full h-2" />
                 </motion.div>
             </div>
