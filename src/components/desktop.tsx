@@ -11,8 +11,9 @@ import { Button } from './ui/button';
 import { X, Loader2 } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
-import { SettingsProvider, useSettings } from '@/contexts/settings-context';
+import { SettingsProvider } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
+import { get, set } from '@/lib/idb';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -21,15 +22,18 @@ function DesktopContent() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const setupFlag = localStorage.getItem('nexus-vr-setup-complete');
-        if (setupFlag === 'true') {
-            setIsSetupComplete(true);
-        }
-        setIsLoading(false);
+        const checkSetupStatus = async () => {
+            const setupFlag = await get<boolean>('nexus-vr-setup-complete');
+            if (setupFlag === true) {
+                setIsSetupComplete(true);
+            }
+            setIsLoading(false);
+        };
+        checkSetupStatus();
     }, []);
 
-    const handleSetupComplete = () => {
-        localStorage.setItem('nexus-vr-setup-complete', 'true');
+    const handleSetupComplete = async () => {
+        await set('nexus-vr-setup-complete', true);
         setIsSetupComplete(true);
     };
 
