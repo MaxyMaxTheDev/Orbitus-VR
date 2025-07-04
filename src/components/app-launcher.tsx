@@ -58,21 +58,18 @@ export function AppLauncher() {
     const [isClosing, setIsClosing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [bannerUrl, setBannerUrl] = useState<string | null>(null);
-    const [isBannerLoading, setIsBannerLoading] = useState(false);
+    const [isBannerLoading, setIsBannerLoading] = useState(true);
     
     useEffect(() => {
-        if (selectedApp && !isLoading) {
-            setIsBannerLoading(true);
-            setBannerUrl(null);
-            generateAppBanner({ appName: selectedApp.name })
-                .then(result => setBannerUrl(result.imageUrl))
-                .catch(err => {
-                    console.error("Failed to generate banner:", err);
-                    setBannerUrl('https://placehold.co/1024x200.png'); 
-                })
-                .finally(() => setIsBannerLoading(false));
-        }
-    }, [selectedApp, isLoading]);
+        setIsBannerLoading(true);
+        generateAppBanner({ appName: 'NexusVR Mainframe' })
+            .then(result => setBannerUrl(result.imageUrl))
+            .catch(err => {
+                console.error("Failed to generate launcher banner:", err);
+                setBannerUrl('https://placehold.co/1200x300.png'); 
+            })
+            .finally(() => setIsBannerLoading(false));
+    }, []);
 
 
     const handleAppClick = (app: App) => {
@@ -86,24 +83,35 @@ export function AppLauncher() {
         setTimeout(() => {
             setSelectedApp(null);
             setIsClosing(false);
-            setBannerUrl(null);
         }, 300);
     };
 
     const AppGrid = () => (
-      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-8 gap-y-12 p-8 animate-in fade-in duration-500">
-        {apps.map((app) => (
-          <div
-            key={app.name}
-            className="flex flex-col items-center gap-3 text-center cursor-pointer group"
-            onClick={() => handleAppClick(app)}
-          >
-            <div className="w-24 h-24 rounded-2xl bg-black/30 border-2 border-primary/20 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg">
-              <app.icon className="w-12 h-12 text-foreground/80 group-hover:text-accent transition-colors" />
+      <div className="w-full max-w-7xl mx-auto flex flex-col items-center animate-in fade-in duration-500">
+        <div className="w-full h-52 mb-8 rounded-lg overflow-hidden bg-black/20 border border-primary/20 shadow-lg relative">
+            {isBannerLoading ? (
+                <Skeleton className="w-full h-full" />
+            ) : bannerUrl ? (
+                <Image src={bannerUrl} alt="NexusVR Launcher Banner" layout="fill" objectFit="cover" data-ai-hint="futuristic cyberpunk" />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center bg-black/10" />
+            )}
+        </div>
+
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-x-8 gap-y-12 p-8 pt-0">
+            {apps.map((app) => (
+            <div
+                key={app.name}
+                className="flex flex-col items-center gap-3 text-center cursor-pointer group"
+                onClick={() => handleAppClick(app)}
+            >
+                <div className="w-24 h-24 rounded-2xl bg-black/30 border-2 border-primary/20 group-hover:border-accent group-hover:bg-accent/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <app.icon className="w-12 h-12 text-foreground/80 group-hover:text-accent transition-colors" />
+                </div>
+                <span className="font-body text-sm text-foreground/90 group-hover:text-accent transition-colors">{app.name}</span>
             </div>
-            <span className="font-body text-sm text-foreground/90 group-hover:text-accent transition-colors">{app.name}</span>
-          </div>
-        ))}
+            ))}
+        </div>
       </div>
     );
 
@@ -130,16 +138,6 @@ export function AppLauncher() {
                         <X className="w-4 h-4" />
                     </Button>
                 </header>
-
-                <div className="w-full h-40 bg-black/20 border-b border-border relative flex-shrink-0">
-                    {isBannerLoading ? (
-                        <Skeleton className="w-full h-full" />
-                    ) : bannerUrl ? (
-                        <Image src={bannerUrl} alt={`${selectedApp.name} Banner`} layout="fill" objectFit="cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-black/10" />
-                    )}
-                </div>
 
                 <main className="flex-1 bg-black/20 overflow-hidden rounded-b-xl">
                     <AppContent />
