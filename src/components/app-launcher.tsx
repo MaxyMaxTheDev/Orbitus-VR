@@ -28,6 +28,8 @@ import { ThemeStudio } from './apps/theme-studio';
 import { PlaceholderApp } from './apps/placeholder-app';
 import { MediaPlayer } from './apps/media-player';
 import { Gallery360 } from './apps/360-gallery';
+import { Workspace } from './apps/workspace';
+import { Wellness } from './apps/wellness';
 
 const apps = [
     { name: "Dashboard", icon: LayoutGrid },
@@ -111,6 +113,10 @@ export function AppLauncher() {
                     return <MediaPlayer />;
                 case "360 Gallery":
                     return <Gallery360 />;
+                case "Workspace":
+                    return <Workspace />;
+                case "Wellness":
+                    return <Wellness />;
                 default:
                     return (
                         <PlaceholderApp name={selectedApp.name} icon={selectedApp.icon} />
