@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -5,17 +6,12 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Search, Globe2 } from 'lucide-react';
-import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
-import { useToast } from '@/hooks/use-toast';
+import { Search, Globe2 } from 'lucide-react';
 import type { SummarizeUrlInput } from '@/ai/schemas';
 import { SummarizeUrlInputSchema } from '@/ai/schemas';
 
 export function Browser() {
-  const [summary, setSummary] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [displayUrl, setDisplayUrl] = useState('');
 
   const {
     register,
@@ -26,21 +22,7 @@ export function Browser() {
   });
 
   const onSubmit: SubmitHandler<SummarizeUrlInput> = async (data) => {
-    setIsLoading(true);
-    setSummary('');
-    try {
-      const result = await summarizeUrl(data);
-      setSummary(result.summary);
-    } catch (error) {
-      console.error('Error summarizing URL:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to summarize the URL. The page might be inaccessible or the format is not supported.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    setDisplayUrl(data.url);
   };
 
   return (
@@ -52,35 +34,34 @@ export function Browser() {
             placeholder="https://example.com"
             autoComplete="off"
             className="flex-1 bg-black/30 border-primary/50 focus:ring-accent"
-            disabled={isLoading}
           />
-          <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/80 text-accent-foreground">
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          <Button type="submit" size="icon" className="bg-accent hover:bg-accent/80 text-accent-foreground">
+            <Search className="w-4 h-4" />
           </Button>
         </form>
         {errors.url && <p className="text-destructive text-xs mt-1">{errors.url.message}</p>}
       </div>
-      <ScrollArea className="flex-1 p-4">
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
-            <Loader2 className="w-8 h-8 animate-spin text-accent" />
-            <p className="font-headline tracking-wider">Parsing Datastream...</p>
-          </div>
-        )}
-        {summary && (
-          <div className="prose prose-invert prose-sm max-w-none text-foreground prose-p:text-foreground/80 prose-headings:text-accent prose-headings:font-headline prose-strong:text-primary">
-            <h3>Summary</h3>
-            <p>{summary}</p>
-          </div>
-        )}
-        {!isLoading && !summary && (
+      <div className="flex-1 p-4 flex flex-col gap-4">
+        {displayUrl ? (
+          <>
+            <p className="text-xs text-muted-foreground text-center flex-shrink-0">
+              Note: For security reasons, many websites block being embedded. If the page below is blank, please try another URL.
+            </p>
+            <iframe
+              src={displayUrl}
+              className="w-full h-full flex-1 rounded-lg border-2 border-primary/30"
+              title="Browser"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+            />
+          </>
+        ) : (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
             <Globe2 className="w-24 h-24 text-primary/10" strokeWidth={0.5}/>
-            <p className="font-headline text-lg">AI Web Summarizer</p>
-            <p>Enter a URL to get an AI-powered summary.</p>
+            <p className="font-headline text-lg">Web Browser</p>
+            <p>Enter a URL to begin browsing.</p>
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

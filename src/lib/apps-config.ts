@@ -24,6 +24,7 @@ import { NotepadApp } from '@/components/apps/notepad';
 import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
 import { NotificationsApp } from '@/components/apps/notifications';
+import { Wellness } from '@/components/apps/wellness';
 
 export type App = {
     name: string;
@@ -35,7 +36,7 @@ export type App = {
 
 export const allApps: App[] = [
     { name: "Dashboard", icon: LayoutGrid, component: Dashboard, description: "A central hub displaying system status, AI insights, and the current time." },
-    { name: "Browser", icon: Globe, component: Browser, description: "A web browser that can access and summarize content from URLs using AI." },
+    { name: "Browser", icon: Globe, component: Browser, description: "A web browser to display websites. Note: Many sites block embedding." },
     { name: "Media Player", icon: Clapperboard, component: MediaPlayer, description: "A video player for watching trailers, movies, and VR content." },
     { name: "VR Chat", icon: Users, component: VRChat, description: "A social chat room with AI personalities to interact with." },
     { name: "360 Gallery", icon: View, component: Gallery360, description: "An immersive gallery for viewing 360-degree panoramic images." },
