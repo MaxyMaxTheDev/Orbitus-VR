@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
-    Code, Bot, Calculator, Notebook, Blocks, Store
+    Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -24,6 +24,7 @@ import { CalculatorApp } from '@/components/apps/calculator';
 import { NotepadApp } from '@/components/apps/notepad';
 import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
+import { NotificationsApp } from '@/components/apps/notifications';
 
 export type App = {
     name: string;
@@ -49,6 +50,7 @@ export const allApps: App[] = [
     { name: "Notepad", icon: Notebook, component: NotepadApp, description: "A simple, persistent notepad for jotting down thoughts and ideas." },
     { name: "AI Assistant", icon: Bot, component: AIAssistant, description: "A conversational AI chatbot for asking questions and getting help." },
     { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
+    { name: "Notifications", icon: Bell, component: NotificationsApp, description: "View system alerts and updates from your apps." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for NexusVR." },
