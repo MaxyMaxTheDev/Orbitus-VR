@@ -43,10 +43,10 @@ const defaultTheme = {
 };
 
 const glassTheme = {
-    primary: [220, 90, 60],   // Vibrant Blue
-    accent: [150, 80, 50],    // Bright Green
-    background: [220, 15, 96], // Very Light Gray
-    card: [220, 10, 92],      // Frosted Glass Pane
+    primary: [240, 80, 65],   // Vibrant Indigo
+    accent: [170, 80, 50],    // Vibrant Teal
+    background: [240, 10, 10], // Very Dark Desaturated Blue
+    card: [240, 8, 15],      // Darker Glass Pane
 };
 
 export function ThemeStudio() {
@@ -82,11 +82,11 @@ export function ThemeStudio() {
             setBackgroundColor(glassTheme.background);
             setCardColor(glassTheme.card);
         } else {
-            // Revert to default when toggled off
-            setPrimaryColor(defaultTheme.primary);
-            setAccentColor(defaultTheme.accent);
-            setBackgroundColor(defaultTheme.background);
-            setCardColor(defaultTheme.card);
+            // Revert to default when toggled off, but only if the user isn't actively changing colors
+            const isDefault = JSON.stringify(primaryColor) === JSON.stringify(glassTheme.primary);
+            if(isDefault) {
+                handleReset();
+            }
         }
     }, [isGlassTheme, isClient]);
 
