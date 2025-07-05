@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,11 +11,11 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 const playlist = [
-  { id: 1, title: 'The Midnight Chase', artist: 'Stellarion', duration: '4:15', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/The-Midnight-Chase.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
-  { id: 2, title: 'Night Rider', artist: 'Vector Shift', duration: '3:55', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Night-Rider.mp3', cover: 'https://placehold.co/500x500.png', hint: 'night city highway' },
-  { id: 3, title: 'Future City', artist: 'Grid Runner', duration: '5:30', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Future-City.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 4, title: 'Digital Dreams', artist: 'Cyberscape', duration: '4:44', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Digital-Dreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
-  { id: 5, title: 'Synthwave Sunset', artist: 'Aura Drive', duration: '3:21', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Synthwave-Sunset.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
+  { id: 1, title: 'The Midnight Chase', artist: 'Stellarion', duration: '4:15', src: 'https://storage.googleapis.com/static.iox3d.com/tmp/The-Midnight-Chase.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
+  { id: 2, title: 'Night Rider', artist: 'Vector Shift', duration: '3:55', src: 'https://storage.googleapis.com/static.iox3d.com/tmp/Night-Rider.mp3', cover: 'https://placehold.co/500x500.png', hint: 'night city highway' },
+  { id: 3, title: 'Future City', artist: 'Grid Runner', duration: '5:30', src: 'https://storage.googleapis.com/static.iox3d.com/tmp/Future-City.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
+  { id: 4, title: 'Digital Dreams', artist: 'Cyberscape', duration: '4:44', src: 'https://storage.googleapis.com/static.iox3d.com/tmp/Digital-Dreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 5, title: 'Synthwave Sunset', artist: 'Aura Drive', duration: '3:21', src: 'https://storage.googleapis.com/static.iox3d.com/tmp/Synthwave-Sunset.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
 ];
 
 type Track = typeof playlist[0];
