@@ -43,10 +43,10 @@ const defaultTheme = {
 };
 
 const glassTheme = {
-    primary: [265, 90, 65], // Vibrant Purple
-    accent: [180, 90, 60], // Bright Cyan
-    background: [225, 20, 15], // Very Dark Blue
-    card: [220, 15, 90], // Light Grey (for frosted glass)
+    primary: [220, 90, 60],   // Vibrant Blue
+    accent: [150, 80, 50],    // Bright Green
+    background: [220, 15, 96], // Very Light Gray
+    card: [220, 10, 92],      // Frosted Glass Pane
 };
 
 export function ThemeStudio() {
