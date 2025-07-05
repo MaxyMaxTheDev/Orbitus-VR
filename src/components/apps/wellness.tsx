@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Area, AreaChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Area, AreaChart, XAxis, YAxis, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Heart, BedDouble, Footprints, BrainCircuit } from 'lucide-react';
@@ -41,9 +41,9 @@ export function Wellness() {
     const { username } = useSettings();
     const [heartRate, setHeartRate] = useState(72);
 
-    // Generate personalized data based on the username
+    // Generate personalized data based on the username and current date
     const personalizedData = useMemo(() => {
-        const seed = createSeed(username);
+        const seed = createSeed(username + new Date().toLocaleDateString());
         const random = mulberry32(seed);
 
         const sleepTotalMinutes = 400 + Math.floor(random() * 120); // 6h40m to 8h40m
@@ -227,4 +227,5 @@ export function Wellness() {
             </div>
         </div>
     );
-}
+
+    
