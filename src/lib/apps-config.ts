@@ -5,6 +5,7 @@ import {
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle,
     Cpu,
+    Heart,
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -27,6 +28,7 @@ import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
 import { NotificationsApp } from '@/components/apps/notifications';
 import { SystemMonitor } from '@/components/apps/system-monitor';
+import { Wellness } from '@/components/apps/wellness';
 
 export type App = {
     name: string;
@@ -54,6 +56,7 @@ export const allApps: App[] = [
     { name: "Notifications", icon: Bell, component: NotificationsApp, description: "View system alerts and updates from your apps." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "System Monitor", icon: Cpu, component: SystemMonitor, description: "Monitors the real-time performance of the virtual OS, including CPU, GPU, and memory." },
+    { name: "Wellness", icon: Heart, component: Wellness, description: "A simulated wellness dashboard for your virtual avatar, tracking daily health metrics." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
