@@ -10,6 +10,7 @@ import { Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/contexts/settings-context';
 import { Button } from './ui/button';
+import { get } from '@/lib/idb';
 
 type AppLibraryProps = {
     onSelectApp: (appName: string) => void;
@@ -98,6 +99,32 @@ function SimpleAppIcon({ app, onSelectApp }: { app: App; onSelectApp: (appName: 
 
 export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
     const { showAppBanners } = useSettings();
+    const [displayedApps, setDisplayedApps] = useState<App[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // This effect runs when the launcher is opened to check which apps are installed.
+    useEffect(() => {
+        const loadInstallableApps = async () => {
+            const isMinecraftInstalled = await get<boolean>('minecraft-installed');
+            
+            const filteredApps = allApps.filter(app => {
+                // If an app is installable, only show it if its flag is true in the DB.
+                if (app.isInstallable) {
+                    if (app.name === 'Minecraft') {
+                        return isMinecraftInstalled;
+                    }
+                    return false; // Hide other potential installable apps by default
+                }
+                // Always show regular, non-installable apps.
+                return true; 
+            });
+
+            setDisplayedApps(filteredApps);
+            setIsLoading(false);
+        };
+
+        loadInstallableApps();
+    }, []);
 
     const stopPropagation = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -121,16 +148,21 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
                 onClick={stopPropagation}
             >
                 <h2 className="text-3xl font-bold text-foreground/90 mb-8 px-4 text-center">App Library</h2>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 max-w-7xl mx-auto">
-                    {allApps.map((app) =>
-                        showAppBanners ? (
-                            <AppCardWithBanner key={app.name} app={app} onSelectApp={onSelectApp} />
-                        ) : (
-                            <SimpleAppIcon key={app.name} app={app} onSelectApp={onSelectApp} />
-                        )
-                    )}
-                </div>
+                 {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                    </div>
+                 ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 max-w-7xl mx-auto">
+                        {displayedApps.map((app) =>
+                            showAppBanners ? (
+                                <AppCardWithBanner key={app.name} app={app} onSelectApp={onSelectApp} />
+                            ) : (
+                                <SimpleAppIcon key={app.name} app={app} onSelectApp={onSelectApp} />
+                            )
+                        )}
+                    </div>
+                 )}
             </div>
         </motion.div>
     );

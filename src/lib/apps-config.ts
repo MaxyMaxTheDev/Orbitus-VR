@@ -23,12 +23,14 @@ import { SettingsApp } from '@/components/apps/settings-app';
 import { CalculatorApp } from '@/components/apps/calculator';
 import { NotepadApp } from '@/components/apps/notepad';
 import { AppStore } from '@/components/apps/app-store';
+import { MinecraftApp } from '@/components/apps/minecraft';
 
 export type App = {
     name: string;
     icon: LucideIcon;
     component: React.FC;
     description: string;
+    isInstallable?: boolean;
 }
 
 export const allApps: App[] = [
@@ -50,4 +52,5 @@ export const allApps: App[] = [
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Blocks, component: AppStore, description: "Download and manage new applications for NexusVR." },
+    { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
 ];

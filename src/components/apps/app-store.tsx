@@ -10,23 +10,10 @@ import { get, set } from '@/lib/idb';
 import { Blocks, Download, Rocket, Trash2, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 
-const MinecraftGame = () => (
-    <div className="w-full h-full bg-black">
-      <iframe
-        src="https://mcraft.fun"
-        frameBorder="0"
-        className="w-full h-full"
-        allowFullScreen
-        title="Minecraft"
-      ></iframe>
-    </div>
-);
-
 export function AppStore() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState(0);
-  const [showGame, setShowGame] = useState(false);
   const [isLoadingState, setIsLoadingState] = useState(true);
 
   const { toast } = useToast();
@@ -56,7 +43,7 @@ export function AppStore() {
           set('minecraft-installed', true);
           toast({
             title: "Installation Complete",
-            description: "Minecraft has been added to your system.",
+            description: "Minecraft has been added to your app library.",
           });
           return 100;
         }
@@ -70,21 +57,9 @@ export function AppStore() {
     set('minecraft-installed', false);
     toast({
       title: "Uninstalled",
-      description: "Minecraft has been removed from your system.",
+      description: "Minecraft has been removed from your app library.",
     });
   };
-
-  if (showGame) {
-      return (
-          <div className="w-full h-full relative">
-              <Button onClick={() => setShowGame(false)} variant="ghost" className="absolute top-2 left-2 z-10 bg-black/50 hover:bg-white/20">
-                  <ArrowLeft className="mr-2" />
-                  Back to App Store
-              </Button>
-              <MinecraftGame />
-          </div>
-      )
-  }
 
   return (
     <div className="h-full w-full p-4 sm:p-6 overflow-y-auto flex items-center justify-center bg-black/20">
@@ -126,16 +101,10 @@ export function AppStore() {
                                 <p className="text-sm text-center text-accent">Installing...</p>
                             </div>
                         ) : isInstalled ? (
-                            <div className="flex gap-2">
-                                <Button onClick={() => setShowGame(true)} size="lg" className="flex-1 bg-primary hover:bg-primary/90">
-                                    <Rocket className="mr-2" />
-                                    Launch
-                                </Button>
-                                <Button onClick={handleUninstall} size="lg" variant="outline" className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
-                                    <Trash2 className="mr-2" />
-                                    Uninstall
-                                </Button>
-                            </div>
+                            <Button onClick={handleUninstall} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
+                                <Trash2 className="mr-2" />
+                                Uninstall
+                            </Button>
                         ) : (
                             <Button onClick={handleInstall} size="lg" className="w-full bg-accent hover:bg-accent/80">
                                 <Download className="mr-2" />
