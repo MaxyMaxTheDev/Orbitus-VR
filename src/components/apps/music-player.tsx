@@ -10,11 +10,11 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 const playlist = [
-  { id: 1, title: 'Cyberdreams', artist: 'SynthRider', duration: '3:45', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/cyberdreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract synthwave' },
-  { id: 2, title: 'Orbital Resonance', artist: 'DJ Hyperion', duration: '5:12', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/orbital.mp3', cover: 'https://placehold.co/500x500.png', hint: 'planet rings' },
-  { id: 3, title: 'Crystal Caves', artist: 'Ana Digital', duration: '4:20', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/caves.mp3', cover: 'https://placehold.co/500x500.png', hint: 'glowing crystals' },
-  { id: 4, title: 'Data Stream', artist: 'Oracle', duration: '6:01', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/data.mp3', cover: 'https://placehold.co/500x500.png', hint: 'binary code' },
-  { id: 5, title: 'Neon Noir', artist: 'SynthRider', duration: '3:58', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/noir.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon city rain' },
+  { id: 1, title: 'The Midnight Chase', artist: 'Stellarion', duration: '4:15', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/The-Midnight-Chase.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
+  { id: 2, title: 'Night Rider', artist: 'Vector Shift', duration: '3:55', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Night-Rider.mp3', cover: 'https://placehold.co/500x500.png', hint: 'night city highway' },
+  { id: 3, title: 'Future City', artist: 'Grid Runner', duration: '5:30', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Future-City.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
+  { id: 4, title: 'Digital Dreams', artist: 'Cyberscape', duration: '4:44', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Digital-Dreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 5, title: 'Synthwave Sunset', artist: 'Aura Drive', duration: '3:21', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/Synthwave-Sunset.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
 ];
 
 type Track = typeof playlist[0];
