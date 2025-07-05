@@ -12,11 +12,11 @@ import { cn } from '@/lib/utils';
 
 // Verified, publicly accessible URLs from archive.org
 const playlist = [
-  { id: 1, title: 'Piscine Nocturne', artist: 'Monplaisir', duration: '3:05', src: 'https://archive.org/download/monplaisir_-_20180922/monplaisir_-_01_-_piscine_nocturne.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
-  { id: 2, title: 'The Fusion', artist: 'Scott Buckley', duration: '3:45', src: 'https://archive.org/download/ScottBuckleyTheFusion/Scott%20Buckley%20-%20The%20Fusion.mp3', cover: 'https://placehold.co/500x500.png', hint: 'night city highway' },
-  { id: 3, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://archive.org/download/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 4, title: 'Future Club', artist: 'Perturbator', duration: '4:52', src: 'https://archive.org/download/Perturbator-FutureClub/Perturbator%20-%20Future%20Club.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
-  { id: 5, title: '8-Bit-Märchenland', artist: 'Welle: Erdball', duration: '3:49', src: 'https://archive.org/download/WelleErdball-8-Bit-Mrchenland/Welle%20Erdball%20-%208-Bit-M%C3%A4rchenland.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
+  { id: 1, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://archive.org/download/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
+  { id: 2, title: 'Sexual Intercourse', artist: 'Perturbator', duration: '4:52', src: 'https://archive.org/download/pertubator-sexual-intercourse/Perturbator-Sexual-Intercourse.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 3, title: 'Roller Mobster', artist: 'Carpenter Brut', duration: '3:34', src: 'https://archive.org/download/carpenter-brut-roller-mobster/Carpenter%20Brut%20-%20Roller%20Mobster.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
+  { id: 4, title: 'Nightcall', artist: 'Kavinsky', duration: '4:19', src: 'https://archive.org/download/Kavinsky-Nightcall/Kavinsky-Nightcall.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
+  { id: 5, title: 'Overdrive', artist: 'Lazerhawk', duration: '4:31', src: 'https://archive.org/download/Lazerhawk-Overdrive/Lazerhawk-Overdrive.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
 ];
 
 
