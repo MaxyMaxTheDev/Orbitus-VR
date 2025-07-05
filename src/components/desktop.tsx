@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -16,6 +17,7 @@ import { get, set } from '@/lib/idb';
 import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
+import { MusicPlayerProvider } from '@/contexts/music-player-context';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -166,7 +168,9 @@ function DesktopContent() {
 export function Desktop() {
     return (
         <SettingsProvider>
-            <DesktopContent />
+            <MusicPlayerProvider>
+                <DesktopContent />
+            </MusicPlayerProvider>
         </SettingsProvider>
     );
 }

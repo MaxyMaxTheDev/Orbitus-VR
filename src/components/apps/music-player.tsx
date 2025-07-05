@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,27 +8,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Music4, Volume2, VolumeX } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
+import { useMusicPlayer } from '@/contexts/music-player-context';
 
-// Verified, publicly accessible, CDN-hosted URLs with permissive CORS
-const playlist = [
-  { id: 1, title: 'Rave Digger', artist: 'Kevin MacLeod', duration: '2:35', src: 'https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/rave_digger.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 2, title: '8-Bit Sonar', artist: 'Visager', duration: '3:15', src: 'https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/8-bit-sonar.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
-  { id: 3, title: 'Classic Vybe', artist: 'Visager', duration: '3:01', src: 'https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/classic-vybe.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
-  { id: 4, title: 'Sending My Love', artist: 'Visager', duration: '3:24', src: 'https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/sending-my-love.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
-  { id: 5, title: 'The Great Mission', artist: 'Visager', duration: '3:00', src: 'https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/the-great-mission.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
-];
-
-
-type Track = typeof playlist[0];
 
 export function MusicPlayer() {
-  const [currentTrack, setCurrentTrack] = useState<Track>(playlist[0]);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const {
+    playlist,
+    currentTrack,
+    isPlaying,
+    isMuted,
+    progress,
+    duration,
+    currentTime,
+    togglePlayPause,
+    selectTrack,
+    skipNext,
+    skipPrev,
+    seek,
+    toggleMute,
+  } = useMusicPlayer();
+
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return '0:00';
@@ -38,64 +36,9 @@ export function MusicPlayer() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      audioRef.current?.pause();
-    } else {
-      audioRef.current?.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-  
-  const handleNext = () => {
-    const currentIndex = playlist.findIndex(t => t.id === currentTrack.id);
-    const nextIndex = (currentIndex + 1) % playlist.length;
-    setCurrentTrack(playlist[nextIndex]);
-  }
-
-  const handlePrev = () => {
-    if (audioRef.current && audioRef.current.currentTime > 3) {
-        audioRef.current.currentTime = 0;
-        return;
-    }
-    const currentIndex = playlist.findIndex(t => t.id === currentTrack.id);
-    const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-    setCurrentTrack(playlist[prevIndex]);
-  }
-
-  useEffect(() => {
-    if (isPlaying) {
-        audioRef.current?.play().catch(e => console.error("Audio play failed:", e));
-    }
-  }, [currentTrack, isPlaying]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateProgress = () => {
-        const newProgress = (audio.currentTime / audio.duration) * 100;
-        if (isFinite(newProgress)) {
-            setProgress(newProgress);
-        }
-        setCurrentTime(audio.currentTime);
-    }
-    const handleMetadata = () => setDuration(audio.duration);
-    const handleEnd = () => handleNext();
-
-    audio.addEventListener('timeupdate', updateProgress);
-    audio.addEventListener('loadedmetadata', handleMetadata);
-    audio.addEventListener('ended', handleEnd);
-    return () => {
-      audio.removeEventListener('timeupdate', updateProgress);
-      audio.removeEventListener('loadedmetadata', handleMetadata);
-      audio.removeEventListener('ended', handleEnd);
-    };
-  }, [currentTrack.id]);
   
   return (
     <div className="flex h-full w-full p-4 gap-4 bg-black/20">
-      <audio ref={audioRef} src={currentTrack.src} muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
       <div className="flex-[2] flex flex-col gap-4 items-center justify-center">
         <Card className="w-64 h-64 bg-black rounded-lg overflow-hidden border-2 border-primary/30 relative shadow-2xl shadow-accent/10">
           <Image src={currentTrack.cover} alt={currentTrack.title} layout="fill" objectFit="cover" data-ai-hint={currentTrack.hint} className={cn(isPlaying && "animate-spin-slow")}/>
@@ -105,27 +48,23 @@ export function MusicPlayer() {
             <p className="text-md text-muted-foreground text-center">{currentTrack.artist}</p>
         </div>
         <div className="w-full max-w-sm flex flex-col gap-3">
-            <Slider value={[progress]} onValueChange={(value) => {
-                if(audioRef.current && isFinite(audioRef.current.duration)) {
-                    audioRef.current.currentTime = (value[0] / 100) * audioRef.current.duration;
-                }
-            }} />
+            <Slider value={[progress]} onValueChange={([value]) => seek(value)} />
             <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{formatTime(currentTime)}</span>
                 <span>{formatTime(duration)}</span>
             </div>
             <div className="flex items-center justify-center gap-4">
-                <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-full hover:bg-white/20">
+                <Button variant="ghost" size="icon" onClick={skipPrev} className="rounded-full hover:bg-white/20">
                     <SkipBack />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={handlePlayPause} className="w-16 h-16 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
+                <Button variant="ghost" size="icon" onClick={togglePlayPause} className="w-16 h-16 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
                     {isPlaying ? <Pause className="w-8 h-8"/> : <Play className="w-8 h-8 ml-1" />}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={handleNext} className="rounded-full hover:bg-white/20">
+                <Button variant="ghost" size="icon" onClick={skipNext} className="rounded-full hover:bg-white/20">
                     <SkipForward />
                 </Button>
             </div>
-             <Button variant="ghost" size="icon" onClick={() => setIsMuted(!isMuted)} className="rounded-full hover:bg-white/20 self-center">
+             <Button variant="ghost" size="icon" onClick={toggleMute} className="rounded-full hover:bg-white/20 self-center">
                 {isMuted ? <VolumeX /> : <Volume2 />}
             </Button>
         </div>
@@ -140,7 +79,7 @@ export function MusicPlayer() {
                 {playlist.map((track) => (
                     <div
                     key={track.id}
-                    onClick={() => setCurrentTrack(track)}
+                    onClick={() => selectTrack(track)}
                     className={cn(
                         'flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors duration-200 border border-transparent',
                         currentTrack.id === track.id ? 'bg-primary/20 border-primary' : 'hover:bg-primary/10'
