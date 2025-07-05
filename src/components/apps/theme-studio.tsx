@@ -7,9 +7,8 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
 
-const ColorSetting = ({ label, value, onChange, disabled }: { label: string; value: number[]; onChange: (value: number[]) => void, disabled?: boolean }) => {
+const ColorSetting = ({ label, value, onChange }: { label: string; value: number[]; onChange: (value: number[]) => void }) => {
   const [h, s, l] = value;
   const hslColor = `hsl(${h}, ${s}%, ${l}%)`;
 
@@ -21,15 +20,15 @@ const ColorSetting = ({ label, value, onChange, disabled }: { label: string; val
       </div>
       <div className="space-y-3">
         <Label className="text-sm text-muted-foreground">Hue ({h})</Label>
-        <Slider trackClassName="bg-gradient-to-r from-red-500 via-yellow-500 to-red-500" value={[h]} max={360} step={1} onValueChange={([newH]) => onChange([newH, s, l])} disabled={disabled} />
+        <Slider trackClassName="bg-gradient-to-r from-red-500 via-yellow-500 to-red-500" value={[h]} max={360} step={1} onValueChange={([newH]) => onChange([newH, s, l])} />
       </div>
       <div className="space-y-3">
         <Label className="text-sm text-muted-foreground">Saturation ({s}%)</Label>
-        <Slider trackClassName={`bg-gradient-to-r from-slate-500 to-[${hslColor}]`} value={[s]} max={100} step={1} onValueChange={([newS]) => onChange([h, newS, l])} disabled={disabled}/>
+        <Slider trackClassName={`bg-gradient-to-r from-slate-500 to-[${hslColor}]`} value={[s]} max={100} step={1} onValueChange={([newS]) => onChange([h, newS, l])} />
       </div>
       <div className="space-y-3">
         <Label className="text-sm text-muted-foreground">Lightness ({l}%)</Label>
-        <Slider trackClassName={`bg-gradient-to-r from-black via-[${hslColor}] to-white`} value={[l]} max={100} step={1} onValueChange={([newL]) => onChange([h, s, newL])} disabled={disabled}/>
+        <Slider trackClassName={`bg-gradient-to-r from-black via-[${hslColor}] to-white`} value={[l]} max={100} step={1} onValueChange={([newL]) => onChange([h, s, newL])} />
       </div>
     </div>
   );
@@ -42,19 +41,11 @@ const defaultTheme = {
   card: [220, 13, 22],
 };
 
-const glassTheme = {
-    primary: [240, 80, 65],   // Vibrant Indigo
-    accent: [170, 80, 50],    // Vibrant Teal
-    background: [240, 10, 10], // Very Dark Desaturated Blue
-    card: [240, 8, 15],      // Darker Glass Pane
-};
-
 export function ThemeStudio() {
     const [primaryColor, setPrimaryColor] = useState(defaultTheme.primary);
     const [accentColor, setAccentColor] = useState(defaultTheme.accent);
     const [backgroundColor, setBackgroundColor] = useState(defaultTheme.background);
     const [cardColor, setCardColor] = useState(defaultTheme.card);
-    const [isGlassTheme, setIsGlassTheme] = useState(false);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -66,29 +57,11 @@ export function ThemeStudio() {
     }
 
     const handleReset = () => {
-        setIsGlassTheme(false);
         setPrimaryColor(defaultTheme.primary);
         setAccentColor(defaultTheme.accent);
         setBackgroundColor(defaultTheme.background);
         setCardColor(defaultTheme.card);
     };
-    
-    useEffect(() => {
-        if (!isClient) return;
-
-        if (isGlassTheme) {
-            setPrimaryColor(glassTheme.primary);
-            setAccentColor(glassTheme.accent);
-            setBackgroundColor(glassTheme.background);
-            setCardColor(glassTheme.card);
-        } else {
-            // Revert to default when toggled off, but only if the user isn't actively changing colors
-            const isDefault = JSON.stringify(primaryColor) === JSON.stringify(glassTheme.primary);
-            if(isDefault) {
-                handleReset();
-            }
-        }
-    }, [isGlassTheme, isClient]);
 
     useEffect(() => {
         if (!isClient) return;
@@ -139,16 +112,7 @@ export function ThemeStudio() {
 
   return (
     <div className="p-4 sm:p-6 h-full w-full overflow-y-auto bg-black/20">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-card/50 border border-border">
-                <Switch
-                    id="glass-theme"
-                    checked={isGlassTheme}
-                    onCheckedChange={setIsGlassTheme}
-                    className="data-[state=checked]:bg-accent"
-                />
-                <Label htmlFor="glass-theme" className="text-lg font-medium">Liquid Glass Theme</Label>
-            </div>
+        <div className="flex justify-end items-center gap-4 mb-6">
             <Button onClick={handleReset} variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset to Default
@@ -160,7 +124,7 @@ export function ThemeStudio() {
                     <CardTitle className="text-primary text-xl font-headline tracking-wider">PRIMARY</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ColorSetting label="Primary Color" value={primaryColor} onChange={setPrimaryColor} disabled={isGlassTheme} />
+                    <ColorSetting label="Primary Color" value={primaryColor} onChange={setPrimaryColor} />
                 </CardContent>
             </Card>
              <Card className="bg-transparent border-accent/20">
@@ -168,7 +132,7 @@ export function ThemeStudio() {
                     <CardTitle className="text-accent text-xl font-headline tracking-wider">ACCENT</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ColorSetting label="Accent Color" value={accentColor} onChange={setAccentColor} disabled={isGlassTheme} />
+                    <ColorSetting label="Accent Color" value={accentColor} onChange={setAccentColor} />
                 </CardContent>
             </Card>
             <Card className="bg-transparent border-border/50">
@@ -176,7 +140,7 @@ export function ThemeStudio() {
                     <CardTitle className="text-xl font-headline tracking-wider">CARD</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ColorSetting label="Card Color" value={cardColor} onChange={setCardColor} disabled={isGlassTheme} />
+                    <ColorSetting label="Card Color" value={cardColor} onChange={setCardColor} />
                 </CardContent>
             </Card>
             <Card className="bg-transparent border-foreground/20">
@@ -184,7 +148,7 @@ export function ThemeStudio() {
                     <CardTitle className="text-xl font-headline tracking-wider">BACKGROUND</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <ColorSetting label="Background" value={backgroundColor} onChange={setBackgroundColor} disabled={isGlassTheme} />
+                    <ColorSetting label="Background" value={backgroundColor} onChange={setBackgroundColor} />
                 </CardContent>
             </Card>
         </div>
