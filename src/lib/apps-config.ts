@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
-    Code, Bot
+    Code, Bot, Calculator, Notebook
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -20,6 +20,8 @@ import { DevKit } from '@/components/apps/devkit';
 import { MailApp } from '@/components/apps/mail';
 import { MusicPlayer } from '@/components/apps/music-player';
 import { SettingsApp } from '@/components/apps/settings-app';
+import { CalculatorApp } from '@/components/apps/calculator';
+import { NotepadApp } from '@/components/apps/notepad';
 
 export type App = {
     name: string;
@@ -40,6 +42,8 @@ export const allApps: App[] = [
     { name: "Workspace", icon: Briefcase, component: Workspace, description: "A productivity app with a to-do list for managing tasks." },
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
+    { name: "Calculator", icon: Calculator, component: CalculatorApp, description: "A futuristic calculator for all your computational needs." },
+    { name: "Notepad", icon: Notebook, component: NotepadApp, description: "A simple, persistent notepad for jotting down thoughts and ideas." },
     { name: "AI Assistant", icon: Bot, component: AIAssistant, description: "A conversational AI chatbot for asking questions and getting help." },
     { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
