@@ -24,7 +24,6 @@ import { NotepadApp } from '@/components/apps/notepad';
 import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
 import { NotificationsApp } from '@/components/apps/notifications';
-import { Wellness } from '@/components/apps/wellness';
 
 export type App = {
     name: string;
