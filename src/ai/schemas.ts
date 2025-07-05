@@ -40,9 +40,9 @@ export const QuoteOutputSchema = z.object({
 });
 export type QuoteOutput = z.infer<typeof QuoteOutputSchema>;
 
-// For summarize-url-flow.ts
+// For summarize-url-flow.ts and browser.tsx
 export const SummarizeUrlInputSchema = z.object({
-  url: z.string().url({ message: "Please enter a valid URL." }).describe('The URL to summarize.'),
+  url: z.string().min(1, { message: "URL cannot be empty." }).describe('The URL to summarize or browse.'),
 });
 export type SummarizeUrlInput = z.infer<typeof SummarizeUrlInputSchema>;
 export const SummarizeUrlOutputSchema = z.object({

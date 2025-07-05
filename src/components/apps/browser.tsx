@@ -16,13 +16,29 @@ export function Browser() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<SummarizeUrlInput>({
     resolver: zodResolver(SummarizeUrlInputSchema),
   });
 
   const onSubmit: SubmitHandler<SummarizeUrlInput> = async (data) => {
-    setDisplayUrl(data.url);
+    let userUrl = data.url.trim();
+    if (!/^(https?:\/\/)/i.test(userUrl)) {
+      userUrl = `https://${userUrl}`;
+    }
+
+    try {
+      // Validate the final URL format
+      new URL(userUrl);
+      setDisplayUrl(userUrl);
+    } catch (error) {
+      setError('url', {
+        type: 'manual',
+        message: 'Please enter a valid URL.',
+      });
+      setDisplayUrl('');
+    }
   };
 
   return (
@@ -31,7 +47,7 @@ export function Browser() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex items-center gap-2">
           <Input
             {...register('url')}
-            placeholder="https://example.com"
+            placeholder="example.com"
             autoComplete="off"
             className="flex-1 bg-black/30 border-primary/50 focus:ring-accent"
           />
