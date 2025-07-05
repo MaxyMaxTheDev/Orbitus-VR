@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
-    Code, Bot, Calculator, Notebook
+    Code, Bot, Calculator, Notebook, Store
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -22,6 +22,7 @@ import { MusicPlayer } from '@/components/apps/music-player';
 import { SettingsApp } from '@/components/apps/settings-app';
 import { CalculatorApp } from '@/components/apps/calculator';
 import { NotepadApp } from '@/components/apps/notepad';
+import { AppStore } from '@/components/apps/app-store';
 
 export type App = {
     name: string;
@@ -48,4 +49,5 @@ export const allApps: App[] = [
     { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
+    { name: "App Store", icon: Store, component: AppStore, description: "Discover and launch new applications and games." },
 ];
