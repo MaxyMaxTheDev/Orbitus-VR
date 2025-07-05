@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuote, QuoteOutput } from '@/ai/flows/quote-flow';
+import { get, set } from '@/lib/idb';
 import { Calendar, Bot, Loader2 } from 'lucide-react';
 import { useSettings } from '@/contexts/settings-context';
 
@@ -24,13 +25,42 @@ export function Dashboard() {
     updateDateTime();
     const timerId = setInterval(updateDateTime, 1000 * 60); 
 
-    getQuote()
-      .then(setQuote)
-      .catch(err => {
-          console.error("Failed to load quote", err);
-          setQuote({quote: "Could not load quote.", author: "System"});
-      })
-      .finally(() => setIsQuoteLoading(false));
+    const fetchQuote = async () => {
+        setIsQuoteLoading(true);
+        const cacheKey = 'daily-quote';
+    
+        try {
+            const cachedData = await get<{ quote: QuoteOutput; timestamp: number }>(cacheKey);
+            const now = new Date().getTime();
+            
+            // Cache is valid for 12 hours.
+            if (cachedData && (now - cachedData.timestamp < 12 * 60 * 60 * 1000)) {
+                setQuote(cachedData.quote);
+                return;
+            }
+    
+            // If cache is stale or doesn't exist, fetch a new one.
+            const newQuote = await getQuote();
+            setQuote(newQuote);
+            await set(cacheKey, { quote: newQuote, timestamp: now });
+    
+        } catch (err: any) {
+            console.error("Failed to load new quote:", err);
+            // On error, try to use a stale quote from cache if available.
+            const cachedData = await get<{ quote: QuoteOutput; timestamp: number }>(cacheKey);
+            if (cachedData) {
+                setQuote(cachedData.quote);
+            } else if (err.message?.includes('429')) {
+                setQuote({quote: "Daily AI insight quota reached. A new one will be available tomorrow.", author: "System"});
+            } else {
+                setQuote({quote: "Could not retrieve AI insight at this time.", author: "System"});
+            }
+        } finally {
+            setIsQuoteLoading(false);
+        }
+    };
+
+    fetchQuote();
 
     return () => clearInterval(timerId);
   }, []);
