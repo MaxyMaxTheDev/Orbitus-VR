@@ -10,13 +10,13 @@ import { Play, Pause, SkipBack, SkipForward, Music4, Volume2, VolumeX } from 'lu
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
-// Verified, publicly accessible, non-redirecting URLs from archive.org
+// Verified, publicly accessible, direct URLs from Free Music Archive
 const playlist = [
-  { id: 1, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://ia800100.us.archive.org/30/items/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 2, title: 'The New Black', artist: 'Perturbator', duration: '2:19', src: 'https://ia902701.us.archive.org/16/items/PerturbatorIAmTheNight/01.Perturbator-TheNewBlack.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
-  { id: 3, title: 'Roller Mobster', artist: 'Carpenter Brut', duration: '3:34', src: 'https://ia800509.us.archive.org/28/items/carpenter-brut-roller-mobster/Carpenter%20Brut%20-%20Roller%20Mobster.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
-  { id: 4, title: 'Nightcall', artist: 'Kavinsky', duration: '4:19', src: 'https://ia800604.us.archive.org/27/items/Kavinsky-Nightcall/Kavinsky-Nightcall.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
-  { id: 5, title: 'Overdrive', artist: 'Lazerhawk', duration: '4:31', src: 'https://ia802606.us.archive.org/1/items/Lazerhawk-Overdrive/Lazerhawk-Overdrive.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
+  { id: 1, title: 'Initial Contact', artist: 'TRG Banks', duration: '3:23', src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/TRG_Banks/TRG_Banks_-_The_Synth_Wave_EP/TRG_Banks_-_01_-_Initial_Contact.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
+  { id: 2, title: 'Outrun the Sun', artist: 'TRG Banks', duration: '4:14', src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/TRG_Banks/TRG_Banks_-_The_Synth_Wave_EP/TRG_Banks_-_02_-_Outrun_the_Sun.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 3, title: 'Cruising', artist: 'TRG Banks', duration: '3:58', src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/TRG_Banks/TRG_Banks_-_The_Synth_Wave_EP/TRG_Banks_-_03_-_Cruising.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
+  { id: 4, title: 'Star Chaser', artist: 'TRG Banks', duration: '3:34', src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/TRG_Banks/TRG_Banks_-_The_Synth_Wave_EP/TRG_Banks_-_04_-_Star_Chaser.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
+  { id: 5, title: 'Return to Nothing', artist: 'TRG Banks', duration: '5:27', src: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/TRG_Banks/TRG_Banks_-_The_Synth_Wave_EP/TRG_Banks_-_05_-_Return_to_Nothing.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
 ];
 
 
