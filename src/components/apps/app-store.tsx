@@ -41,10 +41,15 @@ export function AppStore() {
           setIsInstalling(false);
           setIsInstalled(true);
           set('minecraft-installed', true);
-          toast({
-            title: "Installation Complete",
-            description: "Minecraft has been added to your app library.",
-          });
+          
+          // Defer the toast call to avoid updating another component during this component's render phase.
+          setTimeout(() => {
+            toast({
+              title: "Installation Complete",
+              description: "Minecraft has been added to your app library.",
+            });
+          }, 0);
+
           return 100;
         }
         return prev + 10;
