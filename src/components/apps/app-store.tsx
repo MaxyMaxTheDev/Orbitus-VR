@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Rocket, Trash2, Loader2, ArrowLeft } from 'lucide-react';
+import { Blocks, Download, Rocket, Trash2, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 
 export function AppStore() {
@@ -42,9 +42,9 @@ export function AppStore() {
           setIsInstalled(true);
           set('minecraft-installed', true);
           
-          // Defer the toast call to avoid updating another component during this component's render phase.
           setTimeout(() => {
             toast({
+              icon: <CheckCircle className="h-5 w-5 text-green-500" />,
               title: "Installation Complete",
               description: "Minecraft has been added to your app library.",
             });
@@ -61,8 +61,10 @@ export function AppStore() {
     setIsInstalled(false);
     set('minecraft-installed', false);
     toast({
+      icon: <Trash2 className="h-5 w-5" />,
       title: "Uninstalled",
       description: "Minecraft has been removed from your app library.",
+      variant: "destructive"
     });
   };
 
