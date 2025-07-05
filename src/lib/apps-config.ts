@@ -3,7 +3,8 @@ import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
-    Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle
+    Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle,
+    Cpu,
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -25,6 +26,7 @@ import { NotepadApp } from '@/components/apps/notepad';
 import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
 import { NotificationsApp } from '@/components/apps/notifications';
+import { SystemMonitor } from '@/components/apps/system-monitor';
 
 export type App = {
     name: string;
@@ -51,6 +53,7 @@ export const allApps: App[] = [
     { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
     { name: "Notifications", icon: Bell, component: NotificationsApp, description: "View system alerts and updates from your apps." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
+    { name: "System Monitor", icon: Cpu, component: SystemMonitor, description: "Monitors the real-time performance of the virtual OS, including CPU, GPU, and memory." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
