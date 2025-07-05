@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils';
 // Verified, publicly accessible URLs from archive.org
 const playlist = [
   { id: 1, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://archive.org/download/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 2, title: 'Sexual Intercourse', artist: 'Perturbator', duration: '4:52', src: 'https://archive.org/download/pertubator-sexual-intercourse/Perturbator-Sexual-Intercourse.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 2, title: 'The New Black', artist: 'Perturbator', duration: '2:19', src: 'https://archive.org/download/PerturbatorIAmTheNight/01.Perturbator-TheNewBlack.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
   { id: 3, title: 'Roller Mobster', artist: 'Carpenter Brut', duration: '3:34', src: 'https://archive.org/download/carpenter-brut-roller-mobster/Carpenter%20Brut%20-%20Roller%20Mobster.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
   { id: 4, title: 'Nightcall', artist: 'Kavinsky', duration: '4:19', src: 'https://archive.org/download/Kavinsky-Nightcall/Kavinsky-Nightcall.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
   { id: 5, title: 'Overdrive', artist: 'Lazerhawk', duration: '4:31', src: 'https://archive.org/download/Lazerhawk-Overdrive/Lazerhawk-Overdrive.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
