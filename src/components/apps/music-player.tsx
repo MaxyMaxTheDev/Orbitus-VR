@@ -106,7 +106,9 @@ export function MusicPlayer() {
         </div>
         <div className="w-full max-w-sm flex flex-col gap-3">
             <Slider value={[progress]} onValueChange={(value) => {
-                if(audioRef.current) audioRef.current.currentTime = (value[0] / 100) * audioRef.current.duration;
+                if(audioRef.current && isFinite(audioRef.current.duration)) {
+                    audioRef.current.currentTime = (value[0] / 100) * audioRef.current.duration;
+                }
             }} />
             <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{formatTime(currentTime)}</span>
