@@ -33,7 +33,7 @@ export function SettingsPanel({ children }: { children: React.ReactNode }) {
       <SheetContent className="bg-background/80 backdrop-blur-xl border-primary/30 text-foreground">
         <SheetHeader>
           <SheetTitle className="text-accent font-headline tracking-wider text-2xl">SETTINGS</SheetTitle>
-          <SheetDescription>Customize your NexusVR experience.</SheetDescription>
+          <SheetDescription>Customize your XenovaVR experience.</SheetDescription>
         </SheetHeader>
         <div className="grid gap-8 py-8">
           <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">

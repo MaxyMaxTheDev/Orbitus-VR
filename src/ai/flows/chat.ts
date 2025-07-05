@@ -33,7 +33,7 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await ai.generate({
-      prompt: `You are a helpful AI assistant within a virtual reality environment called NexusVR. Be concise and helpful. User message: ${input.message}`,
+      prompt: `You are a helpful AI assistant within a virtual reality environment called XenovaVR. Be concise and helpful. User message: ${input.message}`,
     });
 
     return {

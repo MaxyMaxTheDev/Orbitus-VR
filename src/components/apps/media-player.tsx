@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -10,7 +9,7 @@ import { Play, Pause, SkipBack, SkipForward, Music4 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const playlist = [
-  { id: 1, title: 'NexusVR Launch Trailer', creator: 'Nexus Studios', duration: '2:34', thumbnail: 'https://placehold.co/1280x720.png', hint: 'futuristic city' },
+  { id: 1, title: 'XenovaVR Launch Trailer', creator: 'Xenova Studios', duration: '2:34', thumbnail: 'https://placehold.co/1280x720.png', hint: 'futuristic city' },
   { id: 2, title: 'Live from the Orbital Stage', creator: 'DJ Hyperion', duration: '45:12', thumbnail: 'https://placehold.co/1280x720.png', hint: 'concert lights' },
   { id: 3, title: 'Sculpting Worlds in VR', creator: 'Ana Digital', duration: '12:50', thumbnail: 'https://placehold.co/1280x720.png', hint: '3d modeling' },
   { id: 4, title: 'Deep Dive: Mariana Trench', creator: 'ExploreVR', duration: '28:19', thumbnail: 'https://placehold.co/1280x720.png', hint: 'underwater bioluminescence' },

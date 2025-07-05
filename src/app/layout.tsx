@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'NexusVR',
+  title: 'XenovaVR',
   description: 'A customizable virtual home environment',
 };
 

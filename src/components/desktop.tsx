@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -14,7 +13,7 @@ import { allApps, type App } from '@/lib/apps-config';
 import { SettingsProvider } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
-import { NexusVRLogo } from './icons/logo';
+import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 
@@ -27,7 +26,7 @@ function DesktopContent() {
 
     useEffect(() => {
         const checkSetupStatus = async () => {
-            const setupFlag = await get<boolean>('nexus-vr-setup-complete');
+            const setupFlag = await get<boolean>('xenova-vr-setup-complete');
             // Add a small delay to make the boot screen visible
             setTimeout(() => {
                 if (setupFlag === true) {
@@ -55,7 +54,7 @@ function DesktopContent() {
     }, [isLoading]);
 
     const handleSetupComplete = async () => {
-        await set('nexus-vr-setup-complete', true);
+        await set('xenova-vr-setup-complete', true);
         setIsSetupComplete(true);
     };
 
@@ -112,7 +111,7 @@ function DesktopContent() {
                     transition={{ duration: 1, ease: "easeInOut" }}
                     className="flex flex-col items-center gap-6 w-full max-w-xs"
                 >
-                    <NexusVRLogo className="w-24 h-24 text-primary" />
+                    <XenovaVRLogo className="w-24 h-24 text-primary" />
                     <Progress value={progress} className="w-full h-2" />
                 </motion.div>
             </div>

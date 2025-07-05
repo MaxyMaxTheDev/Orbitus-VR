@@ -56,7 +56,7 @@ const signupPrompt = ai.definePrompt({
   input: {schema: SignupInputSchema},
   output: {schema: SignupOutputSchema},
   tools: [checkUsernameExists, createNewUser],
-  prompt: `You are a user registration agent for an operating system called NexusVR.
+  prompt: `You are a user registration agent for an operating system called XenovaVR.
 A user is trying to create a new account.
 
 Your tasks are:

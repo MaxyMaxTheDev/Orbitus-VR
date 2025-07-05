@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, LogIn, User, Loader2 } from 'lucide-react';
-import { NexusVRLogo } from './icons/logo';
+import { XenovaVRLogo } from './icons/logo';
 import { login } from '@/ai/flows/login-flow';
 import { signup } from '@/ai/flows/signup-flow';
 
@@ -87,7 +87,7 @@ export function OsSetup({ onComplete }: SetupProps) {
             return (
                 <motion.div key="choice" initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
                     <h1 className="text-3xl font-bold font-headline">Setup Your Profile</h1>
-                    <p className="text-muted-foreground">Choose how you want to save your NexusVR data.</p>
+                    <p className="text-muted-foreground">Choose how you want to save your XenovaVR data.</p>
                     <div className="flex flex-col gap-4">
                         <Button size="lg" variant="outline" className="h-20 flex flex-col items-start text-left" onClick={handleNext}>
                             <div className="flex items-center gap-3">
@@ -99,7 +99,7 @@ export function OsSetup({ onComplete }: SetupProps) {
                         <Button size="lg" variant="outline" className="h-20 flex flex-col items-start text-left" onClick={() => setAccountStep('login')}>
                              <div className="flex items-center gap-3">
                                 <LogIn className="w-6 h-6 text-accent" />
-                                <span className="text-lg font-bold">NexusVR Account</span>
+                                <span className="text-lg font-bold">XenovaVR Account</span>
                             </div>
                             <p className="font-normal text-muted-foreground text-sm whitespace-normal">Sign in to sync your data across devices.</p>
                         </Button>
@@ -174,8 +174,8 @@ export function OsSetup({ onComplete }: SetupProps) {
       case 0: // Welcome
         return (
           <motion.div key={0} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
-            <NexusVRLogo className="w-24 h-24 mx-auto text-primary" />
-            <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to NexusVR</h1>
+            <XenovaVRLogo className="w-24 h-24 mx-auto text-primary" />
+            <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to XenovaVR</h1>
             <p className="text-muted-foreground text-lg">Your new virtual reality desktop. Let's get you set up.</p>
             <Button size="lg" onClick={handleNext} className="mt-4">
               Begin Setup <ArrowRight className="ml-2" />
@@ -188,7 +188,7 @@ export function OsSetup({ onComplete }: SetupProps) {
         return (
           <motion.div key={2} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
             <h1 className="text-3xl font-bold font-headline">What should we call you?</h1>
-            <p className="text-muted-foreground">This will be your display name within NexusVR.</p>
+            <p className="text-muted-foreground">This will be your display name within XenovaVR.</p>
             <Input
               type="text"
               value={username}
@@ -237,7 +237,7 @@ export function OsSetup({ onComplete }: SetupProps) {
             <h1 className="text-4xl font-bold font-headline">Setup Complete!</h1>
             <p className="text-muted-foreground text-lg">Welcome, <span className="text-accent font-bold">{username}</span>. Your virtual desktop is ready.</p>
             <Button size="lg" onClick={handleFinish} className="bg-green-600 hover:bg-green-700">
-              Enter NexusVR
+              Enter XenovaVR
             </Button>
           </motion.div>
         );

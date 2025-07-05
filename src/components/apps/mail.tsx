@@ -25,9 +25,9 @@ const emails = [
   },
   {
     id: 3,
-    sender: 'NexusVR Support',
+    sender: 'XenovaVR Support',
     subject: 'Welcome to your new reality!',
-    body: `Welcome to NexusVR! We're excited to have you. Your virtual home environment is fully customizable. Try the 'Theme Studio' app to personalize your space, or say hello to our AI Assistant.\n\nIf you have any questions, consult the DevKit or contact support.\n\nBest,\nThe NexusVR Team`,
+    body: `Welcome to XenovaVR! We're excited to have you. Your virtual home environment is fully customizable. Try the 'Theme Studio' app to personalize your space, or say hello to our AI Assistant.\n\nIf you have any questions, consult the DevKit or contact support.\n\nBest,\nThe XenovaVR Team`,
     read: true,
   },
   {

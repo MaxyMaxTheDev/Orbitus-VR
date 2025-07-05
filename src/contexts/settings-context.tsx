@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -32,17 +31,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const storedBanners = await get<boolean>('nexus-vr-show-banners');
+        const storedBanners = await get<boolean>('xenova-vr-show-banners');
         if (storedBanners !== undefined) {
           setShowAppBanners(storedBanners);
         }
 
-        const storedUsername = await get<string>('nexus-vr-username');
+        const storedUsername = await get<string>('xenova-vr-username');
         if (storedUsername) {
           setUsername(storedUsername);
         }
         
-        const storedPosition = await get<NotificationPosition>('nexus-vr-notification-position');
+        const storedPosition = await get<NotificationPosition>('xenova-vr-notification-position');
         if (storedPosition) {
           setNotificationPosition(storedPosition);
         }
@@ -57,19 +56,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Handler to update state and IndexedDB for banner settings
   const handleSetShowAppBanners = (show: boolean) => {
     setShowAppBanners(show);
-    set('nexus-vr-show-banners', show).catch(e => console.error("Failed to save banner setting to DB", e));
+    set('xenova-vr-show-banners', show).catch(e => console.error("Failed to save banner setting to DB", e));
   };
 
   // Handler to update state and IndexedDB for username
   const handleSetUsername = (name: string) => {
     setUsername(name);
-    set('nexus-vr-username', name).catch(e => console.error("Failed to save username to DB", e));
+    set('xenova-vr-username', name).catch(e => console.error("Failed to save username to DB", e));
   };
   
   // Handler to update state and IndexedDB for notification position
   const handleSetNotificationPosition = (position: NotificationPosition) => {
     setNotificationPosition(position);
-    set('nexus-vr-notification-position', position).catch(e => console.error("Failed to save notification position to DB", e));
+    set('xenova-vr-notification-position', position).catch(e => console.error("Failed to save notification position to DB", e));
   };
 
   return (

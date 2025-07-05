@@ -53,6 +53,6 @@ export const allApps: App[] = [
     { name: "Notifications", icon: Bell, component: NotificationsApp, description: "View system alerts and updates from your apps." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
-    { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for NexusVR." },
+    { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
 ];

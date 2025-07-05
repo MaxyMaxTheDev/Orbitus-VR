@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function NexusVRLogo({ className }: { className?: string }) {
+export function XenovaVRLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}

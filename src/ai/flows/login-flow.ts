@@ -43,7 +43,7 @@ const loginPrompt = ai.definePrompt({
   input: {schema: LoginInputSchema},
   output: {schema: LoginOutputSchema}, // Instruct the AI on the output format
   tools: [checkUserCredentials],
-  prompt: `You are an authentication agent for an operating system called NexusVR.
+  prompt: `You are an authentication agent for an operating system called XenovaVR.
 A user is trying to log in.
 Your task is to use the 'checkUserCredentials' tool with the provided username and password to verify their identity.
 

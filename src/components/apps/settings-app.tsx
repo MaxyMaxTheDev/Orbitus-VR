@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -156,7 +155,7 @@ export function SettingsApp() {
               <div>
                 <Label className="text-lg font-medium">Powerwash</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  This will delete all your data and restore NexusVR to its
+                  This will delete all your data and restore XenovaVR to its
                   factory state.
                 </p>
               </div>
