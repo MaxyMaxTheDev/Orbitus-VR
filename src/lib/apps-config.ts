@@ -49,5 +49,5 @@ export const allApps: App[] = [
     { name: "Mail", icon: Mail, component: MailApp, description: "An email client for reading and managing messages." },
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
-    { name: "Minecraft", icon: Blocks, component: AppStore, description: "The classic block-building adventure. Fully playable in the browser." },
+    { name: "App Store", icon: Blocks, component: AppStore, description: "Download and manage new applications for NexusVR." },
 ];
