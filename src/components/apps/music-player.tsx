@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,11 +11,11 @@ import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 const playlist = [
-  { id: 1, title: 'Cyberdreams', artist: 'SynthRider', duration: '3:45', src: '/music/cyberdreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract synthwave' },
-  { id: 2, title: 'Orbital Resonance', artist: 'DJ Hyperion', duration: '5:12', src: '/music/orbital.mp3', cover: 'https://placehold.co/500x500.png', hint: 'planet rings' },
-  { id: 3, title: 'Crystal Caves', artist: 'Ana Digital', duration: '4:20', src: '/music/caves.mp3', cover: 'https://placehold.co/500x500.png', hint: 'glowing crystals' },
-  { id: 4, title: 'Data Stream', artist: 'Oracle', duration: '6:01', src: '/music/data.mp3', cover: 'https://placehold.co/500x500.png', hint: 'binary code' },
-  { id: 5, title: 'Neon Noir', artist: 'SynthRider', duration: '3:58', src: '/music/noir.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon city rain' },
+  { id: 1, title: 'Cyberdreams', artist: 'SynthRider', duration: '3:45', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/cyberdreams.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract synthwave' },
+  { id: 2, title: 'Orbital Resonance', artist: 'DJ Hyperion', duration: '5:12', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/orbital.mp3', cover: 'https://placehold.co/500x500.png', hint: 'planet rings' },
+  { id: 3, title: 'Crystal Caves', artist: 'Ana Digital', duration: '4:20', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/caves.mp3', cover: 'https://placehold.co/500x500.png', hint: 'glowing crystals' },
+  { id: 4, title: 'Data Stream', artist: 'Oracle', duration: '6:01', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/data.mp3', cover: 'https://placehold.co/500x500.png', hint: 'binary code' },
+  { id: 5, title: 'Neon Noir', artist: 'SynthRider', duration: '3:58', src: 'https://storage.googleapis.com/studioprompts/placeholder-audio/noir.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon city rain' },
 ];
 
 type Track = typeof playlist[0];
