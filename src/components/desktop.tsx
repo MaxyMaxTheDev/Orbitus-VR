@@ -16,6 +16,7 @@ import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
 import { NexusVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
+import { Toaster } from './ui/toaster';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -124,6 +125,7 @@ function DesktopContent() {
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center">
+            <Toaster />
             {/* Main Content Area */}
             <div className="flex-1 w-full relative">
                 <AnimatePresence>

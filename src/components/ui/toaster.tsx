@@ -1,5 +1,6 @@
 "use client"
 
+import { useSettings } from "@/contexts/settings-context"
 import { useToast } from "@/hooks/use-toast"
 import {
   Toast,
@@ -12,12 +13,13 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const { notificationPosition } = useSettings();
 
   return (
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
-          <Toast key={id} {...props}>
+          <Toast key={id} {...props} position={notificationPosition}>
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (
@@ -29,7 +31,7 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport />
+      <ToastViewport position={notificationPosition} />
     </ToastProvider>
   )
 }

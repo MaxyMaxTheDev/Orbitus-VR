@@ -4,11 +4,21 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { get, set } from '@/lib/idb';
 
+export type NotificationPosition = 
+  | 'top-left' 
+  | 'top-center' 
+  | 'top-right' 
+  | 'bottom-left' 
+  | 'bottom-center' 
+  | 'bottom-right';
+
 type SettingsContextType = {
   showAppBanners: boolean;
   setShowAppBanners: (show: boolean) => void;
   username: string;
   setUsername: (name: string) => void;
+  notificationPosition: NotificationPosition;
+  setNotificationPosition: (position: NotificationPosition) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -16,6 +26,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [showAppBanners, setShowAppBanners] = useState(true);
   const [username, setUsername] = useState("User");
+  const [notificationPosition, setNotificationPosition] = useState<NotificationPosition>('bottom-right');
 
   // This effect runs once on mount to load settings from IndexedDB
   useEffect(() => {
@@ -30,6 +41,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (storedUsername) {
           setUsername(storedUsername);
         }
+        
+        const storedPosition = await get<NotificationPosition>('nexus-vr-notification-position');
+        if (storedPosition) {
+          setNotificationPosition(storedPosition);
+        }
+
       } catch (error) {
         console.error("Failed to load settings from IndexedDB", error);
       }
@@ -48,13 +65,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setUsername(name);
     set('nexus-vr-username', name).catch(e => console.error("Failed to save username to DB", e));
   };
+  
+  // Handler to update state and IndexedDB for notification position
+  const handleSetNotificationPosition = (position: NotificationPosition) => {
+    setNotificationPosition(position);
+    set('nexus-vr-notification-position', position).catch(e => console.error("Failed to save notification position to DB", e));
+  };
 
   return (
     <SettingsContext.Provider value={{ 
         showAppBanners, 
         setShowAppBanners: handleSetShowAppBanners, 
         username, 
-        setUsername: handleSetUsername 
+        setUsername: handleSetUsername,
+        notificationPosition,
+        setNotificationPosition: handleSetNotificationPosition,
     }}>
       {children}
     </SettingsContext.Provider>
