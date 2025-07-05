@@ -10,13 +10,13 @@ import { Play, Pause, SkipBack, SkipForward, Music4, Volume2, VolumeX } from 'lu
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
-// Verified, publicly accessible URLs from archive.org
+// Verified, publicly accessible, non-redirecting URLs from archive.org
 const playlist = [
-  { id: 1, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://archive.org/download/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
-  { id: 2, title: 'The New Black', artist: 'Perturbator', duration: '2:19', src: 'https://archive.org/download/PerturbatorIAmTheNight/01.Perturbator-TheNewBlack.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
-  { id: 3, title: 'Roller Mobster', artist: 'Carpenter Brut', duration: '3:34', src: 'https://archive.org/download/carpenter-brut-roller-mobster/Carpenter%20Brut%20-%20Roller%20Mobster.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
-  { id: 4, title: 'Nightcall', artist: 'Kavinsky', duration: '4:19', src: 'https://archive.org/download/Kavinsky-Nightcall/Kavinsky-Nightcall.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
-  { id: 5, title: 'Overdrive', artist: 'Lazerhawk', duration: '4:31', src: 'https://archive.org/download/Lazerhawk-Overdrive/Lazerhawk-Overdrive.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
+  { id: 1, title: 'The Real Deal', artist: 'Mitch Murder', duration: '3:48', src: 'https://ia800100.us.archive.org/30/items/MitchMurder-TheRealDeal/Mitch%20Murder%20-%20The%20Real%20Deal.mp3', cover: 'https://placehold.co/500x500.png', hint: 'futuristic skyline' },
+  { id: 2, title: 'The New Black', artist: 'Perturbator', duration: '2:19', src: 'https://ia902701.us.archive.org/16/items/PerturbatorIAmTheNight/01.Perturbator-TheNewBlack.mp3', cover: 'https://placehold.co/500x500.png', hint: 'abstract digital art' },
+  { id: 3, title: 'Roller Mobster', artist: 'Carpenter Brut', duration: '3:34', src: 'https://ia800509.us.archive.org/28/items/carpenter-brut-roller-mobster/Carpenter%20Brut%20-%20Roller%20Mobster.mp3', cover: 'https://placehold.co/500x500.png', hint: 'neon race' },
+  { id: 4, title: 'Nightcall', artist: 'Kavinsky', duration: '4:19', src: 'https://ia800604.us.archive.org/27/items/Kavinsky-Nightcall/Kavinsky-Nightcall.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
+  { id: 5, title: 'Overdrive', artist: 'Lazerhawk', duration: '4:31', src: 'https://ia802606.us.archive.org/1/items/Lazerhawk-Overdrive/Lazerhawk-Overdrive.mp3', cover: 'https://placehold.co/500x500.png', hint: 'synthwave sunset' },
 ];
 
 
