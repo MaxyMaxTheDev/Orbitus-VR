@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Area, AreaChart } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Area, AreaChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Heart, BedDouble, Footprints, BrainCircuit } from 'lucide-react';
