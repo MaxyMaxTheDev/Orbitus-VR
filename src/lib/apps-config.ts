@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
-    View, Users, BoxSelect, Gamepad2, Heart, Briefcase, Palette,
+    View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle
 } from "lucide-react";
 
@@ -10,7 +10,6 @@ import { ThemeStudio } from '@/components/apps/theme-studio';
 import { MediaPlayer } from '@/components/apps/media-player';
 import { Gallery360 } from '@/components/apps/360-gallery';
 import { Workspace } from '@/components/apps/workspace';
-import { Wellness } from '@/components/apps/wellness';
 import { Dashboard } from '@/components/apps/dashboard';
 import { Browser } from '@/components/apps/browser';
 import { VRChat } from '@/components/apps/vr-chat';
@@ -42,7 +41,6 @@ export const allApps: App[] = [
     { name: "360 Gallery", icon: View, component: Gallery360, description: "An immersive gallery for viewing 360-degree panoramic images." },
     { name: "SculptVR", icon: BoxSelect, component: SculptVR, description: "A creative tool to generate 3D models from text descriptions using AI." },
     { name: "Game Hub", icon: Gamepad2, component: GameHub, description: "A portal for playing simple, fun mini-games." },
-    { name: "Wellness", icon: Heart, component: Wellness, description: "A relaxation and mindfulness app with guided breathing exercises." },
     { name: "Workspace", icon: Briefcase, component: Workspace, description: "A productivity app with a to-do list for managing tasks." },
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
