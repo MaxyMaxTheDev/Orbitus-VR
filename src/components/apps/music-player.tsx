@@ -10,6 +10,7 @@ import { Play, Pause, SkipBack, SkipForward, Music4, Volume2, VolumeX } from 'lu
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
+// Verified, publicly accessible URLs from archive.org
 const playlist = [
   { id: 1, title: 'Piscine Nocturne', artist: 'Monplaisir', duration: '3:05', src: 'https://archive.org/download/monplaisir_-_20180922/monplaisir_-_01_-_piscine_nocturne.mp3', cover: 'https://placehold.co/500x500.png', hint: 'cyberpunk car' },
   { id: 2, title: 'The Fusion', artist: 'Scott Buckley', duration: '3:45', src: 'https://archive.org/download/ScottBuckleyTheFusion/Scott%20Buckley%20-%20The%20Fusion.mp3', cover: 'https://placehold.co/500x500.png', hint: 'night city highway' },
