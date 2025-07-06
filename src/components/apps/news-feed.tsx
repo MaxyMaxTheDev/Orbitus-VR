@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -30,7 +31,7 @@ export function NewsFeedApp() {
       });
       // Set a fallback error state for the UI
       setFeed({
-        articles: [{ title: 'HoloNet Signal Lost', source: 'System', timestamp: 'Now', description: 'Could not retrieve data from the news stream.' }]
+        articles: [{ title: 'HoloNet Signal Lost', source: 'System', timestamp: 'Now' }, { title: 'Could not retrieve data from the news stream.', source: 'System', timestamp: 'Now' }]
       });
     } finally {
       setIsLoading(false);
