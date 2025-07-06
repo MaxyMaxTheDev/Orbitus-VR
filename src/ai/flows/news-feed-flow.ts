@@ -34,7 +34,8 @@ const newsFeedFlow = ai.defineFlow(
         output: { schema: NewsFeedOutputSchema },
         prompt: `You are a news feed generator for a futuristic virtual world called XenovaVR.
 Generate a list of 5-7 intriguing, sci-fi news headlines.
-Each headline should have a futuristic source (e.g., 'HoloNet News', 'The Kuiper Post') and a relative timestamp (e.g., '15m ago', '3h ago').
+Each headline MUST come from a different and varied futuristic news source. Examples of sources include 'The Kuiper Post', 'Cy-Chronicle', 'Mars Minute', 'Titan Times', 'Galactic Herald', and 'HoloNet News'.
+Each headline should also have a relative timestamp (e.g., '15m ago', '3h ago').
 The tone should be a mix of corporate news, tech breakthroughs, and mysterious events on the galactic frontier.`
     });
 
