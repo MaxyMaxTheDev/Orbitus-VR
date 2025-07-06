@@ -3,9 +3,15 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Loader2, LogIn, LogOut } from 'lucide-react';
+import { Loader2, LogIn, LogOut, Mail as MailIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '../ui/scroll-area';
+
+// Simple SVG for Google icon as it's not in lucide
+const GoogleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22C17.5 22 22 17.5 22 12S17.5 2 12 2 2 6.5 2 12S6.5 22 12 22Z"/><path d="M12 12v-2.5a2.5 2.5 0 0 1 5 0v0a2.5 2.5 0 0 1-2.5 2.5zM12 12h-5a2.5 2.5 0 0 0 0 5h5z"/><path d="M12 12v5a2.5 2.5 0 0 0 0-5zM12 12c-1.657 0-3-1.12-3-2.5s1.343-2.5 3-2.5 3 1.12 3 2.5-1.343 2.5-3 2.5z"/></svg>
+  );
+  
 
 export function MailApp() {
   const { data: session, status } = useSession();
@@ -23,12 +29,18 @@ export function MailApp() {
       <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
         <h2 className="text-2xl font-bold">Connect Your Mail Account</h2>
         <p className="text-muted-foreground max-w-md">
-            To view your emails directly within XenovaVR, you'll need to sign in with your Google account. This application only requests read-only access and does not store your emails.
+            To view your emails directly within XenovaVR, you'll need to sign in with your provider. This application only requests read-only access and does not store your emails.
         </p>
-        <Button onClick={() => signIn('google')} size="lg" className="mt-4">
-          <LogIn className="mr-2" />
-          Sign in with Google
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <Button onClick={() => signIn('google')} size="lg" className="w-full sm:w-auto">
+                <GoogleIcon />
+                Sign in with Google
+            </Button>
+            <Button onClick={() => signIn('yahoo')} size="lg" className="w-full sm:w-auto bg-[#6001d2] hover:bg-[#5001b0] text-white">
+                <MailIcon />
+                Sign in with Yahoo
+            </Button>
+        </div>
       </div>
     );
   }
