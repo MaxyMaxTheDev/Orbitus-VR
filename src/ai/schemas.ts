@@ -123,6 +123,7 @@ export const NewsItemSchema = z.object({
   title: z.string().describe('A compelling, futuristic news headline.'),
   source: z.string().describe("The fictional source of the news (e.g., 'CyberNet Times', 'Galactic Herald')."),
   timestamp: z.string().describe("A relative timestamp (e.g., '5m ago', '2h ago')."),
+  content: z.string().describe("The full text content of the news article, 2-3 paragraphs long. Use markdown for formatting if appropriate (e.g., line breaks)."),
 });
 export type NewsItem = z.infer<typeof NewsItemSchema>;
 

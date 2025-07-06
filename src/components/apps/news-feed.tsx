@@ -5,13 +5,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { getNewsFeed, NewsFeedOutput } from '@/ai/flows/news-feed-flow';
-import { Loader2, Newspaper, RefreshCw } from 'lucide-react';
+import { getNewsFeed } from '@/ai/flows/news-feed-flow';
+import type { NewsFeedOutput, NewsItem } from '@/ai/flows/news-feed-flow';
+import { Loader2, Newspaper, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export function NewsFeedApp() {
   const [feed, setFeed] = useState<NewsFeedOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
   const { toast } = useToast();
 
   const fetchFeed = useCallback(async () => {
@@ -29,9 +32,8 @@ export function NewsFeedApp() {
         title: 'Error',
         description,
       });
-      // Set a fallback error state for the UI
       setFeed({
-        articles: [{ title: 'HoloNet Signal Lost', source: 'System', timestamp: 'Now' }, { title: 'Could not retrieve data from the news stream.', source: 'System', timestamp: 'Now' }]
+        articles: [{ title: 'HoloNet Signal Lost', source: 'System', timestamp: 'Now', content: 'Could not retrieve data from the news stream. Please check your connection or AI API key and try again.' }]
       });
     } finally {
       setIsLoading(false);
@@ -42,7 +44,7 @@ export function NewsFeedApp() {
     fetchFeed();
   }, [fetchFeed]);
 
-  const renderContent = () => {
+  const renderArticleList = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-full text-muted-foreground gap-2">
@@ -64,19 +66,53 @@ export function NewsFeedApp() {
       <ScrollArea className="h-full">
         <div className="space-y-4">
           {feed.articles.map((article, index) => (
-            <div key={index} className="p-4 rounded-lg bg-black/20 border border-primary/10 hover:border-primary/30 transition-colors">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              onClick={() => setSelectedArticle(article)}
+              className="p-4 rounded-lg bg-black/20 border border-primary/10 hover:border-primary/30 transition-all duration-200 cursor-pointer hover:bg-black/30"
+            >
               <h3 className="font-semibold text-foreground mb-1">{article.title}</h3>
               <div className="flex justify-between items-center text-xs text-muted-foreground">
                 <span>{article.source}</span>
                 <span>{article.timestamp}</span>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </ScrollArea>
     );
   };
   
+  const renderArticleDetail = () => {
+    if (!selectedArticle) return null;
+
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex-shrink-0 mb-4">
+          <Button variant="ghost" onClick={() => setSelectedArticle(null)} className="text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Feed
+          </Button>
+        </div>
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-accent">{selectedArticle.title}</h2>
+            <div className="flex justify-between items-center text-sm text-muted-foreground border-b border-primary/20 pb-2">
+              <span>From: {selectedArticle.source}</span>
+              <span>{selectedArticle.timestamp}</span>
+            </div>
+            <div className="prose prose-invert prose-sm max-w-none text-foreground/90 whitespace-pre-wrap">
+              {selectedArticle.content}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  };
+
   return (
     <div className="h-full w-full p-4 flex flex-col">
       <Card className="w-full flex-1 flex flex-col bg-transparent border-primary/30">
@@ -90,7 +126,18 @@ export function NewsFeedApp() {
           </Button>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden p-4 pt-0">
-          {renderContent()}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedArticle ? 'article' : 'list'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              {selectedArticle ? renderArticleDetail() : renderArticleList()}
+            </motion.div>
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>
