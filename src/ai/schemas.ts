@@ -117,3 +117,16 @@ export const ProfileCodeOutputSchema = z.object({
   summary: z.string().describe("A brief, one or two sentence summary of the code's fictional performance profile."),
 });
 export type ProfileCodeOutput = z.infer<typeof ProfileCodeOutputSchema>;
+
+// For news-feed-flow.ts
+export const NewsItemSchema = z.object({
+  title: z.string().describe('A compelling, futuristic news headline.'),
+  source: z.string().describe("The fictional source of the news (e.g., 'CyberNet Times', 'Galactic Herald')."),
+  timestamp: z.string().describe("A relative timestamp (e.g., '5m ago', '2h ago')."),
+});
+export type NewsItem = z.infer<typeof NewsItemSchema>;
+
+export const NewsFeedOutputSchema = z.object({
+  articles: z.array(NewsItemSchema),
+});
+export type NewsFeedOutput = z.infer<typeof NewsFeedOutputSchema>;
