@@ -4,7 +4,7 @@ import {
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell, Trophy, CheckCircle, AlertTriangle,
-    Cpu,
+    Cpu, Sparkles, Gauge,
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -27,6 +27,8 @@ import { AppStore } from '@/components/apps/app-store';
 import { MinecraftApp } from '@/components/apps/minecraft';
 import { NotificationsApp } from '@/components/apps/notifications';
 import { SystemMonitor } from '@/components/apps/system-monitor';
+import { StarMap } from '@/components/apps/star-map';
+import { CodeProfiler } from '@/components/apps/code-profiler';
 
 export type App = {
     name: string;
@@ -47,6 +49,8 @@ export const allApps: App[] = [
     { name: "Workspace", icon: Briefcase, component: Workspace, description: "A productivity app with a to-do list for managing tasks." },
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
+    { name: "Code Profiler", icon: Gauge, component: CodeProfiler, description: "Analyze code snippets with futuristic, AI-powered performance metrics." },
+    { name: "Star Map", icon: Sparkles, component: StarMap, description: "Explore a procedurally generated map of the known galaxy." },
     { name: "Calculator", icon: Calculator, component: CalculatorApp, description: "A futuristic calculator for all your computational needs." },
     { name: "Notepad", icon: Notebook, component: NotepadApp, description: "A simple, persistent notepad for jotting down thoughts and ideas." },
     { name: "AI Assistant", icon: Bot, component: AIAssistant, description: "A conversational AI chatbot for asking questions and getting help." },

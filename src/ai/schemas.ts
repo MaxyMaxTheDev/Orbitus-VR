@@ -103,3 +103,17 @@ export const SignupOutputSchema = z.object({
   message: z.string().describe('A message indicating the result of the signup attempt.'),
 });
 export type SignupOutput = z.infer<typeof SignupOutputSchema>;
+
+// For profile-code-flow.ts
+export const ProfileCodeInputSchema = z.object({
+  code: z.string().min(1, 'Code cannot be empty').describe('The code snippet to profile.'),
+});
+export type ProfileCodeInput = z.infer<typeof ProfileCodeInputSchema>;
+
+export const ProfileCodeOutputSchema = z.object({
+  quantumComplexity: z.string().describe("A fictional 'Quantum Complexity' score or rating (e.g., 'Low', '7.2 Qubits')."),
+  temporalStability: z.string().describe("A fictional 'Temporal Stability' percentage (e.g., '99.8%')."),
+  aethericConsumption: z.string().describe("A fictional 'Aetheric Consumption' value with units (e.g., '14.2μA', 'High')."),
+  summary: z.string().describe("A brief, one or two sentence summary of the code's fictional performance profile."),
+});
+export type ProfileCodeOutput = z.infer<typeof ProfileCodeOutputSchema>;
