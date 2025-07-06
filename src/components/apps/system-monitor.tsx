@@ -108,7 +108,7 @@ export function SystemMonitor() {
                                 <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <Tooltip
+                        <ChartTooltip
                             cursor={false}
                             content={<ChartTooltipContent indicator="line" labelFormatter={(value, payload) => `${payload?.[0]?.payload.usage.toFixed(1)}${unit}`} hideLabel />}
                         />
