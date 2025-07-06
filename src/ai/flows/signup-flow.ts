@@ -102,5 +102,23 @@ export async function signup(input: SignupInput): Promise<SignupOutput> {
     mockUsers.push(input);
     return {success: true, message: 'Account created successfully.'};
   }
-  return signupFlow(input);
+  try {
+    return await signupFlow(input);
+  } catch (e: any) {
+    if (e.message?.includes('429')) {
+      console.warn(
+        'Google AI quota exceeded. Falling back to mock signup validation.'
+      );
+      const userExists = mockUsers.some(
+        u => u.username.toLowerCase() === input.username.toLowerCase()
+      );
+      if (userExists) {
+        return {success: false, message: 'Username already taken.'};
+      }
+      mockUsers.push(input);
+      return {success: true, message: 'Account created successfully.'};
+    }
+    // Re-throw other errors
+    throw e;
+  }
 }

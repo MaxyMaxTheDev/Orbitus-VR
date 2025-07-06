@@ -80,5 +80,22 @@ export async function login(input: LoginInput): Promise<LoginOutput> {
     }
     return {success: false, message: 'Incorrect username or password.'};
   }
-  return loginFlow(input);
+  try {
+    return await loginFlow(input);
+  } catch (e: any) {
+    if (e.message?.includes('429')) {
+      console.warn(
+        'Google AI quota exceeded. Falling back to mock login validation.'
+      );
+      const user = mockUsers.find(
+        u => u.username === input.username && u.password === input.password
+      );
+      if (user) {
+        return {success: true, message: 'Login successful.'};
+      }
+      return {success: false, message: 'Incorrect username or password.'};
+    }
+    // Re-throw other errors
+    throw e;
+  }
 }
