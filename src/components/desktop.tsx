@@ -11,13 +11,12 @@ import { Button } from './ui/button';
 import { X } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
-import { SettingsProvider } from '@/contexts/settings-context';
+import { useSettings } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
 import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
-import { MusicPlayerProvider } from '@/contexts/music-player-context';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -167,10 +166,6 @@ function DesktopContent() {
 
 export function Desktop() {
     return (
-        <SettingsProvider>
-            <MusicPlayerProvider>
-                <DesktopContent />
-            </MusicPlayerProvider>
-        </SettingsProvider>
+        <DesktopContent />
     );
 }

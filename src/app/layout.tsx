@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'XenovaVR',
@@ -24,7 +25,7 @@ export default function RootLayout({
         "font-sans antialiased",
         inter.variable
       )}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

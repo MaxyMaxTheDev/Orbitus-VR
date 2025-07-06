@@ -1,107 +1,73 @@
 
 "use client";
 
-import { useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
-import { Archive, Inbox, Send, File, Trash2, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
-const emails = [
-  {
-    id: 1,
-    sender: 'SynthRider',
-    subject: 'New track is fire!',
-    body: `Yo, just dropped a new synthwave track called "Digital Sunset". It's got some real glitchy vibes I think you'll dig. Let me know what you think!\n\nCatch you in the data streams,\nSynthRider`,
-    read: false,
-  },
-  {
-    id: 2,
-    sender: 'Oracle',
-    subject: 'A whisper from the ether',
-    body: `The signal flickers, and a pattern emerges. A choice, a path, a variable yet to be defined. The stream flows towards a new constant. Contemplate the echo.\n\n::Oracle::`,
-    read: false,
-  },
-  {
-    id: 3,
-    sender: 'XenovaVR Support',
-    subject: 'Welcome to your new reality!',
-    body: `Welcome to XenovaVR! We're excited to have you. Your virtual home environment is fully customizable. Try the 'Theme Studio' app to personalize your space, or say hello to our AI Assistant.\n\nIf you have any questions, consult the DevKit or contact support.\n\nBest,\nThe XenovaVR Team`,
-    read: true,
-  },
-  {
-    id: 4,
-    sender: 'Ana Digital',
-    subject: 'Collaboration on SculptVR project?',
-    body: `Hey, I saw your latest creation in SculptVR – that "Cybernetic Bonsai" was rad! I'm working on a virtual gallery exhibition and I think your style would be a perfect fit. Are you open to a collaboration?\n\nLet me know,\nAna`,
-    read: true,
-  },
-];
-
-type Email = typeof emails[0];
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Loader2, LogIn, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '../ui/scroll-area';
 
 export function MailApp() {
-  const [mailList, setMailList] = useState(emails);
-  const [selectedMail, setSelectedMail] = useState<Email | null>(emails[0]);
+  const { data: session, status } = useSession();
 
-  const handleSelectMail = (mail: Email) => {
-    setSelectedMail(mail);
-    setMailList(
-      mailList.map(m => (m.id === mail.id ? { ...m, read: true } : m))
+  if (status === 'loading') {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
     );
-  };
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
+        <h2 className="text-2xl font-bold">Connect Your Mail Account</h2>
+        <p className="text-muted-foreground max-w-md">
+            To view your emails directly within XenovaVR, you'll need to sign in with your Google account. This application only requests read-only access and does not store your emails.
+        </p>
+        <Button onClick={() => signIn('google')} size="lg" className="mt-4">
+          <LogIn className="mr-2" />
+          Sign in with Google
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full w-full">
-      <div className="w-1/3 border-r border-primary/30 p-2 flex flex-col gap-2">
-        <h2 className="p-2 text-lg font-bold text-accent">Inbox</h2>
-        <ScrollArea>
-          <div className="flex flex-col gap-1 pr-2">
-            {mailList.map((mail) => (
-              <div
-                key={mail.id}
-                onClick={() => handleSelectMail(mail)}
-                className={cn(
-                  'flex flex-col gap-1 p-3 rounded-lg transition-colors duration-200',
-                  selectedMail?.id === mail.id ? 'bg-primary/50' : 'hover:bg-primary/20'
-                )}
-              >
-                <div className="flex justify-between items-center">
-                  <p className="font-semibold text-foreground truncate">{mail.sender}</p>
-                  {!mail.read && <div className="w-2 h-2 rounded-full bg-accent flex-shrink-0"></div>}
-                </div>
-                <p className="text-sm text-foreground truncate">{mail.subject}</p>
-              </div>
-            ))}
+      <div className="w-1/3 border-r border-primary/30 p-2 flex flex-col gap-4">
+        <div className="flex items-center gap-3 p-2">
+          <Avatar>
+            <AvatarImage src={session?.user?.image ?? ''} alt={session?.user?.name ?? ''} />
+            <AvatarFallback>{session?.user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="overflow-hidden">
+            <p className="font-semibold truncate">{session?.user?.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
           </div>
+        </div>
+        
+        <div className="px-2">
+            <Button disabled className="w-full">
+                Fetch Emails (Coming Soon)
+            </Button>
+            <Button onClick={() => signOut()} variant="outline" className="w-full mt-2">
+                <LogOut className="mr-2" />
+                Sign Out
+            </Button>
+        </div>
+
+        <ScrollArea className="flex-1">
+            <div className="flex h-full items-center justify-center text-center text-muted-foreground text-sm p-4">
+                <p>Email fetching functionality will be implemented in the next step.</p>
+            </div>
         </ScrollArea>
+        
       </div>
       <div className="flex-1 p-4">
-        {selectedMail ? (
-          <ScrollArea className="h-full pr-4">
-            <div className="flex flex-col gap-4">
-              <h1 className="text-2xl font-bold text-foreground">{selectedMail.subject}</h1>
-              <Separator />
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarFallback className="bg-secondary">{selectedMail.sender.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold text-foreground">{selectedMail.sender}</p>
-                  <p className="text-sm text-muted-foreground">to: You</p>
-                </div>
-              </div>
-              <Separator />
-              <p className="text-foreground whitespace-pre-wrap leading-relaxed">{selectedMail.body}</p>
-            </div>
-          </ScrollArea>
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
+        <div className="flex h-full items-center justify-center text-muted-foreground">
             <p>Select an email to read.</p>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
