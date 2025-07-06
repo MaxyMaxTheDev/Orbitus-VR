@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Carousel,
   CarouselContent,
@@ -59,6 +59,9 @@ export function Gallery360() {
         onOpenChange={(isOpen) => !isOpen && setSelectedIndex(null)}
       >
         <DialogContent className="max-w-[90vw] max-h-[90vh] h-[90vh] w-[90vw] p-0 border-primary/30 bg-background/80 backdrop-blur-xl flex items-center justify-center">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Image Gallery</DialogTitle>
+            </DialogHeader>
             {selectedIndex !== null && (
                 <Carousel
                     opts={{ loop: true, startIndex: selectedIndex }}
