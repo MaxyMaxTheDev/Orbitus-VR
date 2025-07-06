@@ -19,6 +19,7 @@ export function NewsFeedApp() {
 
   const fetchFeed = useCallback(async () => {
     setIsLoading(true);
+    setSelectedArticle(null); // Return to list view on refresh
     try {
       const newsFeed = await getNewsFeed();
       setFeed(newsFeed);
@@ -63,26 +64,24 @@ export function NewsFeedApp() {
     }
 
     return (
-      <ScrollArea className="h-full">
-        <div className="space-y-4">
-          {feed.articles.map((article, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              onClick={() => setSelectedArticle(article)}
-              className="p-4 rounded-lg bg-black/20 border border-primary/10 hover:border-primary/30 transition-all duration-200 cursor-pointer hover:bg-black/30"
-            >
-              <h3 className="font-semibold text-foreground mb-1">{article.title}</h3>
-              <div className="flex justify-between items-center text-xs text-muted-foreground">
-                <span>{article.source}</span>
-                <span>{article.timestamp}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </ScrollArea>
+      <div className="space-y-4">
+        {feed.articles.map((article, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            onClick={() => setSelectedArticle(article)}
+            className="p-4 rounded-lg bg-black/20 border border-primary/10 hover:border-primary/30 transition-all duration-200 cursor-pointer hover:bg-black/30"
+          >
+            <h3 className="font-semibold text-foreground mb-1">{article.title}</h3>
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
+              <span>{article.source}</span>
+              <span>{article.timestamp}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     );
   };
   
@@ -90,28 +89,45 @@ export function NewsFeedApp() {
     if (!selectedArticle) return null;
 
     return (
-      <div className="h-full flex flex-col">
+      <div className="flex flex-col">
         <div className="flex-shrink-0 mb-4">
           <Button variant="ghost" onClick={() => setSelectedArticle(null)} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Feed
           </Button>
         </div>
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-accent">{selectedArticle.title}</h2>
-            <div className="flex justify-between items-center text-sm text-muted-foreground border-b border-primary/20 pb-2">
-              <span>From: {selectedArticle.source}</span>
-              <span>{selectedArticle.timestamp}</span>
-            </div>
-            <div className="prose prose-invert prose-sm max-w-none text-foreground/90 whitespace-pre-wrap">
-              {selectedArticle.content}
-            </div>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-accent">{selectedArticle.title}</h2>
+          <div className="flex justify-between items-center text-sm text-muted-foreground border-b border-primary/20 pb-2">
+            <span>From: {selectedArticle.source}</span>
+            <span>{selectedArticle.timestamp}</span>
           </div>
-        </ScrollArea>
+          <div className="prose prose-invert prose-sm max-w-none text-foreground/90 whitespace-pre-wrap">
+            {selectedArticle.content}
+          </div>
+        </div>
       </div>
     );
   };
+
+  const Content = () => {
+    if (isLoading && !selectedArticle) {
+      return renderArticleList();
+    }
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={selectedArticle ? 'article' : 'list'}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {selectedArticle ? renderArticleDetail() : renderArticleList()}
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <div className="h-full w-full p-4 flex flex-col">
@@ -126,18 +142,9 @@ export function NewsFeedApp() {
           </Button>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden p-4 pt-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedArticle ? 'article' : 'list'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="h-full"
-            >
-              {selectedArticle ? renderArticleDetail() : renderArticleList()}
-            </motion.div>
-          </AnimatePresence>
+          <ScrollArea className="h-full w-full pr-4">
+            <Content />
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
