@@ -8,10 +8,10 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Cpu, MemoryStick, Video, Network } from 'lucide-react';
 import { useSettings } from '@/contexts/settings-context';
 
-const createInitialData = (length: number, max: number, random: () => number) => {
+const createInitialData = (length: number, baseline: number, random: () => number) => {
     return Array.from({ length }, (_, i) => ({
         time: i,
-        usage: random() * max,
+        usage: Math.max(0, Math.min(100, baseline + (random() - 0.5) * 20)),
     }));
 };
 
@@ -62,7 +62,7 @@ export function SystemMonitor() {
                 const lastTime = data[data.length - 1].time;
                 newData.push({
                     time: lastTime + 1,
-                    usage: Math.max(0, Math.min(100, baseline + (Math.random() - 0.5) * 20)),
+                    usage: Math.max(0, Math.min(100, baseline + (random() - 0.5) * 20)),
                 });
                 return newData;
             };
@@ -74,7 +74,7 @@ export function SystemMonitor() {
         }, 1500);
 
         return () => clearInterval(interval);
-    }, [baselines]);
+    }, [baselines, random]);
 
     const chartConfig = {
         usage: { label: "Usage", color: "hsl(var(--accent))" },
