@@ -77,73 +77,75 @@ export function MediaPlayer() {
   };
 
   return (
-    <div className="flex h-full w-full p-4 gap-4">
-      <audio ref={audioRef} src={currentVideo.audioSrc} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
-      {/* Main Player */}
-      <div className="flex-[3] flex flex-col gap-4">
-        <Card className="w-full aspect-video bg-black rounded-lg overflow-hidden border-primary/30 relative">
-          <Image src={currentVideo.thumbnail} alt={currentVideo.title} layout="fill" objectFit="cover" data-ai-hint={currentVideo.hint} />
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            {!isPlaying && 
-              <button onClick={() => setIsPlaying(true)} className="w-20 h-20 text-white/50 hover:text-white/80 transition-colors">
-                  <Play className="w-full h-full" />
-              </button>
-            }
-          </div>
-        </Card>
-        <div className="flex items-center justify-between">
-            <div>
-                <h2 className="text-2xl font-bold text-foreground">{currentVideo.title}</h2>
-                <p className="text-md text-muted-foreground">{currentVideo.creator}</p>
+    <div className="h-full w-full overflow-y-auto">
+        <div className="flex flex-col lg:flex-row p-4 gap-4">
+            <audio ref={audioRef} src={currentVideo.audioSrc} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+            {/* Main Player */}
+            <div className="lg:flex-[3] flex flex-col gap-4">
+                <Card className="w-full aspect-video bg-black rounded-lg overflow-hidden border-primary/30 relative">
+                <Image src={currentVideo.thumbnail} alt={currentVideo.title} layout="fill" objectFit="cover" data-ai-hint={currentVideo.hint} />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    {!isPlaying && 
+                    <button onClick={() => setIsPlaying(true)} className="w-20 h-20 text-white/50 hover:text-white/80 transition-colors">
+                        <Play className="w-full h-full" />
+                    </button>
+                    }
+                </div>
+                </Card>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-foreground">{currentVideo.title}</h2>
+                        <p className="text-md text-muted-foreground">{currentVideo.creator}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-full hover:bg-white/20">
+                            <SkipBack />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setIsPlaying(!isPlaying)} className="w-14 h-14 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
+                            {isPlaying ? <Pause className="w-8 h-8"/> : <Play className="w-8 h-8 ml-1" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={handleNext} className="rounded-full hover:bg-white/20">
+                            <SkipForward />
+                        </Button>
+                    </div>
+                </div>
             </div>
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-full hover:bg-white/20">
-                    <SkipBack />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => setIsPlaying(!isPlaying)} className="w-14 h-14 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
-                    {isPlaying ? <Pause className="w-8 h-8"/> : <Play className="w-8 h-8 ml-1" />}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={handleNext} className="rounded-full hover:bg-white/20">
-                    <SkipForward />
-                </Button>
+
+            {/* Playlist */}
+            <div className="lg:flex-[2] flex flex-col">
+                <h3 className="text-xl font-bold mb-2 text-accent tracking-wider">Playlist</h3>
+                <Card className="flex-1 bg-transparent border-primary/30 min-h-[300px] lg:min-h-0">
+                <ScrollArea className="h-full w-full">
+                    <CardContent className="p-2">
+                        <div className="flex flex-col gap-2">
+                        {playlist.map((video) => (
+                            <div
+                            key={video.id}
+                            onClick={() => handleSelectVideo(video)}
+                            className={cn(
+                                'flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors duration-200',
+                                currentVideo.id === video.id ? 'bg-primary/50' : 'hover:bg-primary/20'
+                            )}
+                            >
+                            <div className="relative w-24 h-14 bg-secondary rounded-md overflow-hidden flex-shrink-0">
+                                <Image src={video.thumbnail} alt={video.title} layout="fill" objectFit="cover" data-ai-hint={video.hint} />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="font-semibold text-foreground truncate">{video.title}</p>
+                                <p className="text-xs text-muted-foreground">{video.creator}</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{video.duration}</p>
+                            {currentVideo.id === video.id && isPlaying && (
+                                <Music4 className="w-5 h-5 text-accent animate-float" />
+                            )}
+                            </div>
+                        ))}
+                        </div>
+                    </CardContent>
+                </ScrollArea>
+                </Card>
             </div>
         </div>
-      </div>
-
-      {/* Playlist */}
-      <div className="flex-[2] flex flex-col">
-        <h3 className="text-xl font-bold mb-2 text-accent tracking-wider">Playlist</h3>
-        <Card className="flex-1 bg-transparent border-primary/30">
-          <ScrollArea className="h-full w-full">
-            <CardContent className="p-2">
-                <div className="flex flex-col gap-2">
-                {playlist.map((video) => (
-                    <div
-                    key={video.id}
-                    onClick={() => handleSelectVideo(video)}
-                    className={cn(
-                        'flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors duration-200',
-                        currentVideo.id === video.id ? 'bg-primary/50' : 'hover:bg-primary/20'
-                    )}
-                    >
-                    <div className="relative w-24 h-14 bg-secondary rounded-md overflow-hidden flex-shrink-0">
-                        <Image src={video.thumbnail} alt={video.title} layout="fill" objectFit="cover" data-ai-hint={video.hint} />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="font-semibold text-foreground truncate">{video.title}</p>
-                        <p className="text-xs text-muted-foreground">{video.creator}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{video.duration}</p>
-                    {currentVideo.id === video.id && isPlaying && (
-                        <Music4 className="w-5 h-5 text-accent animate-float" />
-                    )}
-                    </div>
-                ))}
-                </div>
-            </CardContent>
-          </ScrollArea>
-        </Card>
-      </div>
     </div>
   );
 }
