@@ -17,6 +17,7 @@ import { get, set } from '@/lib/idb';
 import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
+import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -124,43 +125,45 @@ function DesktopContent() {
     }
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center">
-            <Toaster />
-            {/* Main Content Area */}
-            <div className="flex-1 w-full relative">
+        <DesktopActionsProvider openApp={openApp}>
+            <div className="flex-1 flex flex-col items-center justify-center">
+                <Toaster />
+                {/* Main Content Area */}
+                <div className="flex-1 w-full relative">
+                    <AnimatePresence>
+                        {selectedApp ? <AppWindow /> : <Dashboard />}
+                    </AnimatePresence>
+                </div>
+
+                {/* App Library Overlay */}
                 <AnimatePresence>
-                    {selectedApp ? <AppWindow /> : <Dashboard />}
+                    {isLibraryOpen && (
+                        <AppLauncher
+                            onSelectApp={openApp}
+                            onClose={() => setLibraryOpen(false)}
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Dock */}
+                <AnimatePresence>
+                    {!isLibraryOpen && (
+                        <motion.div
+                            className="w-full flex justify-center p-4 z-30"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <Dock
+                                onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                                onOpenApp={openApp}
+                            />
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             </div>
-
-            {/* App Library Overlay */}
-            <AnimatePresence>
-                {isLibraryOpen && (
-                    <AppLauncher
-                        onSelectApp={openApp}
-                        onClose={() => setLibraryOpen(false)}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* Dock */}
-            <AnimatePresence>
-                {!isLibraryOpen && (
-                    <motion.div
-                        className="w-full flex justify-center p-4 z-30"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <Dock
-                            onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                            onOpenApp={openApp}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+        </DesktopActionsProvider>
     );
 }
 

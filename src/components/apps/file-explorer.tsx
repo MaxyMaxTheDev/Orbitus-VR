@@ -7,6 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Folder, File, Server, Home, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { allApps } from '@/lib/apps-config';
+import { useDesktopActions } from '@/contexts/desktop-actions-context';
+import { useToast } from '@/hooks/use-toast';
 
 type FileSystemItem = {
   name: string;
@@ -24,9 +27,10 @@ const mockFileSystem: Record<string, FileSystemItem[]> = {
     { name: 'README.txt', type: 'file', size: '2 KB', lastModified: '2099-01-01', content: 'Welcome to XenovaVR.\n\nThis is a virtual operating system designed to be a customizable home environment.\nUse the dock below to launch applications and explore your new digital world.' },
   ],
   apps: [
-    { name: 'Browser.app', type: 'folder', size: '150 MB', lastModified: '2099-03-12' },
-    { name: 'SculptVR.app', type: 'folder', size: '320 MB', lastModified: '2099-03-10' },
-    { name: 'ThemeStudio.app', type: 'folder', size: '50 MB', lastModified: '2099-03-11' },
+    { name: 'Browser.app', type: 'file', size: '150 MB', lastModified: '2099-03-12' },
+    { name: 'SculptVR.app', type: 'file', size: '320 MB', lastModified: '2099-03-10' },
+    { name: 'Theme Studio.app', type: 'file', size: '50 MB', lastModified: '2099-03-11' },
+    { name: 'System Monitor.app', type: 'file', size: '120 MB', lastModified: '2099-03-13' },
   ],
   system: [
     { name: 'kernel.bin', type: 'file', size: '2.1 GB', lastModified: '2099-03-14', content: '01001011 01000101 01010010 01001110 01000101 01001100\n494e4954 2e2e2e2e 564f4944 2e2e2e2e 4c4f4144 494e47\n... [BINARY DATA REDACTED FOR SECURITY] ...' },
@@ -53,6 +57,8 @@ const mockFileSystem: Record<string, FileSystemItem[]> = {
 export function FileExplorer() {
   const [currentPath, setCurrentPath] = useState<string[]>(['root']);
   const [viewingFile, setViewingFile] = useState<FileSystemItem | null>(null);
+  const { openApp } = useDesktopActions();
+  const { toast } = useToast();
   
   const currentDirectory = currentPath[currentPath.length - 1];
   const items = mockFileSystem[currentDirectory as keyof typeof mockFileSystem] || [];
@@ -70,6 +76,18 @@ export function FileExplorer() {
   const handleDoubleClick = (item: FileSystemItem) => {
     if (item.type === 'folder') {
       navigateTo(item.name);
+    } else if (item.name.endsWith('.app')) {
+      const appName = item.name.replace('.app', '');
+      const appExists = allApps.some(app => app.name === appName);
+      if (appExists) {
+        openApp(appName);
+      } else {
+        toast({
+            variant: "destructive",
+            title: "Application Not Found",
+            description: `The app "${appName}" could not be found in your library.`
+        });
+      }
     } else {
       setViewingFile(item);
     }
