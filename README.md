@@ -31,16 +31,6 @@ GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID_HERE"
 GOOGLE_CLIENT_SECRET="YOUR_GOOGLE_CLIENT_SECRET_HERE"
 ```
 
-### Yahoo Authentication (for Mail App)
-
-*   Go to the [Verizon Media Developer Network](https://developer.verizonmedia.com/developer/login) to create a new app.
-*   You will need a **Client ID** and a **Client Secret**.
-
-```
-YAHOO_CLIENT_ID="YOUR_YAHOO_CLIENT_ID_HERE"
-YAHOO_CLIENT_SECRET="YOUR_YAHOO_CLIENT_SECRET_HERE"
-```
-
 ### NextAuth.js Configuration
 
 *   `next-auth` requires a secret key to sign session cookies. You can generate a random string for this. A quick way is to run `openssl rand -base64 32` in your terminal.

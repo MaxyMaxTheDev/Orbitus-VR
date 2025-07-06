@@ -1,7 +1,6 @@
 
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import YahooProvider from 'next-auth/providers/yahoo';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,10 +15,6 @@ export const authOptions: NextAuthOptions = {
           scope: 'openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.readonly',
         },
       },
-    }),
-    YahooProvider({
-        clientId: process.env.YAHOO_CLIENT_ID as string,
-        clientSecret: process.env.YAHOO_CLIENT_SECRET as string,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,

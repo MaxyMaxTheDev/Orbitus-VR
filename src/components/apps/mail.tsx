@@ -36,10 +36,6 @@ export function MailApp() {
                 <GoogleIcon />
                 Sign in with Google
             </Button>
-            <Button onClick={() => signIn('yahoo')} size="lg" className="w-full sm:w-auto bg-[#6001d2] hover:bg-[#5001b0] text-white">
-                <MailIcon />
-                Sign in with Yahoo
-            </Button>
         </div>
       </div>
     );
