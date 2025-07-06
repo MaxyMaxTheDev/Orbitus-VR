@@ -11,19 +11,14 @@ interface XenovaVRDBSchema extends DBSchema {
   };
 }
 
-let dbPromise: Promise<IDBPDatabase<XenovaVRDBSchema>> | null = null;
-
-function getDb() {
-    if (!dbPromise) {
-        dbPromise = openDB<XenovaVRDBSchema>(DB_NAME, DB_VERSION, {
-            upgrade(db) {
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME);
-                }
-            },
-        });
-    }
-    return dbPromise;
+function getDb(): Promise<IDBPDatabase<XenovaVRDBSchema>> {
+  return openDB<XenovaVRDBSchema>(DB_NAME, DB_VERSION, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    },
+  });
 }
 
 export async function get<T>(key: string): Promise<T | undefined> {
