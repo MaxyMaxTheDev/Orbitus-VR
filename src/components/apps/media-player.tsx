@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,13 +9,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, Music4 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Import the coded video components
+import { 
+  XenovaTrailer,
+  OrbitalStage,
+  SculptingWorlds,
+  DeepDive,
+  CyberSamurai,
+  DysonSphere
+} from '@/components/videos';
+
+// Update the playlist to use components instead of video files
 const playlist = [
-  { id: 1, title: 'XenovaVR Launch Trailer', creator: 'XenovaVR', duration: '9:56', thumbnail: 'https://placehold.co/1280x720.png', hint: 'futuristic city', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4' },
-  { id: 2, title: 'Live from the Orbital Stage', creator: 'DJ Hyperion', duration: '0:15', thumbnail: 'https://placehold.co/1280x720.png', hint: 'concert lights', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4' },
-  { id: 3, title: 'Sculpting Worlds in VR', creator: 'Ana Digital', duration: '1:00', thumbnail: 'https://placehold.co/1280x720.png', hint: '3d modeling', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4' },
-  { id: 4, title: 'Deep Dive: Mariana Trench', creator: 'ExploreVR', duration: '0:15', thumbnail: 'https://placehold.co/1280x720.png', hint: 'underwater bioluminescence', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4' },
-  { id: 5, title: 'Cyber-Samurai: The Movie', creator: 'Synthwave Pictures', duration: '14:48', thumbnail: 'https://placehold.co/1280x720.png', hint: 'samurai neon', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4' },
-  { id: 6, title: 'How to build a Dyson Sphere', creator: 'Cosmo Engineer', duration: '12:14', thumbnail: 'https://placehold.co/1280x720.png', hint: 'dyson sphere', videoSrc: 'https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4' },
+  { id: 1, title: 'XenovaVR Launch Trailer', creator: 'XenovaVR', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: 'futuristic city', component: XenovaTrailer },
+  { id: 2, title: 'Live from the Orbital Stage', creator: 'DJ Hyperion', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: 'concert lights', component: OrbitalStage },
+  { id: 3, title: 'Sculpting Worlds in VR', creator: 'Ana Digital', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: '3d modeling', component: SculptingWorlds },
+  { id: 4, title: 'Deep Dive: Mariana Trench', creator: 'ExploreVR', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: 'underwater bioluminescence', component: DeepDive },
+  { id: 5, title: 'Cyber-Samurai: The Movie', creator: 'Synthwave Pictures', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: 'samurai neon', component: CyberSamurai },
+  { id: 6, title: 'How to build a Dyson Sphere', creator: 'Cosmo Engineer', duration: 'Loop', thumbnail: 'https://placehold.co/1280x720.png', hint: 'dyson sphere', component: DysonSphere },
 ];
 
 type Video = typeof playlist[0];
@@ -23,7 +34,6 @@ type Video = typeof playlist[0];
 export function MediaPlayer() {
   const [currentVideo, setCurrentVideo] = useState<Video>(playlist[0]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleNext = useCallback(() => {
     const currentIndex = playlist.findIndex(v => v.id === currentVideo.id);
@@ -32,65 +42,7 @@ export function MediaPlayer() {
     setIsPlaying(true);
   }, [currentVideo.id]);
 
-  // This effect handles the video source and playback state
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    // If the video source is different, update it and load
-    if (video.src !== currentVideo.videoSrc) {
-        video.src = currentVideo.videoSrc;
-        video.load();
-    }
-    
-    // Control play/pause
-    if (isPlaying) {
-      video.play().catch(e => {
-        // Autoplay might be blocked
-        console.error("Video play failed:", e)
-        setIsPlaying(false); // Update state if play fails
-      });
-    } else {
-      video.pause();
-    }
-
-  }, [isPlaying, currentVideo]);
-
-  // This effect handles event listeners on the video element
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const onEnded = () => handleNext();
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-
-    video.addEventListener('ended', onEnded);
-    video.addEventListener('play', onPlay);
-    video.addEventListener('pause', onPause);
-    
-    return () => {
-      video.removeEventListener('ended', onEnded);
-      video.removeEventListener('play', onPlay);
-      video.removeEventListener('pause', onPause);
-    };
-  }, [handleNext]);
-
-
-  const handleSelectVideo = (video: Video) => {
-    if (currentVideo.id !== video.id) {
-        setCurrentVideo(video);
-        setIsPlaying(true);
-    } else {
-        setIsPlaying(!isPlaying);
-    }
-  };
-
   const handlePrev = () => {
-    if (videoRef.current && videoRef.current.currentTime > 3) {
-      videoRef.current.currentTime = 0;
-      return;
-    }
     const currentIndex = playlist.findIndex(v => v.id === currentVideo.id);
     const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
     setCurrentVideo(playlist[prevIndex]);
@@ -101,24 +53,24 @@ export function MediaPlayer() {
     setIsPlaying(!isPlaying);
   };
 
+  const handleSelectVideo = (video: Video) => {
+    if (currentVideo.id !== video.id) {
+        setCurrentVideo(video);
+        setIsPlaying(true);
+    } else {
+        togglePlay();
+    }
+  };
+
+  const VideoComponent = currentVideo.component;
+
   return (
     <div className="h-full w-full overflow-y-auto">
         <div className="flex flex-col lg:flex-row p-4 gap-4">
             {/* Main Player */}
             <div className="lg:flex-[3] flex flex-col gap-4">
-                <Card className="w-full aspect-video bg-black rounded-lg overflow-hidden border-primary/30 relative">
-                    <video
-                        ref={videoRef}
-                        className="w-full h-full object-contain cursor-pointer"
-                        poster={currentVideo.thumbnail}
-                        onClick={togglePlay}
-                        onDoubleClick={(e) => e.currentTarget.requestFullscreen()}
-                        playsInline
-                        key={currentVideo.videoSrc}
-                    >
-                        <source src={currentVideo.videoSrc} type="video/mp4" />
-                        Your browser does not support the video tag.
-                    </video>
+                <Card className="w-full aspect-video bg-black rounded-lg overflow-hidden border-primary/30 relative cursor-pointer" onClick={togglePlay}>
+                   <VideoComponent isPlaying={isPlaying} />
                 </Card>
                 <div className="flex items-center justify-between">
                     <div>
@@ -126,13 +78,13 @@ export function MediaPlayer() {
                         <p className="text-md text-muted-foreground">{currentVideo.creator}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-full hover:bg-white/20">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handlePrev(); }} className="rounded-full hover:bg-white/20">
                             <SkipBack />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={togglePlay} className="w-14 h-14 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-14 h-14 rounded-full bg-accent text-accent-foreground hover:bg-accent/80">
                             {isPlaying ? <Pause className="w-8 h-8"/> : <Play className="w-8 h-8 ml-1" />}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={handleNext} className="rounded-full hover:bg-white/20">
+                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleNext(); }} className="rounded-full hover:bg-white/20">
                             <SkipForward />
                         </Button>
                     </div>
