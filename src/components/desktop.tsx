@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -83,9 +84,9 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-0 w-full h-full flex items-center justify-center z-20"
+                className="absolute inset-0 z-20 p-2"
             >
-                <div className="w-[98%] h-[calc(100%-2rem)] flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
+                <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
                         <div className="flex items-center gap-3">
                             <selectedApp.icon className="w-5 h-5 text-accent" />
@@ -148,7 +149,7 @@ function DesktopContent() {
                 <AnimatePresence>
                     {!isLibraryOpen && (
                         <motion.div
-                            className="w-full flex justify-center p-3 mb-2 z-30"
+                            className="w-full flex justify-center mb-3 z-30"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
