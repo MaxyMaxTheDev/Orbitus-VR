@@ -10,7 +10,7 @@ import { Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/contexts/settings-context';
 import { Button } from './ui/button';
-import { get } from '@/lib/idb';
+import { get, set } from '@/lib/idb';
 
 type AppLibraryProps = {
     onSelectApp: (appName: string) => void;
@@ -26,9 +26,22 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
         const fetchBanner = async () => {
             setIsLoading(true);
             setError(null);
+            const cacheKey = `banner-${app.name}`;
             try {
+                // 1. Check cache first
+                const cachedUrl = await get<string>(cacheKey);
+                if (cachedUrl) {
+                    setBannerUrl(cachedUrl);
+                    return; // Found in cache, no need to generate
+                }
+
+                // 2. If not in cache, generate
                 const result = await generateAppBanner({ appName: app.name, description: app.description });
                 setBannerUrl(result.imageUrl);
+
+                // 3. Save to cache for next time
+                await set(cacheKey, result.imageUrl);
+                
             } catch (e: any) {
                 setError(e.message || 'The AI failed to generate the banner.');
             } finally {
