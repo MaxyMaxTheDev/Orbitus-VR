@@ -149,7 +149,7 @@ function DesktopContent() {
                 <AnimatePresence>
                     {!isLibraryOpen && (
                         <motion.div
-                            className="w-full flex justify-center p-3 mb-5 z-30"
+                            className="w-full flex justify-center p-3 mb-2 z-30"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
