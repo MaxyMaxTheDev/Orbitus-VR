@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -86,7 +85,7 @@ function DesktopContent() {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="absolute inset-0 w-full h-full flex items-center justify-center z-20"
             >
-                <div className="w-[98%] h-[95%] flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
+                <div className="w-[98%] h-[98%] flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
                         <div className="flex items-center gap-3">
                             <selectedApp.icon className="w-5 h-5 text-accent" />
