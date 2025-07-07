@@ -1,4 +1,3 @@
-
 [
   {
     "username": "NexusUser",
@@ -11,5 +10,9 @@
   {
     "username": "Oracle",
     "password": "data"
+  },
+  {
+    "password": "Olowu2011@",
+    "username": "VirtualVortexYT"
   }
 ]
