@@ -7,15 +7,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {SignupInputSchema, SignupOutputSchema} from '../schemas';
 import type {SignupInput, SignupOutput} from '../schemas';
+import { findUserByUsername, addUser } from '@/lib/users';
 
 export type {SignupInput, SignupOutput};
-
-// In a real application, this would be a shared database module.
-const mockUsers = [
-  {username: 'NexusUser', password: 'password123'},
-  {username: 'SynthRider', password: 'synth'},
-  {username: 'Oracle', password: 'data'},
-];
 
 // Tool to check if a username already exists.
 const checkUsernameExists = ai.defineTool(
@@ -26,10 +20,8 @@ const checkUsernameExists = ai.defineTool(
     outputSchema: z.object({exists: z.boolean()}),
   },
   async ({username}) => {
-    const userExists = mockUsers.some(
-      u => u.username.toLowerCase() === username.toLowerCase()
-    );
-    return {exists: userExists};
+    const user = await findUserByUsername(username);
+    return {exists: !!user};
   }
 );
 
@@ -42,11 +34,12 @@ const createNewUser = ai.defineTool(
     inputSchema: SignupInputSchema,
     outputSchema: z.object({success: z.boolean()}),
   },
-  async newUser => {
-    // This simulates saving the new user to the database.
-    mockUsers.push(newUser);
-    console.log(`AI confirmed new user can be created: ${newUser.username}`);
-    return {success: true};
+  async (newUser) => {
+    const success = await addUser(newUser);
+    if (success) {
+      console.log(`AI confirmed new user can be created: ${newUser.username}`);
+    }
+    return {success};
   }
 );
 
@@ -92,14 +85,12 @@ const signupFlow = ai.defineFlow(
 
 export async function signup(input: SignupInput): Promise<SignupOutput> {
   if (!process.env.GOOGLE_API_KEY) {
-    console.warn('GOOGLE_API_KEY not set. Using mock signup validation.');
-    const userExists = mockUsers.some(
-      u => u.username.toLowerCase() === input.username.toLowerCase()
-    );
+    console.warn('GOOGLE_API_KEY not set. Using direct signup validation.');
+    const userExists = await findUserByUsername(input.username);
     if (userExists) {
       return {success: false, message: 'Username already taken.'};
     }
-    mockUsers.push(input);
+    await addUser(input);
     return {success: true, message: 'Account created successfully.'};
   }
   try {
@@ -107,15 +98,13 @@ export async function signup(input: SignupInput): Promise<SignupOutput> {
   } catch (e: any) {
     if (e.message?.includes('429')) {
       console.warn(
-        'Google AI quota exceeded. Falling back to mock signup validation.'
+        'Google AI quota exceeded. Falling back to direct signup validation.'
       );
-      const userExists = mockUsers.some(
-        u => u.username.toLowerCase() === input.username.toLowerCase()
-      );
+      const userExists = await findUserByUsername(input.username);
       if (userExists) {
         return {success: false, message: 'Username already taken.'};
       }
-      mockUsers.push(input);
+      await addUser(input);
       return {success: true, message: 'Account created successfully.'};
     }
     // Re-throw other errors

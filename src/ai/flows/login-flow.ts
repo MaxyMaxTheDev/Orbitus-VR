@@ -7,14 +7,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {LoginInputSchema, LoginOutputSchema} from '../schemas';
 import type {LoginInput, LoginOutput} from '../schemas';
+import { findUserByCredentials } from '@/lib/users';
 
 export type {LoginInput, LoginOutput};
-
-const mockUsers = [
-  {username: 'NexusUser', password: 'password123'},
-  {username: 'SynthRider', password: 'synth'},
-  {username: 'Oracle', password: 'data'},
-];
 
 // Define the tool for checking credentials. This simulates a database lookup.
 const checkUserCredentials = ai.defineTool(
@@ -30,9 +25,7 @@ const checkUserCredentials = ai.defineTool(
     }),
   },
   async ({username, password}) => {
-    const user = mockUsers.find(
-      u => u.username === username && u.password === password
-    );
+    const user = await findUserByCredentials({ username, password });
     return {isValid: !!user};
   }
 );
@@ -71,10 +64,8 @@ const loginFlow = ai.defineFlow(
 
 export async function login(input: LoginInput): Promise<LoginOutput> {
   if (!process.env.GOOGLE_API_KEY) {
-    console.warn('GOOGLE_API_KEY not set. Using mock login validation.');
-    const user = mockUsers.find(
-      u => u.username === input.username && u.password === input.password
-    );
+    console.warn('GOOGLE_API_KEY not set. Using direct login validation.');
+    const user = await findUserByCredentials(input);
     if (user) {
       return {success: true, message: 'Login successful.'};
     }
@@ -85,11 +76,9 @@ export async function login(input: LoginInput): Promise<LoginOutput> {
   } catch (e: any) {
     if (e.message?.includes('429')) {
       console.warn(
-        'Google AI quota exceeded. Falling back to mock login validation.'
+        'Google AI quota exceeded. Falling back to direct login validation.'
       );
-      const user = mockUsers.find(
-        u => u.username === input.username && u.password === input.password
-      );
+      const user = await findUserByCredentials(input);
       if (user) {
         return {success: true, message: 'Login successful.'};
       }
