@@ -84,7 +84,7 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-0 z-20 p-2"
+                className="absolute inset-0 z-20 px-2"
             >
                 <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
