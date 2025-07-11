@@ -235,7 +235,7 @@ export function OsSetup({ onComplete }: SetupProps) {
             <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-w-md space-y-8">
               <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">UI Scale Calibration</h1>
-                <p className="text-muted-foreground">Adjust the slider to make the interface comfortable for your screen.</p>
+                <p className="text-sm text-muted-foreground">Adjust the slider to make the interface comfortable to read.</p>
               </div>
 
               <div className="relative h-64 border-2 border-dashed border-border rounded-xl flex items-center justify-center p-4">
