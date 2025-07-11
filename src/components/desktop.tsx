@@ -85,7 +85,7 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-0 z-20 p-4"
+                className="absolute inset-x-0.5 top-0.5 bottom-0.5 z-20"
             >
                 <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
@@ -150,22 +150,24 @@ function DesktopContent() {
                 </AnimatePresence>
 
                 {/* Dock */}
-                <AnimatePresence>
-                    {!isLibraryOpen && (
-                        <motion.div
-                            className="w-full flex justify-center mb-5 z-30"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <Dock
-                                onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                                onOpenApp={openApp}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                <div className="flex-shrink-0 py-2">
+                    <AnimatePresence>
+                        {!isLibraryOpen && (
+                            <motion.div
+                                className="w-full flex justify-center z-30"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <Dock
+                                    onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                                    onOpenApp={openApp}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </DesktopActionsProvider>
     );
