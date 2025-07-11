@@ -19,6 +19,8 @@ type SettingsContextType = {
   setUsername: (name: string) => void;
   notificationPosition: NotificationPosition;
   setNotificationPosition: (position: NotificationPosition) => void;
+  uiScale: number;
+  setUiScale: (scale: number) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [showAppBanners, setShowAppBanners] = useState(true);
   const [username, setUsername] = useState("User");
   const [notificationPosition, setNotificationPosition] = useState<NotificationPosition>('bottom-right');
+  const [uiScale, setUiScale] = useState(100);
 
   // This effect runs once on mount to load settings from IndexedDB
   useEffect(() => {
@@ -45,6 +48,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const storedPosition = await get<NotificationPosition>('xenova-vr-notification-position');
         if (storedPosition) {
           setNotificationPosition(storedPosition);
+        }
+        
+        const storedUiScale = await get<number>('xenova-vr-ui-scale');
+        if (storedUiScale) {
+          setUiScale(storedUiScale);
         }
 
       } catch (error) {
@@ -72,6 +80,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     set('xenova-vr-notification-position', position).catch(e => console.error("Failed to save notification position to DB", e));
   };
 
+  // Handler to update state and IndexedDB for UI Scale
+  const handleSetUiScale = (scale: number) => {
+    setUiScale(scale);
+    set('xenova-vr-ui-scale', scale).catch(e => console.error("Failed to save ui scale to DB", e));
+  }
+
   return (
     <SettingsContext.Provider value={{ 
         showAppBanners, 
@@ -80,6 +94,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setUsername: handleSetUsername,
         notificationPosition,
         setNotificationPosition: handleSetNotificationPosition,
+        uiScale,
+        setUiScale: handleSetUiScale,
     }}>
       {children}
     </SettingsContext.Provider>

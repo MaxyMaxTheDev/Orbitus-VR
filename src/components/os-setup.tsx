@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,10 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, LogIn, User, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, LogIn, User, Loader2, Maximize, AppWindow } from 'lucide-react';
 import { XenovaVRLogo } from './icons/logo';
 import { login } from '@/ai/flows/login-flow';
 import { signup } from '@/ai/flows/signup-flow';
+import { Slider } from './ui/slider';
 
 type SetupProps = {
   onComplete: () => void;
@@ -19,7 +21,7 @@ type SetupProps = {
 export function OsSetup({ onComplete }: SetupProps) {
   const [step, setStep] = useState(0);
   const [accountStep, setAccountStep] = useState<'choice' | 'login' | 'register'>('choice');
-  const { username, setUsername, showAppBanners, setShowAppBanners } = useSettings();
+  const { username, setUsername, showAppBanners, setShowAppBanners, uiScale, setUiScale } = useSettings();
   const [password, setPassword] = useState('');
   
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -228,9 +230,54 @@ export function OsSetup({ onComplete }: SetupProps) {
             </Button>
           </motion.div>
         );
-      case 4: // Finish
+      case 4: // UI Scale
         return (
-          <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
+            <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-w-md space-y-8">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold font-headline">UI Scale Calibration</h1>
+                <p className="text-muted-foreground">Adjust the slider to make the interface comfortable for your screen.</p>
+              </div>
+
+              <div className="relative h-64 border-2 border-dashed border-border rounded-xl flex items-center justify-center p-4">
+                  <div
+                    className="w-full h-full transition-transform duration-200 ease-out"
+                    style={{ transform: `scale(${uiScale / 100})` }}
+                  >
+                    <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-lg">
+                        <header className="flex items-center gap-2 p-2 border-b border-border bg-card/50 rounded-t-lg">
+                            <AppWindow className="w-4 h-4 text-accent" />
+                            <span className="text-sm font-bold text-foreground">Sample Window</span>
+                        </header>
+                        <main className="flex-1 p-2">
+                           <div className="w-3/4 h-2 rounded-full bg-muted-foreground/30 mb-2"></div>
+                           <div className="w-1/2 h-2 rounded-full bg-muted-foreground/30"></div>
+                        </main>
+                    </div>
+                  </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-muted-foreground">
+                    <Maximize className="w-5 h-5" />
+                    <Slider
+                        value={[uiScale]}
+                        onValueChange={(value) => setUiScale(value[0])}
+                        min={75}
+                        max={125}
+                        step={5}
+                    />
+                    <Maximize className="w-8 h-8" />
+                </div>
+              </div>
+
+              <Button size="lg" onClick={handleNext} className="w-full">
+                Continue <ArrowRight className="ml-2" />
+              </Button>
+            </motion.div>
+          );
+      case 5: // Finish
+        return (
+          <motion.div key={5} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
             <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
                 <Check className="w-12 h-12 text-green-400" />
             </div>

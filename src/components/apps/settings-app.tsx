@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch';
 import { ImportModelDialog } from '@/components/settings-panel';
 import { useSettings, type NotificationPosition } from '@/contexts/settings-context';
 import { clearAll } from '@/lib/idb';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Maximize } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Slider } from '../ui/slider';
 
 export function SettingsApp() {
   const {
@@ -37,6 +38,8 @@ export function SettingsApp() {
     setUsername,
     notificationPosition,
     setNotificationPosition,
+    uiScale,
+    setUiScale,
   } = useSettings();
 
   const handlePowerwash = async () => {
@@ -79,7 +82,7 @@ export function SettingsApp() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
-              <Label htmlFor="show-banners" className="text-lg font-medium">
+              <Label htmlFor="show-banners" className="font-medium">
                 Show App Banners
               </Label>
               <Switch
@@ -88,6 +91,28 @@ export function SettingsApp() {
                 onCheckedChange={setShowAppBanners}
                 className="data-[state=checked]:bg-accent"
               />
+            </div>
+             <div className="space-y-2 p-4 rounded-lg bg-black/20">
+              <Label
+                htmlFor="ui-scale"
+                className="font-medium"
+              >
+                UI Scale ({uiScale}%)
+              </Label>
+               <div className="flex justify-between items-center gap-4 text-muted-foreground">
+                    <Maximize className="w-4 h-4" />
+                    <Slider
+                        id="ui-scale"
+                        value={[uiScale]}
+                        onValueChange={(value) =>
+                          setUiScale(value[0])
+                        }
+                        min={75}
+                        max={125}
+                        step={5}
+                    />
+                    <Maximize className="w-6 h-6" />
+                </div>
             </div>
           </CardContent>
         </Card>
@@ -137,7 +162,7 @@ export function SettingsApp() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
-              <Label className="text-lg font-medium">
+              <Label className="font-medium">
                 Custom Environment
               </Label>
               <ImportModelDialog />
