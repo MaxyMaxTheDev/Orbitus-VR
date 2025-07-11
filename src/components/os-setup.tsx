@@ -235,13 +235,16 @@ export function OsSetup({ onComplete }: SetupProps) {
             <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-w-md space-y-8">
               <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">UI Scale Calibration</h1>
-                <p className="text-sm text-muted-foreground">Adjust the slider to make the interface comfortable to read.</p>
+                <p className="text-sm text-muted-foreground">Adjust the slider for comfortable readability.</p>
               </div>
 
               <div className="relative h-64 border-2 border-dashed border-border rounded-xl flex items-center justify-center p-4">
-                  <div
-                    className="w-full h-full transition-transform duration-200 ease-out"
-                    style={{ transform: `scale(${uiScale / 100})` }}
+                  <motion.div
+                    className="w-full h-full"
+                    style={{ transform: `scale(var(--ui-scale))` }}
+                    initial={false}
+                    animate={{'--ui-scale': uiScale / 100} as any}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                   >
                     <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-sm border border-border rounded-lg shadow-lg">
                         <header className="flex items-center gap-2 p-2 border-b border-border bg-card/50 rounded-t-lg">
@@ -253,7 +256,7 @@ export function OsSetup({ onComplete }: SetupProps) {
                            <div className="w-1/2 h-2 rounded-full bg-muted-foreground/30"></div>
                         </main>
                     </div>
-                  </div>
+                  </motion.div>
               </div>
               
               <div className="space-y-4">
