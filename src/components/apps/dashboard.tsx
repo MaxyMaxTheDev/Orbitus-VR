@@ -18,7 +18,7 @@ export function Dashboard() {
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date();
-      setDate(now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+      setDate(now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }));
       setTime(now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }));
     };
     
@@ -67,51 +67,47 @@ export function Dashboard() {
 
   return (
     <div className="h-full w-full p-4 sm:p-6 overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         
-        <Card className="bg-card/50 border-border lg:col-span-1">
-           <CardHeader>
-            <CardTitle className="text-sm font-medium text-accent">WELCOME</CardTitle>
+        <Card className="bg-card/50 border-border lg:col-span-2">
+           <CardHeader className="p-3">
+            <CardTitle className="text-xs font-medium text-accent">WELCOME</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <User className="w-8 h-8 text-muted-foreground" />
+          <CardContent className="p-3 pt-0">
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-lg font-bold text-foreground">{username}</p>
-                <p className="text-xs text-muted-foreground">Virtual space ready.</p>
+                <p className="text-base font-bold text-foreground truncate">{username}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="lg:col-span-2 bg-card/50 border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent">AI INSIGHT</CardTitle>
-            <Bot className="w-4 h-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1">
+            <CardTitle className="text-xs font-medium text-accent">AI INSIGHT</CardTitle>
+            <Bot className="w-3 h-3 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="h-20">
+          <CardContent className="p-3 pt-0 min-h-[4rem] flex items-center">
             {isQuoteLoading ? (
                 <div className="flex items-center gap-2 text-muted-foreground h-full">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Generating insight...</span>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span className="text-xs">Generating...</span>
                 </div>
             ) : (
-                <div>
-                  <p className="text-base font-medium text-foreground">"{quote?.quote}"</p>
-                  <p className="text-xs text-muted-foreground text-right mt-1">- {quote?.author}</p>
-                </div>
+                <p className="text-xs font-medium text-foreground">"{quote?.quote}"</p>
             )}
           </CardContent>
         </Card>
         
         <Card className="bg-card/50 border-border lg:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent">SYSTEM TIME</CardTitle>
-            <Calendar className="w-4 h-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 pb-1">
+            <CardTitle className="text-xs font-medium text-accent">SYSTEM TIME</CardTitle>
+            <Calendar className="w-3 h-3 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground text-center">{time}</div>
-            <p className="text-xs text-muted-foreground text-center truncate">{date}</p>
+          <CardContent className="p-3 pt-0">
+            <div className="text-lg font-bold text-foreground text-center">{time}</div>
+            <p className="text-[10px] text-muted-foreground text-center truncate">{date}</p>
           </CardContent>
         </Card>
 
