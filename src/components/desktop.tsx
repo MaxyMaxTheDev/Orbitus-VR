@@ -85,7 +85,7 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-x-0.5 top-0.5 bottom-0.5 z-20"
+                className="absolute inset-x-0 top-0 bottom-[1px]"
             >
                 <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
@@ -127,13 +127,13 @@ function DesktopContent() {
 
     return (
         <DesktopActionsProvider openApp={openApp}>
-             <div 
-                className="flex-1 flex flex-col items-center justify-center"
-                style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}
-            >
+             <div className="h-screen w-screen flex flex-col items-center justify-center p-4" >
                 <Toaster />
                 {/* Main Content Area */}
-                <div className="flex-1 w-full relative">
+                <div 
+                    className="flex-1 w-full relative mb-2"
+                    style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}
+                >
                     <AnimatePresence>
                         {selectedApp ? <AppWindow /> : <Dashboard />}
                     </AnimatePresence>
@@ -150,11 +150,11 @@ function DesktopContent() {
                 </AnimatePresence>
 
                 {/* Dock */}
-                <div className="flex-shrink-0 py-2">
-                    <AnimatePresence>
+                <div className="flex-shrink-0 relative z-30">
+                     <AnimatePresence>
                         {!isLibraryOpen && (
                             <motion.div
-                                className="w-full flex justify-center z-30"
+                                className="w-full flex justify-center"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 20 }}

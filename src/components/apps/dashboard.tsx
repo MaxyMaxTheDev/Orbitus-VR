@@ -67,7 +67,7 @@ export function Dashboard() {
 
   return (
     <div className="h-full w-full p-4 sm:p-6 overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         <Card className="bg-card/50 border-border lg:col-span-1">
            <CardHeader>
@@ -75,10 +75,10 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <User className="w-10 h-10 text-muted-foreground" />
+              <User className="w-8 h-8 text-muted-foreground" />
               <div>
-                <p className="text-xl font-bold text-foreground">{username}</p>
-                <p className="text-xs text-muted-foreground">Your virtual space is ready.</p>
+                <p className="text-lg font-bold text-foreground">{username}</p>
+                <p className="text-xs text-muted-foreground">Virtual space ready.</p>
               </div>
             </div>
           </CardContent>
@@ -89,29 +89,29 @@ export function Dashboard() {
             <CardTitle className="text-sm font-medium text-accent">AI INSIGHT</CardTitle>
             <Bot className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="h-20">
             {isQuoteLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground h-16">
+                <div className="flex items-center gap-2 text-muted-foreground h-full">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Generating insight...</span>
                 </div>
             ) : (
-                <div className="h-16">
-                  <p className="text-lg font-medium text-foreground">"{quote?.quote}"</p>
-                  <p className="text-sm text-muted-foreground text-right mt-2">- {quote?.author}</p>
+                <div>
+                  <p className="text-base font-medium text-foreground">"{quote?.quote}"</p>
+                  <p className="text-xs text-muted-foreground text-right mt-1">- {quote?.author}</p>
                 </div>
             )}
           </CardContent>
         </Card>
         
-        <Card className="bg-card/50 border-border lg:col-span-3">
+        <Card className="bg-card/50 border-border lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-accent">SYSTEM TIME</CardTitle>
             <Calendar className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-5xl font-bold text-foreground text-center">{time}</div>
-            <p className="text-xs text-muted-foreground text-center">{date}</p>
+            <div className="text-3xl font-bold text-foreground text-center">{time}</div>
+            <p className="text-xs text-muted-foreground text-center truncate">{date}</p>
           </CardContent>
         </Card>
 
