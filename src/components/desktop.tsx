@@ -85,7 +85,7 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="absolute inset-x-0 top-0 bottom-[1px]"
+                className="w-full h-full"
             >
                 <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
@@ -122,21 +122,33 @@ function DesktopContent() {
     }
     
     if (!isSetupComplete) {
-        return <OsSetup onComplete={handleSetupComplete} />;
+        return (
+            <div 
+                className="h-screen w-screen flex items-center justify-center"
+                style={{ 
+                    transform: `scale(${uiScale / 100})`, 
+                    transformOrigin: 'center center',
+                    transition: 'transform 0.2s ease-out'
+                }}
+            >
+                 <OsSetup onComplete={handleSetupComplete} />
+            </div>
+        );
     }
 
     return (
         <DesktopActionsProvider openApp={openApp}>
-             <div className="h-screen w-screen flex flex-col items-center justify-center p-4" >
+             <div className="h-full w-full flex flex-col items-stretch p-2 pb-0" >
                 <Toaster />
                 {/* Main Content Area */}
                 <div 
-                    className="flex-1 w-full relative mb-2"
-                    style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}
+                    className="flex-1 w-full relative"
                 >
-                    <AnimatePresence>
-                        {selectedApp ? <AppWindow /> : <Dashboard />}
-                    </AnimatePresence>
+                    <div className="absolute inset-0.5" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
+                         <AnimatePresence>
+                            {selectedApp ? <AppWindow /> : <Dashboard />}
+                        </AnimatePresence>
+                    </div>
                 </div>
 
                 {/* App Library Overlay */}
@@ -150,7 +162,7 @@ function DesktopContent() {
                 </AnimatePresence>
 
                 {/* Dock */}
-                <div className="flex-shrink-0 relative z-30">
+                <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                      <AnimatePresence>
                         {!isLibraryOpen && (
                             <motion.div
