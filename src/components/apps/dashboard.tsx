@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuote, QuoteOutput } from '@/ai/flows/quote-flow';
 import { get, set } from '@/lib/idb';
-import { Calendar, Bot, Loader2 } from 'lucide-react';
+import { Calendar, Bot, Loader2, User } from 'lucide-react';
 import { useSettings } from '@/contexts/settings-context';
 
 export function Dashboard() {
@@ -67,16 +67,20 @@ export function Dashboard() {
 
   return (
     <div className="h-full w-full p-4 sm:p-6 overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <Card className="bg-card/50 border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-accent">SYSTEM TIME</CardTitle>
-            <Calendar className="w-4 h-4 text-muted-foreground" />
+        <Card className="bg-card/50 border-border lg:col-span-1">
+           <CardHeader>
+            <CardTitle className="text-sm font-medium text-accent">WELCOME</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-foreground">{time}</div>
-            <p className="text-xs text-muted-foreground">{date}</p>
+            <div className="flex items-center gap-3">
+              <User className="w-10 h-10 text-muted-foreground" />
+              <div>
+                <p className="text-xl font-bold text-foreground">{username}</p>
+                <p className="text-xs text-muted-foreground">Your virtual space is ready.</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -87,27 +91,30 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             {isQuoteLoading ? (
-                <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2 text-muted-foreground h-16">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Generating insight...</span>
                 </div>
             ) : (
-                <>
-                <p className="text-lg font-medium text-foreground">"{quote?.quote}"</p>
-                <p className="text-sm text-muted-foreground text-right mt-2">- {quote?.author}</p>
-                </>
+                <div className="h-16">
+                  <p className="text-lg font-medium text-foreground">"{quote?.quote}"</p>
+                  <p className="text-sm text-muted-foreground text-right mt-2">- {quote?.author}</p>
+                </div>
             )}
           </CardContent>
         </Card>
         
-        <Card className="md:col-span-3 bg-card/50 border-border">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-accent">WELCOME, {username.toUpperCase()}</CardTitle>
+        <Card className="bg-card/50 border-border lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-accent">SYSTEM TIME</CardTitle>
+            <Calendar className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-foreground/80">Your virtual space is ready. Launch apps from the dock below to begin your immersive experience. Customize your environment in the Theme Studio or chat with the AI Assistant.</p>
+            <div className="text-5xl font-bold text-foreground text-center">{time}</div>
+            <p className="text-xs text-muted-foreground text-center">{date}</p>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
