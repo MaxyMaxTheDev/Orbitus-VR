@@ -10,7 +10,7 @@ import { Search, Globe2, Loader2, FileText } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput } from '@/ai/schemas';
-import { SummarizeUrlInputSchema } from '@/ai/schemas';
+import { SummarizeUrlInputSchema }from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 
