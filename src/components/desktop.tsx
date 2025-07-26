@@ -8,7 +8,7 @@ import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X } from 'lucide-react';
+import { X, Minimize, Maximize } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
 import { useSettings } from '@/contexts/settings-context';
@@ -18,6 +18,7 @@ import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
+import { cn } from '@/lib/utils';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -77,6 +78,7 @@ function DesktopContent() {
         if (!selectedApp) return null;
 
         const AppContent = selectedApp.component;
+        const isBrowser = selectedApp.name === "Browser";
 
         return (
             <motion.div
@@ -85,10 +87,19 @@ function DesktopContent() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="w-full h-full"
+                className={cn(
+                    "w-full h-full",
+                    isBrowser && "fixed inset-0 z-40" // Fullscreen class
+                )}
             >
-                <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border rounded-2xl shadow-2xl shadow-black/30">
-                    <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 rounded-t-2xl flex-shrink-0">
+                <div className={cn(
+                    "w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border shadow-2xl shadow-black/30",
+                    isBrowser ? "rounded-none" : "rounded-2xl" // Fullscreen class
+                )}>
+                    <header className={cn(
+                        "flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0",
+                        isBrowser ? "rounded-none" : "rounded-t-2xl" // Fullscreen class
+                    )}>
                         <div className="flex items-center gap-3">
                             <selectedApp.icon className="w-5 h-5 text-accent" />
                             <span className="font-bold text-foreground">{selectedApp.name}</span>
@@ -97,7 +108,10 @@ function DesktopContent() {
                             <X className="w-5 h-5" />
                         </Button>
                     </header>
-                    <main className="flex-1 bg-black/10 overflow-hidden rounded-b-2xl">
+                    <main className={cn(
+                        "flex-1 bg-black/10 overflow-hidden",
+                        isBrowser ? "rounded-none" : "rounded-b-2xl" // Fullscreen class
+                    )}>
                         <AppContent />
                     </main>
                 </div>
