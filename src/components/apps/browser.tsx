@@ -87,17 +87,12 @@ export function Browser() {
     switch (viewMode) {
       case ViewMode.Browsing:
         return (
-          <>
-            <p className="text-xs text-muted-foreground text-center flex-shrink-0">
-              Note: For security reasons, many websites block being embedded. If the page below is blank, please try another URL or the Summarize function.
-            </p>
-            <iframe
-              src={displayUrl}
-              className="w-full h-full flex-1 rounded-lg border-2 border-primary/30"
-              title="Browser"
-              sandbox="allow-scripts allow-same-origin allow-forms"
-            />
-          </>
+          <iframe
+            src={displayUrl}
+            className="w-full h-full flex-1 rounded-lg border-2 border-primary/30"
+            title="Browser"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+          />
         );
       case ViewMode.Summarizing:
         return (

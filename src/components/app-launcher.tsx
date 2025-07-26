@@ -24,18 +24,20 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
 
     useEffect(() => {
         const fetchBanner = async () => {
+            const cacheKey = `banner-${app.name}`;
+            
+            // 1. Check cache first
+            const cachedUrl = await get<string>(cacheKey);
+            if (cachedUrl) {
+                setBannerUrl(cachedUrl);
+                setIsLoading(false);
+                return; // Found in cache, no need to generate
+            }
+
+            // 2. If not in cache, start loading and generate
             setIsLoading(true);
             setError(null);
-            const cacheKey = `banner-${app.name}`;
             try {
-                // 1. Check cache first
-                const cachedUrl = await get<string>(cacheKey);
-                if (cachedUrl) {
-                    setBannerUrl(cachedUrl);
-                    return; // Found in cache, no need to generate
-                }
-
-                // 2. If not in cache, generate
                 const result = await generateAppBanner({ appName: app.name, description: app.description });
                 setBannerUrl(result.imageUrl);
 
@@ -66,7 +68,7 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
                 </div>
 
                 {/* Banner Image State */}
-                {bannerUrl && !error && (
+                {bannerUrl && (
                     <div className={cn(
                         "absolute inset-0 transition-opacity duration-1000",
                         !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -75,8 +77,8 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
                     </div>
                 )}
 
-                {/* Error State */}
-                {error && (
+                {/* Error State (only shows if there's no bannerUrl) */}
+                {error && !bannerUrl && (
                      <div className={cn(
                         "absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-1000",
                         !isLoading ? "opacity-100" : "opacity-0 pointer-events-none"
