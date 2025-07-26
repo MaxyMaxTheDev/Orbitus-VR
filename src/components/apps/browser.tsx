@@ -13,6 +13,7 @@ import type { SummarizeUrlInput } from '@/ai/schemas';
 import { SummarizeUrlInputSchema }from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 enum ViewMode {
   Idle,
@@ -32,6 +33,7 @@ export function Browser() {
     handleSubmit,
     setError,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<SummarizeUrlInput>({
     resolver: zodResolver(SummarizeUrlInputSchema),
@@ -40,9 +42,15 @@ export function Browser() {
   const handleNavigation: SubmitHandler<SummarizeUrlInput> = async (data) => {
     setViewMode(ViewMode.Browsing);
     let userUrl = data.url.trim();
+    if (!userUrl) {
+      setError('url', { type: 'manual', message: 'Please enter a URL to browse.' });
+      setViewMode(ViewMode.Error);
+      return;
+    }
     if (!/^(https?:\/\/)/i.test(userUrl)) {
       userUrl = `https://${userUrl}`;
     }
+    setValue('url', userUrl);
 
     try {
       // Validate the final URL format
@@ -71,6 +79,7 @@ export function Browser() {
     if (!/^(https?:\/\/)/i.test(userUrl)) {
         userUrl = `https://${userUrl}`;
     }
+    setValue('url', userUrl);
     
     setViewMode(ViewMode.Summarizing);
     setViewContent('');
@@ -93,11 +102,9 @@ export function Browser() {
     switch (viewMode) {
       case ViewMode.Browsing:
         return (
-          <iframe
-            srcDoc={viewContent}
+          <div
             className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
-            title="Browser"
-            sandbox="allow-scripts allow-same-origin" // Sandboxed for security
+            dangerouslySetInnerHTML={{ __html: viewContent }}
           />
         );
       case ViewMode.Summarizing:
