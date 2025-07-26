@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Globe2, Loader2, FileText } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
-import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput } from '@/ai/schemas';
 import { SummarizeUrlInputSchema }from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +24,7 @@ enum ViewMode {
 
 export function Browser() {
   const [viewContent, setViewContent] = useState('');
+  const [currentUrl, setCurrentUrl] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Idle);
   const { toast } = useToast();
 
@@ -40,7 +40,6 @@ export function Browser() {
   });
 
   const handleNavigation: SubmitHandler<SummarizeUrlInput> = async (data) => {
-    setViewMode(ViewMode.Browsing);
     let userUrl = data.url.trim();
     if (!userUrl) {
       setError('url', { type: 'manual', message: 'Please enter a URL to browse.' });
@@ -50,20 +49,19 @@ export function Browser() {
     if (!/^(https?:\/\/)/i.test(userUrl)) {
       userUrl = `https://${userUrl}`;
     }
-    setValue('url', userUrl);
-
+    
     try {
-      // Validate the final URL format
       new URL(userUrl);
-      const result = await browseUrl({ url: userUrl });
-      setViewContent(result.html);
+      setValue('url', userUrl);
+      setCurrentUrl(userUrl);
+      setViewContent(''); // Clear previous content
       setViewMode(ViewMode.Browsing);
     } catch (error) {
       setError('url', {
         type: 'manual',
         message: 'Please enter a valid URL.',
       });
-      setViewContent('');
+      setCurrentUrl('');
       setViewMode(ViewMode.Error);
     }
   };
@@ -79,12 +77,14 @@ export function Browser() {
     if (!/^(https?:\/\/)/i.test(userUrl)) {
         userUrl = `https://${userUrl}`;
     }
-    setValue('url', userUrl);
     
-    setViewMode(ViewMode.Summarizing);
-    setViewContent('');
-
     try {
+      new URL(userUrl);
+      setValue('url', userUrl);
+      setCurrentUrl(userUrl); // Keep URL bar updated
+      setViewMode(ViewMode.Summarizing);
+      setViewContent('');
+
       const result = await summarizeUrl({ url: userUrl });
       setViewContent(result.summary);
       setViewMode(ViewMode.Summary);
@@ -102,10 +102,17 @@ export function Browser() {
     switch (viewMode) {
       case ViewMode.Browsing:
         return (
-          <div
-            className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
-            dangerouslySetInnerHTML={{ __html: viewContent }}
-          />
+          <>
+            <p className="text-xs text-muted-foreground text-center mb-2">
+              Note: For security reasons, many websites block being embedded. If the page below is blank, please try another URL or the Summarize function.
+            </p>
+            <iframe
+                src={currentUrl}
+                className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                title="Browser"
+            />
+          </>
         );
       case ViewMode.Summarizing:
         return (
@@ -116,8 +123,8 @@ export function Browser() {
         );
       case ViewMode.Summary:
         return (
-            <ScrollArea className="h-full">
-                <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap p-4">
+            <ScrollArea className="h-full border border-primary/30 rounded-lg p-4 bg-black/20">
+                <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap">
                     {viewContent}
                 </div>
             </ScrollArea>
