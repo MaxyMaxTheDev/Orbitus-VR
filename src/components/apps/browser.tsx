@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Globe2, Loader2, FileText } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
+import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput } from '@/ai/schemas';
 import { SummarizeUrlInputSchema } from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,8 +23,7 @@ enum ViewMode {
 }
 
 export function Browser() {
-  const [displayUrl, setDisplayUrl] = useState('');
-  const [summary, setSummary] = useState('');
+  const [viewContent, setViewContent] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Idle);
   const { toast } = useToast();
 
@@ -47,31 +47,37 @@ export function Browser() {
     try {
       // Validate the final URL format
       new URL(userUrl);
-      setDisplayUrl(userUrl);
+      const result = await browseUrl({ url: userUrl });
+      setViewContent(result.html);
+      setViewMode(ViewMode.Browsing);
     } catch (error) {
       setError('url', {
         type: 'manual',
         message: 'Please enter a valid URL.',
       });
-      setDisplayUrl('');
+      setViewContent('');
       setViewMode(ViewMode.Error);
     }
   };
   
   const handleSummarize = async () => {
     const data = getValues();
-    if (!data.url) {
+    let userUrl = data.url.trim();
+    if (!userUrl) {
       setError('url', { type: 'manual', message: 'Please enter a URL to summarize.' });
       setViewMode(ViewMode.Error);
       return;
     }
+    if (!/^(https?:\/\/)/i.test(userUrl)) {
+        userUrl = `https://${userUrl}`;
+    }
     
     setViewMode(ViewMode.Summarizing);
-    setSummary('');
+    setViewContent('');
 
     try {
-      const result = await summarizeUrl({ url: data.url });
-      setSummary(result.summary);
+      const result = await summarizeUrl({ url: userUrl });
+      setViewContent(result.summary);
       setViewMode(ViewMode.Summary);
     } catch (e: any) {
         toast({
@@ -88,10 +94,10 @@ export function Browser() {
       case ViewMode.Browsing:
         return (
           <iframe
-            src={displayUrl}
-            className="w-full h-full flex-1 rounded-lg border-2 border-primary/30"
+            srcDoc={viewContent}
+            className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
             title="Browser"
-            sandbox="allow-scripts allow-same-origin allow-forms"
+            sandbox="allow-scripts allow-same-origin" // Sandboxed for security
           />
         );
       case ViewMode.Summarizing:
@@ -105,7 +111,7 @@ export function Browser() {
         return (
             <ScrollArea className="h-full">
                 <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap p-4">
-                    {summary}
+                    {viewContent}
                 </div>
             </ScrollArea>
         );

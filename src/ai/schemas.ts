@@ -50,6 +50,14 @@ export const SummarizeUrlOutputSchema = z.object({
 });
 export type SummarizeUrlOutput = z.infer<typeof SummarizeUrlOutputSchema>;
 
+// For browse-url-flow.ts and browser.tsx
+export const BrowseUrlInputSchema = SummarizeUrlInputSchema;
+export type BrowseUrlInput = z.infer<typeof BrowseUrlInputSchema>;
+export const BrowseUrlOutputSchema = z.object({
+  html: z.string().describe('The HTML content of the URL.'),
+});
+export type BrowseUrlOutput = z.infer<typeof BrowseUrlOutputSchema>;
+
 // For vr-chat-flow.ts
 export const MessageSchema = z.object({
   author: z.string(),
