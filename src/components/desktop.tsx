@@ -8,7 +8,7 @@ import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X, Minimize, Maximize } from 'lucide-react';
+import { X } from 'lucide-react';
 
 import { allApps, type App } from '@/lib/apps-config';
 import { useSettings } from '@/contexts/settings-context';
@@ -94,11 +94,11 @@ function DesktopContent() {
             >
                 <div className={cn(
                     "w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border shadow-2xl shadow-black/30",
-                    isBrowser ? "rounded-none" : "rounded-2xl" // Fullscreen class
+                    isBrowser ? "rounded-none" : "rounded-2xl"
                 )}>
                     <header className={cn(
                         "flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0",
-                        isBrowser ? "rounded-none" : "rounded-t-2xl" // Fullscreen class
+                        isBrowser ? "rounded-none" : "rounded-t-2xl"
                     )}>
                         <div className="flex items-center gap-3">
                             <selectedApp.icon className="w-5 h-5 text-accent" />
@@ -110,7 +110,7 @@ function DesktopContent() {
                     </header>
                     <main className={cn(
                         "flex-1 bg-black/10 overflow-hidden",
-                        isBrowser ? "rounded-none" : "rounded-b-2xl" // Fullscreen class
+                        isBrowser ? "rounded-none" : "rounded-b-2xl"
                     )}>
                         <AppContent />
                     </main>
@@ -158,7 +158,7 @@ function DesktopContent() {
                 <div 
                     className="flex-1 w-full relative"
                 >
-                    <div className="absolute inset-0.5" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
+                    <div className="absolute inset-0" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
                          <AnimatePresence>
                             {selectedApp ? <AppWindow /> : <Dashboard />}
                         </AnimatePresence>
