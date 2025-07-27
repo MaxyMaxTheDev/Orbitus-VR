@@ -80,31 +80,9 @@ function DesktopContent() {
 
         const AppContent = selectedApp.component;
         
-        // Handle Browser fullscreen separately
+        // Browser is handled outside this component to be truly fullscreen
         if (selectedApp.name === "Browser") {
-            return (
-                <motion.div
-                    key={selectedApp.name}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="fixed inset-0 z-40 flex flex-col bg-card"
-                >
-                    <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0">
-                        <div className="flex items-center gap-3">
-                            <selectedApp.icon className="w-5 h-5 text-accent" />
-                            <span className="font-bold text-foreground">{selectedApp.name}</span>
-                        </div>
-                        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-white/10" onClick={closeApp}>
-                            <X className="w-5 h-5" />
-                        </Button>
-                    </header>
-                    <main className="flex-1 bg-black/10 overflow-hidden">
-                        <Browser />
-                    </main>
-                </motion.div>
-            )
+            return null;
         }
 
         // Standard window for all other apps
@@ -165,9 +143,37 @@ function DesktopContent() {
             </div>
         );
     }
+    
+    const isBrowserOpen = selectedApp?.name === "Browser";
 
     return (
         <DesktopActionsProvider openApp={openApp}>
+             <AnimatePresence>
+                {isBrowserOpen && selectedApp && (
+                     <motion.div
+                        key="browser-fullscreen"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed inset-0 z-40 flex flex-col bg-card"
+                    >
+                        <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                <selectedApp.icon className="w-5 h-5 text-accent" />
+                                <span className="font-bold text-foreground">{selectedApp.name}</span>
+                            </div>
+                            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-white/10" onClick={closeApp}>
+                                <X className="w-5 h-5" />
+                            </Button>
+                        </header>
+                        <main className="flex-1 bg-black/10 overflow-hidden">
+                           <Browser />
+                        </main>
+                    </motion.div>
+                )}
+             </AnimatePresence>
+
              <div className="h-full w-full flex flex-col items-stretch p-2 pb-0" >
                 <Toaster />
                 {/* Main Content Area */}
@@ -176,7 +182,7 @@ function DesktopContent() {
                 >
                     <div className="absolute inset-0" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
                          <AnimatePresence>
-                            {selectedApp ? <AppWindow /> : <Dashboard />}
+                            {selectedApp && !isBrowserOpen ? <AppWindow /> : <Dashboard />}
                         </AnimatePresence>
                     </div>
                 </div>
@@ -194,7 +200,7 @@ function DesktopContent() {
                 {/* Dock */}
                 <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                      <AnimatePresence>
-                        {(!isLibraryOpen && selectedApp?.name !== 'Browser') && (
+                        {(!isLibraryOpen && !isBrowserOpen) && (
                             <motion.div
                                 className="w-full flex justify-center"
                                 initial={{ opacity: 0, y: 20 }}
