@@ -6,13 +6,13 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
-import type { SummarizeUrlInput } from '@/ai/schemas';
-import { SummarizeUrlInputSchema }from '@/ai/schemas';
+import { browseUrl } from '@/ai/flows/browse-url-flow';
+import type { SummarizeUrlInput, BrowseUrlInput } from '@/ai/schemas';
+import { SummarizeUrlInputSchema } from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 enum ViewMode {
   Idle,
@@ -38,53 +38,66 @@ export function Browser() {
   } = useForm<SummarizeUrlInput>({
     resolver: zodResolver(SummarizeUrlInputSchema),
   });
+  
+  const normalizeUrl = (url: string) => {
+    let userUrl = url.trim();
+    if (!userUrl) return null;
 
-  const handleNavigation: SubmitHandler<SummarizeUrlInput> = async (data) => {
-    let userUrl = data.url.trim();
-    if (!userUrl) {
-      setError('url', { type: 'manual', message: 'Please enter a URL to browse.' });
-      setViewMode(ViewMode.Error);
-      return;
-    }
     if (!/^(https?:\/\/)/i.test(userUrl)) {
       userUrl = `https://${userUrl}`;
     }
     
     try {
       new URL(userUrl);
-      setValue('url', userUrl);
-      setCurrentUrl(userUrl);
-      setViewContent(''); // Clear previous content
-      setViewMode(ViewMode.Browsing);
+      return userUrl;
     } catch (error) {
-      setError('url', {
-        type: 'manual',
-        message: 'Please enter a valid URL.',
-      });
-      setCurrentUrl('');
+      return null;
+    }
+  }
+
+  const handleNavigation: SubmitHandler<SummarizeUrlInput> = async (data) => {
+    const userUrl = normalizeUrl(data.url);
+    if (!userUrl) {
+      setError('url', { type: 'manual', message: 'Please enter a valid URL.' });
       setViewMode(ViewMode.Error);
+      return;
+    }
+    
+    setValue('url', userUrl);
+    setCurrentUrl(userUrl);
+    setViewContent('');
+    setViewMode(ViewMode.Browsing);
+    
+    try {
+        const result = await browseUrl({ url: userUrl });
+        setViewContent(result.html);
+    } catch (e: any) {
+         toast({
+            variant: 'destructive',
+            title: 'Browsing Failed',
+            description: e.message || 'The server could not load the URL.',
+        });
+        setViewContent(`<h1>Failed to load page</h1><p>${e.message}</p>`);
+        setViewMode(ViewMode.Error);
     }
   };
   
   const handleSummarize = async () => {
     const data = getValues();
-    let userUrl = data.url.trim();
+    const userUrl = normalizeUrl(data.url);
+
     if (!userUrl) {
       setError('url', { type: 'manual', message: 'Please enter a URL to summarize.' });
       setViewMode(ViewMode.Error);
       return;
     }
-    if (!/^(https?:\/\/)/i.test(userUrl)) {
-        userUrl = `https://${userUrl}`;
-    }
     
-    try {
-      new URL(userUrl);
-      setValue('url', userUrl);
-      setCurrentUrl(userUrl); // Keep URL bar updated
-      setViewMode(ViewMode.Summarizing);
-      setViewContent('');
+    setValue('url', userUrl);
+    setCurrentUrl(userUrl);
+    setViewMode(ViewMode.Summarizing);
+    setViewContent('');
 
+    try {
       const result = await summarizeUrl({ url: userUrl });
       setViewContent(result.summary);
       setViewMode(ViewMode.Summary);
@@ -102,17 +115,17 @@ export function Browser() {
     switch (viewMode) {
       case ViewMode.Browsing:
         return (
-          <>
-            <p className="text-xs text-muted-foreground text-center mb-2">
-              Note: For security reasons, many websites block being embedded. If the page below is blank, please try another URL or the Summarize function.
-            </p>
-            <iframe
-                src={currentUrl}
-                className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
-                sandbox="allow-scripts allow-same-origin allow-forms"
-                title="Browser"
+          viewContent 
+          ? <iframe
+              srcDoc={viewContent}
+              className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
+              sandbox="allow-forms allow-same-origin" // Stripping scripts, so sandbox is for extra safety
+              title="Browser"
             />
-          </>
+          : <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
+              <Loader2 className="w-16 h-16 animate-spin text-accent" />
+              <p className="text-lg font-headline tracking-widest text-accent">CONNECTING TO SERVER...</p>
+            </div>
         );
       case ViewMode.Summarizing:
         return (
@@ -129,8 +142,16 @@ export function Browser() {
                 </div>
             </ScrollArea>
         );
-      case ViewMode.Idle:
       case ViewMode.Error:
+         return (
+          <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 rounded-lg p-4">
+            <ServerCrash className="w-24 h-24" strokeWidth={1}/>
+            <h3 className="text-xl font-bold font-headline">Connection Error</h3>
+            <p className="text-center">The requested URL could not be loaded by the server.</p>
+            <div className="mt-2 text-xs font-mono p-2 bg-black/30 rounded w-full text-center truncate">{currentUrl}</div>
+          </div>
+        )
+      case ViewMode.Idle:
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
