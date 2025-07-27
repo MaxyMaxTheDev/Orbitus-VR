@@ -118,8 +118,8 @@ export function Browser() {
           viewContent 
           ? <iframe
               srcDoc={viewContent}
-              className="w-full h-full flex-1 rounded-lg border-2 border-primary/30 bg-white"
-              sandbox="allow-forms allow-same-origin" // Stripping scripts, so sandbox is for extra safety
+              className="w-full h-full flex-1 bg-white"
+              sandbox="allow-forms allow-same-origin allow-popups"
               title="Browser"
             />
           : <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">

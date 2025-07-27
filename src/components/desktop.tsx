@@ -19,6 +19,7 @@ import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
 import { cn } from '@/lib/utils';
+import { Browser } from './apps/browser';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -78,28 +79,19 @@ function DesktopContent() {
         if (!selectedApp) return null;
 
         const AppContent = selectedApp.component;
-        const isBrowser = selectedApp.name === "Browser";
-
-        return (
-            <motion.div
-                key={selectedApp.name}
-                initial={{ opacity: 0, scale: 0.95, y: 50 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 50 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className={cn(
-                    "w-full h-full",
-                    isBrowser && "fixed inset-0 z-40" // Fullscreen class
-                )}
-            >
-                <div className={cn(
-                    "w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border shadow-2xl shadow-black/30",
-                    isBrowser ? "rounded-none" : "rounded-2xl"
-                )}>
-                    <header className={cn(
-                        "flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0",
-                        isBrowser ? "rounded-none" : "rounded-t-2xl"
-                    )}>
+        
+        // Handle Browser fullscreen separately
+        if (selectedApp.name === "Browser") {
+            return (
+                <motion.div
+                    key={selectedApp.name}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="fixed inset-0 z-40 flex flex-col bg-card"
+                >
+                    <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0">
                         <div className="flex items-center gap-3">
                             <selectedApp.icon className="w-5 h-5 text-accent" />
                             <span className="font-bold text-foreground">{selectedApp.name}</span>
@@ -108,10 +100,34 @@ function DesktopContent() {
                             <X className="w-5 h-5" />
                         </Button>
                     </header>
-                    <main className={cn(
-                        "flex-1 bg-black/10 overflow-hidden",
-                        isBrowser ? "rounded-none" : "rounded-b-2xl"
-                    )}>
+                    <main className="flex-1 bg-black/10 overflow-hidden">
+                        <Browser />
+                    </main>
+                </motion.div>
+            )
+        }
+
+        // Standard window for all other apps
+        return (
+            <motion.div
+                key={selectedApp.name}
+                initial={{ opacity: 0, scale: 0.95, y: 50 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 50 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="w-full h-full"
+            >
+                <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border shadow-2xl shadow-black/30 rounded-2xl">
+                    <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0 rounded-t-2xl">
+                        <div className="flex items-center gap-3">
+                            <selectedApp.icon className="w-5 h-5 text-accent" />
+                            <span className="font-bold text-foreground">{selectedApp.name}</span>
+                        </div>
+                        <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-white/10" onClick={closeApp}>
+                            <X className="w-5 h-5" />
+                        </Button>
+                    </header>
+                    <main className="flex-1 bg-black/10 overflow-hidden rounded-b-2xl">
                         <AppContent />
                     </main>
                 </div>
@@ -178,7 +194,7 @@ function DesktopContent() {
                 {/* Dock */}
                 <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                      <AnimatePresence>
-                        {!isLibraryOpen && (
+                        {(!isLibraryOpen && selectedApp?.name !== 'Browser') && (
                             <motion.div
                                 className="w-full flex justify-center"
                                 initial={{ opacity: 0, y: 20 }}
