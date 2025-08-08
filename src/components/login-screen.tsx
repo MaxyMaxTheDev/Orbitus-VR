@@ -7,10 +7,9 @@ import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogIn } from 'lucide-react';
+import { Loader2, LogIn, User } from 'lucide-react';
 import { login } from '@/ai/flows/login-flow';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { User } from 'lucide-react';
 
 type LoginScreenProps = {
   onLoginSuccess: () => void;
@@ -18,7 +17,8 @@ type LoginScreenProps = {
 };
 
 export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenProps) {
-  const { username } = useSettings();
+  const { username: contextUsername, setUsername: setContextUsername } = useSettings();
+  const [username, setUsername] = useState(contextUsername);
   const [password, setPassword] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +31,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     try {
       const result = await login({ username, password });
       if (result.success) {
+        setContextUsername(username); // Update context with the signed-in user
         onLoginSuccess();
       } else {
         setError(result.message);
@@ -42,6 +43,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       setIsLoading(false);
     }
   };
+  
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSignIn();
+    }
+  }
 
   const variants = {
     enter: { opacity: 1, y: 0 },
@@ -63,9 +70,20 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
             </AvatarFallback>
         </Avatar>
 
-        <h1 className="text-2xl font-bold font-headline">Welcome back, {username}</h1>
+        <h1 className="text-2xl font-bold font-headline">Sign In</h1>
         
         <div className="space-y-4 text-left">
+          <div>
+            <Label htmlFor="username-login">Username</Label>
+            <Input
+              id="username-login"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              onKeyDown={onKeyDown}
+            />
+          </div>
           <div>
             <Label htmlFor="password-login">Password</Label>
             <Input
@@ -74,15 +92,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSignIn();
-              }}
+              onKeyDown={onKeyDown}
             />
           </div>
         </div>
         
-        <Button size="lg" className="w-full" onClick={handleSignIn} disabled={password.trim() === '' || isLoading}>
+        <Button size="lg" className="w-full" onClick={handleSignIn} disabled={username.trim() === '' || password.trim() === '' || isLoading}>
           {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2" /> Sign In</>}
         </Button>
         
