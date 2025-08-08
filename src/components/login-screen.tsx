@@ -62,7 +62,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         initial="initial"
         animate="enter"
         transition={{ duration: 0.5, ease: 'easeInOut' }}
-        className="text-center w-full max-w-sm space-y-6"
+        className="text-center w-full max-w-sm space-y-8"
       >
         <Avatar className="w-24 h-24 mx-auto border-4 border-primary">
             <AvatarFallback className="bg-primary/20 text-primary">
@@ -103,7 +103,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         
         {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground pt-4">
             Don't have an account? <Button variant="link" className="p-0" onClick={onSwitchToSignUp}>Create one</Button>
         </p>
       </motion.div>
