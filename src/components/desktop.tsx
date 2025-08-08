@@ -20,6 +20,9 @@ import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
 import { cn } from '@/lib/utils';
 import { Browser } from './apps/browser';
+import { SystemBar } from './system-bar';
+import { SystemOverlay } from './system-overlay';
+import { LoginScreen } from './login-screen';
 
 function DesktopContent() {
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
@@ -28,19 +31,25 @@ function DesktopContent() {
     const [isLoading, setIsLoading] = useState(true);
     const [progress, setProgress] = useState(0);
     const { uiScale } = useSettings();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [systemAction, setSystemAction] = useState<'shutdown' | 'restart' | null>(null);
 
     useEffect(() => {
-        const checkSetupStatus = async () => {
+        const checkSystemState = async () => {
             const setupFlag = await get<boolean>('xenova-vr-setup-complete');
-            // Add a small delay to make the boot screen visible
+            const loggedInFlag = await get<boolean>('xenova-vr-is-logged-in');
+            
             setTimeout(() => {
-                if (setupFlag === true) {
+                if (setupFlag) {
                     setIsSetupComplete(true);
+                }
+                if (loggedInFlag) {
+                    setIsLoggedIn(true);
                 }
                 setIsLoading(false);
             }, 1500);
         };
-        checkSetupStatus();
+        checkSystemState();
     }, []);
 
     useEffect(() => {
@@ -60,7 +69,29 @@ function DesktopContent() {
 
     const handleSetupComplete = async () => {
         await set('xenova-vr-setup-complete', true);
+        await set('xenova-vr-is-logged-in', true);
         setIsSetupComplete(true);
+        setIsLoggedIn(true);
+    };
+
+    const handleLoginSuccess = async () => {
+        await set('xenova-vr-is-logged-in', true);
+        setIsLoggedIn(true);
+    };
+    
+    const handleSignOut = async () => {
+        await set('xenova-vr-is-logged-in', false);
+        setIsLoggedIn(false);
+    };
+
+    const handleRestart = () => {
+        setSystemAction('restart');
+        setTimeout(() => window.location.reload(), 1500);
+    };
+
+    const handleShutdown = () => {
+        setSystemAction('shutdown');
+        setTimeout(() => window.close(), 1500);
     };
 
     const openApp = (appName: string) => {
@@ -130,24 +161,23 @@ function DesktopContent() {
     }
     
     if (!isSetupComplete) {
-        return (
-            <div 
-                className="h-screen w-screen flex items-center justify-center"
-                style={{ 
-                    transform: `scale(${uiScale / 100})`, 
-                    transformOrigin: 'center center',
-                    transition: 'transform 0.2s ease-out'
-                }}
-            >
-                 <OsSetup onComplete={handleSetupComplete} />
-            </div>
-        );
+        return <OsSetup onComplete={handleSetupComplete} />;
+    }
+    
+    if (!isLoggedIn) {
+        return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     }
     
     const isBrowserOpen = selectedApp?.name === "Browser";
 
     return (
         <DesktopActionsProvider openApp={openApp}>
+            <AnimatePresence>
+                {systemAction && <SystemOverlay action={systemAction} />}
+            </AnimatePresence>
+            
+            <SystemBar onSignOut={handleSignOut} onRestart={handleRestart} onShutdown={handleShutdown} />
+
              <AnimatePresence>
                 {isBrowserOpen && selectedApp && (
                      <motion.div

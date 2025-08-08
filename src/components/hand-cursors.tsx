@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -47,7 +48,7 @@ export function HandCursors() {
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 pointer-events-none z-50 w-8 h-8"
+      className="fixed top-0 left-0 pointer-events-none z-[9999] w-8 h-8"
     >
       <div className="relative w-full h-full">
         <div className="absolute inset-0 w-full h-full rounded-full bg-primary/20 animate-pulse" />
