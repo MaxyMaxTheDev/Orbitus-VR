@@ -100,9 +100,6 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                 </Button>
                 {signupError && <p className="text-sm text-destructive">{signupError}</p>}
                 <p className="text-sm text-muted-foreground">
-                    This creates an account to save your settings within XenovaVR.
-                </p>
-                <p className="text-sm text-muted-foreground">
                     Already have an account? <Button variant="link" className="p-0" onClick={onSwitchToLogin}>Sign in</Button>
                 </p>
             </motion.div>
