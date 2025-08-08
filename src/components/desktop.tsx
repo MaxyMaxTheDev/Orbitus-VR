@@ -33,18 +33,17 @@ function DesktopContent() {
     const { uiScale } = useSettings();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [systemAction, setSystemAction] = useState<'shutdown' | 'restart' | null>(null);
+    const [showLoginScreen, setShowLoginScreen] = useState(false);
 
     useEffect(() => {
         const checkSystemState = async () => {
             const setupFlag = await get<boolean>('xenova-vr-setup-complete');
-            const loggedInFlag = await get<boolean>('xenova-vr-is-logged-in');
             
             setTimeout(() => {
                 if (setupFlag) {
                     setIsSetupComplete(true);
-                }
-                if (loggedInFlag) {
-                    setIsLoggedIn(true);
+                    // If setup is done, default to showing the login screen.
+                    setShowLoginScreen(true);
                 }
                 setIsLoading(false);
             }, 1500);
@@ -60,7 +59,6 @@ function DesktopContent() {
                     clearInterval(interval);
                     return 100;
                 }
-                // Update progress to fill up in 1.5 seconds
                 return prev + 100 / (1500 / 50); 
             });
         }, 50);
@@ -69,19 +67,17 @@ function DesktopContent() {
 
     const handleSetupComplete = async () => {
         await set('xenova-vr-setup-complete', true);
-        await set('xenova-vr-is-logged-in', true);
         setIsSetupComplete(true);
         setIsLoggedIn(true);
     };
 
     const handleLoginSuccess = async () => {
-        await set('xenova-vr-is-logged-in', true);
         setIsLoggedIn(true);
     };
     
     const handleSignOut = async () => {
-        await set('xenova-vr-is-logged-in', false);
         setIsLoggedIn(false);
+        setShowLoginScreen(true); // Always go to login screen on sign out.
     };
 
     const handleRestart = () => {
@@ -111,12 +107,10 @@ function DesktopContent() {
 
         const AppContent = selectedApp.component;
         
-        // Browser is handled outside this component to be truly fullscreen
         if (selectedApp.name === "Browser") {
             return null;
         }
 
-        // Standard window for all other apps
         return (
             <motion.div
                 key={selectedApp.name}
@@ -160,12 +154,11 @@ function DesktopContent() {
         );
     }
     
-    if (!isSetupComplete) {
-        return <OsSetup onComplete={handleSetupComplete} />;
-    }
-    
-    if (!isLoggedIn) {
-        return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+    if (!isSetupComplete || !isLoggedIn) {
+        if (showLoginScreen) {
+             return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setShowLoginScreen(false)} />;
+        }
+        return <OsSetup onComplete={handleSetupComplete} onSwitchToLogin={() => setShowLoginScreen(true)} />;
     }
     
     const isBrowserOpen = selectedApp?.name === "Browser";
@@ -206,7 +199,6 @@ function DesktopContent() {
 
              <div className="h-full w-full flex flex-col items-stretch p-2 pb-0" >
                 <Toaster />
-                {/* Main Content Area */}
                 <div 
                     className="flex-1 w-full relative"
                 >
@@ -216,8 +208,6 @@ function DesktopContent() {
                         </AnimatePresence>
                     </div>
                 </div>
-
-                {/* App Library Overlay */}
                 <AnimatePresence>
                     {isLibraryOpen && (
                         <AppLauncher
@@ -226,8 +216,6 @@ function DesktopContent() {
                         />
                     )}
                 </AnimatePresence>
-
-                {/* Dock */}
                 <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                      <AnimatePresence>
                         {(!isLibraryOpen && !isBrowserOpen) && (

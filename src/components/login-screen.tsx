@@ -8,17 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, LogIn } from 'lucide-react';
-import { XenovaVRLogo } from './icons/logo';
 import { login } from '@/ai/flows/login-flow';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { User } from 'lucide-react';
 
 type LoginScreenProps = {
   onLoginSuccess: () => void;
+  onSwitchToSignUp: () => void;
 };
 
-export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-  const { username, setUsername } = useSettings();
+export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenProps) {
+  const { username } = useSettings();
   const [password, setPassword] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +89,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <p className="text-sm text-muted-foreground">
-            Not {username}? <Button variant="link" className="p-0" onClick={() => window.location.reload()}>Use a different account</Button>
+            Don't have an account? <Button variant="link" className="p-0" onClick={onSwitchToSignUp}>Create one</Button>
         </p>
       </motion.div>
     </div>

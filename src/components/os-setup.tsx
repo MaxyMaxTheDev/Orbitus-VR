@@ -15,9 +15,10 @@ import { Slider } from './ui/slider';
 
 type SetupProps = {
   onComplete: () => void;
+  onSwitchToLogin: () => void;
 };
 
-export function OsSetup({ onComplete }: SetupProps) {
+export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [step, setStep] = useState(0);
   const { username, setUsername, showAppBanners, setShowAppBanners, uiScale, setUiScale } = useSettings();
   const [password, setPassword] = useState('');
@@ -100,6 +101,9 @@ export function OsSetup({ onComplete }: SetupProps) {
                 {signupError && <p className="text-sm text-destructive">{signupError}</p>}
                 <p className="text-sm text-muted-foreground">
                     This creates an account to save your settings within XenovaVR.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    Already have an account? <Button variant="link" className="p-0" onClick={onSwitchToLogin}>Sign in</Button>
                 </p>
             </motion.div>
         );
