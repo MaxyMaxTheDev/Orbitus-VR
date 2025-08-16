@@ -2,11 +2,21 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { LoginInput } from '@/ai/schemas';
 
-const usersFilePath = path.join(process.cwd(), 'users.json');
+const dataDir = path.join(process.cwd(), '.data');
+const usersFilePath = path.join(dataDir, 'users.json');
 
 type User = LoginInput;
 
+async function ensureDataDirExists() {
+  try {
+    await fs.mkdir(dataDir, { recursive: true });
+  } catch (error) {
+    console.error("Could not create .data directory", error);
+  }
+}
+
 async function getUsers(): Promise<User[]> {
+  await ensureDataDirExists();
   try {
     const data = await fs.readFile(usersFilePath, 'utf-8');
     return JSON.parse(data);
@@ -27,6 +37,7 @@ async function getUsers(): Promise<User[]> {
 }
 
 async function saveUsers(users: User[]): Promise<void> {
+  await ensureDataDirExists();
   await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
 }
 
