@@ -62,29 +62,33 @@ const loginFlow = ai.defineFlow(
   }
 );
 
+// This is the primary function exported and called by the UI.
 export async function login(input: LoginInput): Promise<LoginOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
-    console.warn('GOOGLE_API_KEY not set. Using direct login validation.');
+  const fallbackLogin = async () => {
     const user = await findUserByCredentials(input);
     if (user) {
       return {success: true, message: 'Login successful.'};
     }
     return {success: false, message: 'Incorrect username or password.'};
+  };
+
+  if (!process.env.GOOGLE_API_KEY) {
+    console.warn('GOOGLE_API_KEY not set. Using direct login validation.');
+    return fallbackLogin();
   }
+
   try {
-    return await loginFlow(input);
+    // Give the AI a short timeout to respond. If it fails, use the fallback.
+    const result = await Promise.race([
+        loginFlow(input),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('AI Timeout')), 5000))
+    ]);
+    return result as LoginOutput;
   } catch (e: any) {
-    if (e.message?.includes('429')) {
-      console.warn(
-        'Google AI quota exceeded. Falling back to direct login validation.'
-      );
-      const user = await findUserByCredentials(input);
-      if (user) {
-        return {success: true, message: 'Login successful.'};
-      }
-      return {success: false, message: 'Incorrect username or password.'};
-    }
-    // Re-throw other errors
-    throw e;
+    console.warn(
+        'AI-assisted login failed. Falling back to direct validation.',
+        e.message
+    );
+    return fallbackLogin();
   }
 }
