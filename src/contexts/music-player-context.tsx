@@ -21,6 +21,7 @@ type MusicPlayerContextType = {
     progress: number;
     duration: number;
     currentTime: number;
+    hasPlayed: boolean;
     togglePlayPause: () => void;
     selectTrack: (track: Track) => void;
     skipNext: () => void;
@@ -38,6 +39,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
+    const [hasPlayed, setHasPlayed] = useState(false); // New state to track if music has ever played
     const audioRef = useRef<HTMLAudioElement>(null);
 
     const skipNext = useCallback(() => {
@@ -85,10 +87,12 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     }, [isPlaying, currentTrack.src]);
 
     const togglePlayPause = () => {
+        if (!hasPlayed) setHasPlayed(true);
         setIsPlaying(prev => !prev);
     };
     
     const selectTrack = (track: Track) => {
+        if (!hasPlayed) setHasPlayed(true);
         setCurrentTrack(track);
     };
     
@@ -121,6 +125,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
             progress,
             duration,
             currentTime,
+            hasPlayed,
             togglePlayPause,
             selectTrack,
             skipNext,
