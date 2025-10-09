@@ -17,6 +17,8 @@ type AppLibraryProps = {
     onClose: () => void;
 }
 
+const SCULPT_VR_BANNER_URL = "https://storage.googleapis.com/aifire-app-files-public/images/sculpt-vr-banner.png";
+
 function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appName: string) => void; }) {
     const [bannerUrl, setBannerUrl] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +26,13 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
 
     useEffect(() => {
         const fetchBanner = async () => {
+            // Special case for SculptVR to use the static banner
+            if (app.name === 'SculptVR') {
+                setBannerUrl(SCULPT_VR_BANNER_URL);
+                setIsLoading(false);
+                return;
+            }
+
             const cacheKey = `banner-${app.name}`;
             
             // 1. Check cache first
