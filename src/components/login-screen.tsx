@@ -64,7 +64,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         transition={{ duration: 0.5, ease: 'easeInOut' }}
         className="text-center w-full max-w-sm flex-1 flex flex-col justify-center"
       >
-        <div className="space-y-6">
+        <div className="space-y-6 mb-10">
             <Avatar className="w-24 h-24 mx-auto border-4 border-primary">
                 <AvatarFallback className="bg-primary/20 text-primary">
                     <User className="w-12 h-12" />
@@ -74,7 +74,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
             <h1 className="text-2xl font-bold font-headline">Sign In</h1>
         </div>
         
-        <div className="space-y-6 text-left mt-10">
+        <div className="space-y-6 text-left">
           <div>
             <Label htmlFor="username-login">Username</Label>
             <Input
