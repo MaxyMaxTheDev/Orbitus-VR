@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, ShieldAlert } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlInput } from '@/ai/schemas';
@@ -20,6 +20,7 @@ enum ViewMode {
   Summarizing,
   Summary,
   Error,
+  IframeBlocked,
 }
 
 export function Browser() {
@@ -71,6 +72,11 @@ export function Browser() {
     try {
         const result = await browseUrl({ url: userUrl });
         setViewContent(result.html);
+        // This is a heuristic: if we get content but it's very small, it might be an error page.
+        // A better check is to see if the iframe loads.
+        if (result.html.length < 200 && result.html.includes("Error")) {
+          setViewMode(ViewMode.Error);
+        }
     } catch (e: any) {
          toast({
             variant: 'destructive',
@@ -110,7 +116,37 @@ export function Browser() {
         setViewMode(ViewMode.Idle);
     }
   }
+
+  useEffect(() => {
+    if (viewMode !== ViewMode.Browsing || !viewContent) return;
+
+    // Heuristic to detect if the iframe was blocked by X-Frame-Options.
+    // We set a timeout. If the iframe's content hasn't loaded (and it's still blank),
+    // we assume it was blocked.
+    const timer = setTimeout(() => {
+      // A truly blank iframe loaded via srcDoc will have a body but no other elements.
+      // This is a rough check.
+      if (document.querySelector('iframe')?.contentDocument?.body?.childElementCount === 0) {
+        setViewMode(ViewMode.IframeBlocked);
+      }
+    }, 2000); // 2-second timeout
+
+    return () => clearTimeout(timer);
+  }, [viewContent, viewMode]);
   
+  const handleFixConnection = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    let url = '';
+
+    if (userAgent.includes("firefox")) {
+      url = 'https://addons.mozilla.org/en-US/firefox/addon/ignore-x-frame-options-header/';
+    } else { // Assume Chrome or other Chromium-based browsers
+      url = 'https://chromewebstore.google.com/detail/ignore-x-frame-headers/gleekbfjekiniecknbkamfmkohkpodhe';
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const renderContent = () => {
     switch (viewMode) {
       case ViewMode.Browsing:
@@ -119,7 +155,7 @@ export function Browser() {
           ? <iframe
               srcDoc={viewContent}
               className="w-full h-full flex-1 bg-white"
-              sandbox="allow-forms allow-same-origin allow-popups"
+              sandbox="allow-forms allow-same-origin allow-popups allow-scripts" // allow-scripts for sites that need it
               title="Browser"
             />
           : <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
@@ -141,6 +177,19 @@ export function Browser() {
                     {viewContent}
                 </div>
             </ScrollArea>
+        );
+      case ViewMode.IframeBlocked:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-foreground gap-4 bg-destructive/10 rounded-lg p-4 text-center">
+            <ShieldAlert className="w-24 h-24 text-destructive" strokeWidth={1}/>
+            <h3 className="text-xl font-bold font-headline">Connection Refused</h3>
+            <p className="max-w-md">The website at <span className="font-mono text-accent bg-black/20 p-1 rounded">{currentUrl}</span> is preventing it from being displayed here.</p>
+            <p className="text-sm text-muted-foreground">This is often due to a security setting called 'X-Frame-Options'. You can install a browser extension to bypass this for browsing within XenovaVR.</p>
+            <Button onClick={handleFixConnection} className='mt-4'>
+                <Download className="mr-2 h-4 w-4" />
+                Get Browser Extension
+            </Button>
+          </div>
         );
       case ViewMode.Error:
          return (
