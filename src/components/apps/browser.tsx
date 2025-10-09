@@ -6,7 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Download } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Wrench } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import type { SummarizeUrlInput } from '@/ai/schemas';
 import { SummarizeUrlInputSchema } from '@/ai/schemas';
@@ -183,7 +183,7 @@ export function Browser() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button type="button" onClick={handleFixConnection} size="icon" variant="secondary" title="Fix Connection Issues">
-                  <Download className="w-4 h-4" />
+                  <Wrench className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent><p>Get extension to fix connection issues</p></TooltipContent>
