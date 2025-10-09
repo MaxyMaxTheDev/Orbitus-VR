@@ -18,5 +18,9 @@
   {
     "username": "VirtualVortexDEV",
     "password": "admin"
+  },
+  {
+    "username": "Guest",
+    "password": "nul"
   }
 ]
