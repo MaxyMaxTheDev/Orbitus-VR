@@ -23,11 +23,32 @@ async function getUsers(): Promise<User[]> {
   } catch (error: any) {
     if (error.code === 'ENOENT') {
       // File doesn't exist, return initial mock users and create the file
-      const initialUsers = [
-        {username: 'NexusUser', password: 'password123'},
-        {username: 'SynthRider', password: 'synth'},
-        {username: 'Oracle', password: 'data'},
-      ];
+      const initialUsers: User[] = [
+          {
+            "username": "NexusUser",
+            "password": "password123"
+          },
+          {
+            "username": "SynthRider",
+            "password": "synth"
+          },
+          {
+            "username": "Oracle",
+            "password": "data"
+          },
+          {
+            "password": "Olowu2011@",
+            "username": "VirtualVortexYT"
+          },
+          {
+            "username": "VirtualVortexDEV",
+            "password": "admin"
+          },
+          {
+            "username": "Guest",
+            "password": "nul"
+          }
+        ];
       await fs.writeFile(usersFilePath, JSON.stringify(initialUsers, null, 2));
       return initialUsers;
     }
