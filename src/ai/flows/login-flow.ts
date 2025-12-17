@@ -11,7 +11,7 @@ export type {LoginInput, LoginOutput};
 
 // This is the primary function exported and called by the UI.
 export async function login(input: LoginInput): Promise<LoginOutput> {
-    const user = findUserByCredentials(input);
+    const user = await findUserByCredentials(input);
     if (user) {
       return {success: true, message: 'Login successful.'};
     }
