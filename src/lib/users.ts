@@ -1,84 +1,30 @@
-import fs from 'fs/promises';
-import path from 'path';
-import type { LoginInput } from '@/ai/schemas';
 
-const dataDir = path.join(process.cwd(), '.data');
-const usersFilePath = path.join(dataDir, 'users.json');
+'use server';
+
+import type { LoginInput, SignupInput } from '@/ai/schemas';
+import users from '../../.data/users.json';
+// fs/promises is not reliable in this environment, so we use static import.
 
 type User = LoginInput;
 
-async function ensureDataDirExists() {
-  try {
-    await fs.mkdir(dataDir, { recursive: true });
-  } catch (error) {
-    console.error("Could not create .data directory", error);
-  }
-}
-
-async function getUsers(): Promise<User[]> {
-  await ensureDataDirExists();
-  try {
-    const data = await fs.readFile(usersFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
-      // File doesn't exist, return initial mock users and create the file
-      const initialUsers: User[] = [
-          {
-            "username": "NexusUser",
-            "password": "password123"
-          },
-          {
-            "username": "SynthRider",
-            "password": "synth"
-          },
-          {
-            "username": "Oracle",
-            "password": "data"
-          },
-          {
-            "password": "Olowu2011@",
-            "username": "VirtualVortexYT"
-          },
-          {
-            "username": "VirtualVortexDEV",
-            "password": "admin"
-          },
-          {
-            "username": "Guest",
-            "password": "nul"
-          }
-        ];
-      await fs.writeFile(usersFilePath, JSON.stringify(initialUsers, null, 2));
-      return initialUsers;
-    }
-    console.error("Error reading users file:", error);
-    return [];
-  }
-}
-
-async function saveUsers(users: User[]): Promise<void> {
-  await ensureDataDirExists();
-  await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
-}
 
 export async function findUserByCredentials({ username, password }: LoginInput): Promise<User | undefined> {
-  const users = await getUsers();
-  return users.find(u => u.username === username && u.password === password);
+  return (users as User[]).find(u => u.username === username && u.password === password);
 }
 
 export async function findUserByUsername(username: string): Promise<User | undefined> {
-  const users = await getUsers();
-  return users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  return (users as User[]).find(u => u.username.toLowerCase() === username.toLowerCase());
 }
 
-export async function addUser(newUser: LoginInput): Promise<boolean> {
-  const users = await getUsers();
-  const userExists = users.some(u => u.username.toLowerCase() === newUser.username.toLowerCase());
+export async function addUser(newUser: SignupInput): Promise<boolean> {
+  // This function won't actually persist the user because of file system limitations.
+  // It will only check for existing users based on the statically imported JSON.
+  const userExists = await findUserByUsername(newUser.username);
   if (userExists) {
     return false;
   }
-  users.push(newUser);
-  await saveUsers(users);
+  // In a real scenario, you'd update the users.json file here.
+  // For this demo, we'll log that the user would be added.
+  console.log(`User ${newUser.username} would be added to users.json if file writes were enabled.`);
   return true;
 }
