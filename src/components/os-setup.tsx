@@ -48,22 +48,29 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
       
       handleNext();
     } catch (error: any) {
-      let message = "An unknown error occurred.";
+      let message = "An unknown error occurred. Please try again.";
        if (error.code) {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            message = 'This email address is already in use.';
+            message = 'This email address is already in use by another account.';
             break;
           case 'auth/invalid-email':
-            message = 'Please enter a valid email address.';
+            message = 'The email address you entered is not valid.';
             break;
           case 'auth/weak-password':
             message = 'The password is too weak. Please use at least 6 characters.';
             break;
+          case 'auth/operation-not-allowed':
+            message = 'Email/Password sign-up is not enabled. Please enable it in your Firebase project console.';
+            break;
           default:
-            message = 'An error occurred during sign up. Please try again.';
+            // For development, it's helpful to see the actual error code.
+            message = `An unexpected error occurred: ${error.code}. Please check your Firebase configuration.`;
             break;
         }
+      } else if (error.message) {
+        // Fallback for other types of errors
+        message = error.message;
       }
       setSignupError(message);
     } finally {

@@ -43,15 +43,20 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           case 'auth/user-not-found':
           case 'auth/wrong-password':
           case 'auth/invalid-credential':
-            message = 'Incorrect email or password.';
+            message = 'Incorrect email or password. Please try again.';
             break;
           case 'auth/invalid-email':
-            message = 'Please enter a valid email address.';
+            message = 'The email address you entered is not valid.';
             break;
+          case 'auth/operation-not-allowed':
+             message = 'Email/Password sign-in is not enabled for this project.';
+             break;
           default:
-            message = 'An error occurred during login. Please try again.';
+            message = `Login failed: ${err.code}. Please check your Firebase configuration and try again.`;
             break;
         }
+      } else if (err.message) {
+        message = err.message;
       }
       setError(message);
     } finally {
