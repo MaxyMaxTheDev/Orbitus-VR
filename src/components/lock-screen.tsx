@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { ArrowUp, LogIn } from 'lucide-react';
 import { getTip, TipOutput } from '@/ai/flows/tip-flow';
 import { get, set } from '@/lib/idb';
+import Image from 'next/image';
 
 type LockScreenProps = {
     onUnlock: () => void;
@@ -64,19 +65,27 @@ function TipOfTheDay() {
 export function LockScreen({ onUnlock }: LockScreenProps) {
     return (
         <motion.div
-            className="absolute inset-0 z-50 bg-background flex flex-col items-center justify-between p-8"
+            className="absolute inset-0 z-50 flex flex-col items-center justify-between p-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
         >
+            <Image
+                alt="Grassy hill with a blue sky"
+                src="https://picsum.photos/seed/grassy-hill/1920/1080"
+                layout="fill"
+                objectFit="cover"
+                data-ai-hint="grassy hill"
+                className="z-0"
+            />
             {/* Background overlay */}
-            <div className="absolute inset-0 bg-black/50" />
+            <div className="absolute inset-0 bg-black/50 z-10" />
             
             {/* Spacer */}
-            <div />
+            <div className="relative z-20" />
 
             {/* Main Content */}
-            <div className="relative flex flex-col items-center gap-12">
+            <div className="relative z-20 flex flex-col items-center gap-12">
                 <Clock />
                 <TipOfTheDay />
             </div>
@@ -91,7 +100,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                         onUnlock();
                     }
                 }}
-                className="relative flex flex-col items-center gap-4"
+                className="relative z-20 flex flex-col items-center gap-4"
             >
                 <motion.div 
                     className="flex flex-col items-center gap-1 text-white/80"
