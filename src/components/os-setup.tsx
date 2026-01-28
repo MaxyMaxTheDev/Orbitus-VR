@@ -10,8 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, User, Loader2, Maximize, AppWindow } from 'lucide-react';
 import { XenovaVRLogo } from './icons/logo';
-import { signup } from '@/ai/flows/signup-flow';
 import { Slider } from './ui/slider';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 
 type SetupProps = {
   onComplete: () => void;
@@ -21,10 +22,12 @@ type SetupProps = {
 export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [step, setStep] = useState(0);
   const { username, setUsername, showAppBanners, setShowAppBanners, uiScale, setUiScale } = useSettings();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
+  const auth = useAuth();
 
   const handleNext = () => setStep(s => s + 1);
 
@@ -33,19 +36,36 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   };
 
   const handleSignUp = async () => {
-    if (username.trim() === '' || password.trim() === '') return;
+    if (username.trim() === '' || password.trim() === '' || email.trim() === '') return;
     setIsSigningUp(true);
     setSignupError(null);
     try {
-      const result = await signup({ username, password });
-      if (result.success) {
-        handleNext();
-      } else {
-        setSignupError(result.message);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: username });
+      
+      // On successful signup, update settings context
+      setUsername(username);
+      
+      handleNext();
+    } catch (error: any) {
+      let message = "An unknown error occurred.";
+       if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            message = 'This email address is already in use.';
+            break;
+          case 'auth/invalid-email':
+            message = 'Please enter a valid email address.';
+            break;
+          case 'auth/weak-password':
+            message = 'The password is too weak. Please use at least 6 characters.';
+            break;
+          default:
+            message = 'An error occurred during sign up. Please try again.';
+            break;
+        }
       }
-    } catch (error) {
-      console.error("Signup flow error:", error);
-      setSignupError("An unexpected error occurred. Please try again.");
+      setSignupError(message);
     } finally {
       setIsSigningUp(false);
     }
@@ -80,22 +100,18 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                  <div className="space-y-4 text-left">
                     <div>
                         <Label htmlFor="username-reg">Username</Label>
-                        <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" 
-                         onKeyDown={(e) => {
-                            if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') handleSignUp();
-                        }}
-                        />
+                        <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a public username" />
+                    </div>
+                    <div>
+                        <Label htmlFor="email-reg">Email</Label>
+                        <Input id="email-reg" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
                     </div>
                     <div>
                         <Label htmlFor="password-reg">Password</Label>
-                        <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" 
-                         onKeyDown={(e) => {
-                            if (e.key === 'Enter' && username.trim() !== '' && password.trim() !== '') handleSignUp();
-                        }}
-                        />
+                        <Input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a secure password (min. 6 characters)" />
                     </div>
                  </div>
-                <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || isSigningUp}>
+                <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || email.trim() === '' || isSigningUp}>
                     {isSigningUp ? <Loader2 className="animate-spin" /> : 'Create Account & Continue'}
                 </Button>
                 {signupError && <p className="text-sm text-destructive">{signupError}</p>}

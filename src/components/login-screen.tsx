@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, LogIn, User } from 'lucide-react';
-import { login } from '@/ai/flows/login-flow';
 import { Avatar, AvatarFallback } from './ui/avatar';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 
 type LoginScreenProps = {
   onLoginSuccess: () => void;
@@ -17,28 +18,42 @@ type LoginScreenProps = {
 };
 
 export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenProps) {
-  const { username: contextUsername, setUsername: setContextUsername } = useSettings();
-  const [username, setUsername] = useState(contextUsername);
+  const { setUsername: setContextUsername } = useSettings();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const auth = useAuth();
 
   const handleSignIn = async () => {
-    if (username.trim() === '' || password.trim() === '') return;
+    if (email.trim() === '' || password.trim() === '') return;
     setIsLoading(true);
     setError(null);
     try {
-      const result = await login({ username, password });
-      if (result.success) {
-        setContextUsername(username); // Update context with the signed-in user
-        onLoginSuccess();
-      } else {
-        setError(result.message);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (userCredential.user.displayName) {
+        setContextUsername(userCredential.user.displayName);
       }
-    } catch (err) {
-      console.error("Login flow error:", err);
-      setError("An unexpected error occurred during login. Please try again.");
+      onLoginSuccess();
+    } catch (err: any) {
+      let message = 'An unknown error occurred.';
+      if (err.code) {
+        switch (err.code) {
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            message = 'Incorrect email or password.';
+            break;
+          case 'auth/invalid-email':
+            message = 'Please enter a valid email address.';
+            break;
+          default:
+            message = 'An error occurred during login. Please try again.';
+            break;
+        }
+      }
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -76,14 +91,15 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         
         <div className="space-y-6 text-left">
           <div>
-            <Label htmlFor="username-login">Username</Label>
+            <Label htmlFor="email-login">Email</Label>
             <Input
-              id="username-login"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              id="email-login"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
               onKeyDown={onKeyDown}
+              autoComplete="email"
             />
           </div>
           <div>
@@ -95,11 +111,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               onKeyDown={onKeyDown}
+              autoComplete="current-password"
             />
           </div>
         </div>
         
-        <Button size="lg" className="w-full mt-10" onClick={handleSignIn} disabled={username.trim() === '' || password.trim() === '' || isLoading}>
+        <Button size="lg" className="w-full mt-10" onClick={handleSignIn} disabled={email.trim() === '' || password.trim() === '' || isLoading}>
           {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2" /> Sign In</>}
         </Button>
         

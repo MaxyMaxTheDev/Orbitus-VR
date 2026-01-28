@@ -80,29 +80,21 @@ export const GenerateAppBannerOutputSchema = z.object({
 });
 export type GenerateAppBannerOutput = z.infer<typeof GenerateAppBannerOutputSchema>;
 
-// For login-flow.ts
+// For login
 export const LoginInputSchema = z.object({
-  username: z.string().describe("The user's username."),
-  password: z.string().describe("The user's password."),
+  email: z.string().email({ message: "Please enter a valid email address." }).describe("The user's email."),
+  password: z.string().min(1, "Password cannot be empty.").describe("The user's password."),
 });
 export type LoginInput = z.infer<typeof LoginInputSchema>;
-export const LoginOutputSchema = z.object({
-  success: z.boolean().describe('Whether the login was successful.'),
-  message: z.string().describe('A message indicating the result of the login attempt.'),
-});
-export type LoginOutput = z.infer<typeof LoginOutputSchema>;
 
-// For signup-flow.ts
+// For signup
 export const SignupInputSchema = z.object({
-  username: z.string().describe("The user's desired username."),
-  password: z.string().describe("The user's desired password."),
+  username: z.string().min(3, "Username must be at least 3 characters long.").describe("The user's desired username."),
+  email: z.string().email({ message: "Please enter a valid email address." }).describe("The user's email address."),
+  password: z.string().min(6, "Password must be at least 6 characters long.").describe("The user's desired password."),
 });
 export type SignupInput = z.infer<typeof SignupInputSchema>;
-export const SignupOutputSchema = z.object({
-  success: z.boolean().describe('Whether the signup was successful.'),
-  message: z.string().describe('A message indicating the result of the signup attempt.'),
-});
-export type SignupOutput = z.infer<typeof SignupOutputSchema>;
+
 
 // For profile-code-flow.ts
 export const ProfileCodeInputSchema = z.object({
