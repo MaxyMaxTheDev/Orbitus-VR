@@ -12,7 +12,7 @@ export type NotificationPosition =
   | 'bottom-center' 
   | 'bottom-right';
 
-export type WidgetName = 'insight' | 'overview' | 'storage' | 'news';
+export type WidgetName = 'insight' | 'overview' | 'storage' | 'news' | 'wellness' | 'tasks' | 'music';
 
 type SettingsContextType = {
   showAppBanners: boolean;
@@ -25,6 +25,8 @@ type SettingsContextType = {
   setUiScale: (scale: number) => void;
   dashboardWidgets: WidgetName[];
   setDashboardWidgets: (widgets: WidgetName[]) => void;
+  isEditingDashboard: boolean;
+  setIsEditingDashboard: (isEditing: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [notificationPosition, setNotificationPosition] = useState<NotificationPosition>('bottom-right');
   const [uiScale, setUiScale] = useState(100);
   const [dashboardWidgets, setDashboardWidgets] = useState<WidgetName[]>(defaultWidgets);
+  const [isEditingDashboard, setIsEditingDashboard] = useState(false);
 
   // This effect runs once on mount to load settings from IndexedDB
   useEffect(() => {
@@ -103,6 +106,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     set('xenova-vr-dashboard-widgets', widgets).catch(e => console.error("Failed to save dashboard widgets to DB", e));
   };
 
+  const handleSetIsEditingDashboard = (isEditing: boolean) => {
+    setIsEditingDashboard(isEditing);
+  };
+
   return (
     <SettingsContext.Provider value={{ 
         showAppBanners, 
@@ -115,6 +122,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setUiScale: handleSetUiScale,
         dashboardWidgets,
         setDashboardWidgets: handleSetDashboardWidgets,
+        isEditingDashboard,
+        setIsEditingDashboard: handleSetIsEditingDashboard,
     }}>
       {children}
     </SettingsContext.Provider>
@@ -128,3 +137,5 @@ export function useSettings() {
   }
   return context;
 }
+
+    

@@ -21,7 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { ImportModelDialog } from '@/components/settings-panel';
 import { useSettings, type NotificationPosition, type WidgetName } from '@/contexts/settings-context';
 import { clearAll } from '@/lib/idb';
-import { Trash2, Maximize, Save, Loader2 } from 'lucide-react';
+import { Trash2, Maximize, Save, Loader2, LayoutDashboard } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -33,14 +33,7 @@ import { Slider } from '../ui/slider';
 import { useAuth } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-
-const allWidgets: { id: WidgetName; label: string; description: string }[] = [
-    { id: 'insight', label: 'AI Insight', description: 'Displays a daily AI-generated quote.' },
-    { id: 'overview', label: 'Overview', description: 'Shows notifications and task shortcuts.' },
-    { id: 'storage', label: 'Storage Status', description: 'Monitors virtual drive capacity.' },
-    { id: 'news', label: 'HoloNet News', description: 'A feed of the latest news headlines.' },
-];
-
+import { useDesktopActions } from '@/contexts/desktop-actions-context';
 
 export function SettingsApp() {
   const {
@@ -52,14 +45,14 @@ export function SettingsApp() {
     setNotificationPosition,
     uiScale,
     setUiScale,
-    dashboardWidgets,
-    setDashboardWidgets,
+    setIsEditingDashboard,
   } = useSettings();
 
   const [newUsername, setNewUsername] = useState(currentUsername);
   const [isSaving, setIsSaving] = useState(false);
   const auth = useAuth();
   const { toast } = useToast();
+  const { openApp } = useDesktopActions();
 
   const handleUsernameSave = async () => {
     if (!newUsername.trim() || newUsername.trim() === currentUsername) {
@@ -102,19 +95,10 @@ export function SettingsApp() {
       console.error('Failed to clear data:', error);
     }
   };
-
-  const handleWidgetToggle = (widgetId: WidgetName, checked: boolean) => {
-    let newWidgets;
-    if (checked) {
-        newWidgets = [...dashboardWidgets, widgetId];
-    } else {
-        newWidgets = dashboardWidgets.filter(id => id !== widgetId);
-    }
-    // Preserve a sensible order by sorting based on the master list
-    const orderedWidgets = allWidgets
-        .map(w => w.id)
-        .filter(id => newWidgets.includes(id));
-    setDashboardWidgets(orderedWidgets);
+  
+  const handleEditWidgets = () => {
+    setIsEditingDashboard(true);
+    openApp('Dashboard');
   };
 
   return (
@@ -191,29 +175,25 @@ export function SettingsApp() {
             </div>
           </CardContent>
         </Card>
-
+        
         <Card className="bg-transparent border-primary/30">
-            <CardHeader>
-                <CardTitle className="text-accent text-xl">Dashboard Widgets</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {allWidgets.map((widget) => (
-                    <div key={widget.id} className="flex items-start justify-between p-4 rounded-lg bg-black/20">
-                        <div>
-                             <Label htmlFor={`widget-toggle-${widget.id}`} className="font-medium leading-none">
-                                {widget.label}
-                            </Label>
-                            <p className="text-xs text-muted-foreground mt-1">{widget.description}</p>
-                        </div>
-                        <Switch
-                            id={`widget-toggle-${widget.id}`}
-                            checked={dashboardWidgets.includes(widget.id)}
-                            onCheckedChange={(checked) => handleWidgetToggle(widget.id, checked)}
-                            className="data-[state=checked]:bg-accent"
-                        />
-                    </div>
-                ))}
-            </CardContent>
+          <CardHeader>
+              <CardTitle className="text-accent text-xl">Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-black/20">
+                  <div>
+                      <Label className="font-medium">Customize Widgets</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                          Add, remove, and rearrange widgets.
+                      </p>
+                  </div>
+                  <Button onClick={handleEditWidgets}>
+                      <LayoutDashboard className="mr-2" />
+                      Edit Widgets
+                  </Button>
+              </div>
+          </CardContent>
         </Card>
 
         <Card className="bg-transparent border-primary/30">
@@ -321,3 +301,5 @@ export function SettingsApp() {
     </div>
   );
 }
+
+    
