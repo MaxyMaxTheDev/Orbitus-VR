@@ -23,19 +23,31 @@ export function SystemBar({ onSignOut, onRestart, onShutdown }: SystemBarProps) 
 
     return (
         <TooltipProvider>
-            {/* Invisible trigger zone at the top-center of the screen */}
+            {/* 
+              This container handles the hover logic. It's positioned at the top of the screen.
+              `onMouseLeave` will close the menu. `pointer-events-none` allows clicks to pass through.
+              A z-index ensures it's on top of other content.
+            */}
             <div
-                className="fixed top-0 left-1/2 -translate-x-1/2 h-2 w-32 z-50"
-                onMouseEnter={() => setIsHovering(true)}
-            />
-            
-            {/* The container for the menu, which hides it when the mouse leaves */}
-            <div
-                className="fixed top-0 left-0 right-0 flex justify-center pointer-events-none"
+                className="fixed top-0 left-0 right-0 h-32 flex justify-center z-50 pointer-events-none"
                 onMouseLeave={() => setIsHovering(false)}
             >
+                {/* 
+                  This is a small, precise, invisible trigger area. 
+                  `pointer-events-auto` allows it to be hovered.
+                */}
+                <div
+                    className="absolute top-0 h-2 w-32 pointer-events-auto"
+                    onMouseEnter={() => setIsHovering(true)}
+                />
+
+                {/* 
+                  This is the actual animated menu. It also has pointer-events-auto and onMouseEnter
+                  to ensure it stays open when the user moves their mouse onto it. 
+                */}
                 <motion.div
                     className="absolute top-0 pointer-events-auto"
+                    onMouseEnter={() => setIsHovering(true)}
                     initial={{ y: '-100%', opacity: 0 }}
                     animate={{ y: isHovering ? 0 : '-100%', opacity: isHovering ? 1 : 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
