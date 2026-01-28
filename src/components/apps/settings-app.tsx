@@ -19,7 +19,7 @@ import { Input } from '../ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ImportModelDialog } from '@/components/settings-panel';
-import { useSettings, type NotificationPosition } from '@/contexts/settings-context';
+import { useSettings, type NotificationPosition, type WidgetName } from '@/contexts/settings-context';
 import { clearAll } from '@/lib/idb';
 import { Trash2, Maximize, Save, Loader2 } from 'lucide-react';
 import {
@@ -34,6 +34,14 @@ import { useAuth } from '@/firebase';
 import { updateProfile } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 
+const allWidgets: { id: WidgetName; label: string; description: string }[] = [
+    { id: 'insight', label: 'AI Insight', description: 'Displays a daily AI-generated quote.' },
+    { id: 'overview', label: 'Overview', description: 'Shows notifications and task shortcuts.' },
+    { id: 'storage', label: 'Storage Status', description: 'Monitors virtual drive capacity.' },
+    { id: 'news', label: 'HoloNet News', description: 'A feed of the latest news headlines.' },
+];
+
+
 export function SettingsApp() {
   const {
     showAppBanners,
@@ -44,6 +52,8 @@ export function SettingsApp() {
     setNotificationPosition,
     uiScale,
     setUiScale,
+    dashboardWidgets,
+    setDashboardWidgets,
   } = useSettings();
 
   const [newUsername, setNewUsername] = useState(currentUsername);
@@ -91,6 +101,20 @@ export function SettingsApp() {
     } catch (error) {
       console.error('Failed to clear data:', error);
     }
+  };
+
+  const handleWidgetToggle = (widgetId: WidgetName, checked: boolean) => {
+    let newWidgets;
+    if (checked) {
+        newWidgets = [...dashboardWidgets, widgetId];
+    } else {
+        newWidgets = dashboardWidgets.filter(id => id !== widgetId);
+    }
+    // Preserve a sensible order by sorting based on the master list
+    const orderedWidgets = allWidgets
+        .map(w => w.id)
+        .filter(id => newWidgets.includes(id));
+    setDashboardWidgets(orderedWidgets);
   };
 
   return (
@@ -166,6 +190,30 @@ export function SettingsApp() {
                 </div>
             </div>
           </CardContent>
+        </Card>
+
+        <Card className="bg-transparent border-primary/30">
+            <CardHeader>
+                <CardTitle className="text-accent text-xl">Dashboard Widgets</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {allWidgets.map((widget) => (
+                    <div key={widget.id} className="flex items-start justify-between p-4 rounded-lg bg-black/20">
+                        <div>
+                             <Label htmlFor={`widget-toggle-${widget.id}`} className="font-medium leading-none">
+                                {widget.label}
+                            </Label>
+                            <p className="text-xs text-muted-foreground mt-1">{widget.description}</p>
+                        </div>
+                        <Switch
+                            id={`widget-toggle-${widget.id}`}
+                            checked={dashboardWidgets.includes(widget.id)}
+                            onCheckedChange={(checked) => handleWidgetToggle(widget.id, checked)}
+                            className="data-[state=checked]:bg-accent"
+                        />
+                    </div>
+                ))}
+            </CardContent>
         </Card>
 
         <Card className="bg-transparent border-primary/30">

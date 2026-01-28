@@ -12,6 +12,8 @@ export type NotificationPosition =
   | 'bottom-center' 
   | 'bottom-right';
 
+export type WidgetName = 'insight' | 'overview' | 'storage' | 'news';
+
 type SettingsContextType = {
   showAppBanners: boolean;
   setShowAppBanners: (show: boolean) => void;
@@ -21,15 +23,20 @@ type SettingsContextType = {
   setNotificationPosition: (position: NotificationPosition) => void;
   uiScale: number;
   setUiScale: (scale: number) => void;
+  dashboardWidgets: WidgetName[];
+  setDashboardWidgets: (widgets: WidgetName[]) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+
+const defaultWidgets: WidgetName[] = ['insight', 'overview', 'storage', 'news'];
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [showAppBanners, setShowAppBanners] = useState(true);
   const [username, setUsername] = useState("User");
   const [notificationPosition, setNotificationPosition] = useState<NotificationPosition>('bottom-right');
   const [uiScale, setUiScale] = useState(100);
+  const [dashboardWidgets, setDashboardWidgets] = useState<WidgetName[]>(defaultWidgets);
 
   // This effect runs once on mount to load settings from IndexedDB
   useEffect(() => {
@@ -53,6 +60,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const storedUiScale = await get<number>('xenova-vr-ui-scale');
         if (storedUiScale) {
           setUiScale(storedUiScale);
+        }
+
+        const storedWidgets = await get<WidgetName[]>('xenova-vr-dashboard-widgets');
+        if (storedWidgets) {
+          setDashboardWidgets(storedWidgets);
         }
 
       } catch (error) {
@@ -84,7 +96,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const handleSetUiScale = (scale: number) => {
     setUiScale(scale);
     set('xenova-vr-ui-scale', scale).catch(e => console.error("Failed to save ui scale to DB", e));
-  }
+  };
+
+  const handleSetDashboardWidgets = (widgets: WidgetName[]) => {
+    setDashboardWidgets(widgets);
+    set('xenova-vr-dashboard-widgets', widgets).catch(e => console.error("Failed to save dashboard widgets to DB", e));
+  };
 
   return (
     <SettingsContext.Provider value={{ 
@@ -96,6 +113,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setNotificationPosition: handleSetNotificationPosition,
         uiScale,
         setUiScale: handleSetUiScale,
+        dashboardWidgets,
+        setDashboardWidgets: handleSetDashboardWidgets,
     }}>
       {children}
     </SettingsContext.Provider>
