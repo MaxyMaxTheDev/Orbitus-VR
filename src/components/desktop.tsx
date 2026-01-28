@@ -18,7 +18,7 @@ import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
-import { Browser } from './apps/browser';
+import { FullscreenAppWrapper } from './fullscreen-app-wrapper';
 import { SystemBar } from './system-bar';
 import { SystemOverlay } from './system-overlay';
 import { LoginScreen } from './login-screen';
@@ -130,10 +130,11 @@ function DesktopContent() {
         return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setSystemState('setup')} />;
     }
     
-    const isBrowserOpen = selectedApp?.name === "Browser";
+    const fullscreenApps = ["Browser", "Minecraft"];
+    const isFullscreenApp = selectedApp && fullscreenApps.includes(selectedApp.name);
 
     const AppWindow = () => {
-        if (!selectedApp || isBrowserOpen) return null;
+        if (!selectedApp || isFullscreenApp) return null;
         const AppContent = selectedApp.component;
         return (
             <motion.div
@@ -171,28 +172,10 @@ function DesktopContent() {
             <SystemBar onSignOut={handleSignOut} onRestart={handleRestart} onShutdown={handleShutdown} />
 
              <AnimatePresence>
-                {isBrowserOpen && selectedApp && (
-                     <motion.div
-                        key="browser-fullscreen"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-40 flex flex-col bg-card"
-                    >
-                        <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0">
-                            <div className="flex items-center gap-3">
-                                <selectedApp.icon className="w-5 h-5 text-accent" />
-                                <span className="font-bold text-foreground">{selectedApp.name}</span>
-                            </div>
-                            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full hover:bg-white/10" onClick={closeApp}>
-                                <X className="w-5 h-5" />
-                            </Button>
-                        </header>
-                        <main className="flex-1 bg-black/10 overflow-hidden">
-                           <Browser />
-                        </main>
-                    </motion.div>
+                {isFullscreenApp && selectedApp && (
+                     <FullscreenAppWrapper app={selectedApp} onClose={closeApp}>
+                        <selectedApp.component />
+                    </FullscreenAppWrapper>
                 )}
              </AnimatePresence>
 
@@ -203,7 +186,7 @@ function DesktopContent() {
                 >
                     <div className="absolute inset-0" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
                          <AnimatePresence>
-                            {selectedApp && !isBrowserOpen ? <AppWindow /> : <Dashboard />}
+                            {selectedApp && !isFullscreenApp ? <AppWindow /> : <Dashboard />}
                         </AnimatePresence>
                     </div>
                 </div>
@@ -217,7 +200,7 @@ function DesktopContent() {
                 </AnimatePresence>
                 <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                      <AnimatePresence>
-                        {(!isLibraryOpen && !isBrowserOpen) && (
+                        {(!isLibraryOpen && !isFullscreenApp) && (
                             <motion.div
                                 className="w-full flex justify-center"
                                 initial={{ opacity: 0, y: 20 }}
