@@ -28,7 +28,7 @@ function Clock() {
     }, []);
 
     return (
-        <div className="text-center text-white">
+        <div className="text-center text-white [text-shadow:_0_2px_8px_rgb(0_0_0_/_50%)]">
             <h1 className="text-7xl md:text-8xl font-bold tracking-tighter">{time}</h1>
             <p className="text-xl md:text-2xl font-medium text-white/80">{date}</p>
         </div>
@@ -41,7 +41,7 @@ function TipOfTheDay() {
     useEffect(() => {
         const fetchTip = async () => {
             const cacheKey = 'daily-tip';
-            const cached = await get<{ tip: TipOutput; timestamp: number }>(cacheKey);
+            const cached = await get<{ tip: TipOutput; timestamp: number }>('daily-tip');
             const now = new Date().getTime();
             
             if (cached && (now - cached.timestamp < 12 * 60 * 60 * 1000)) {
@@ -49,14 +49,14 @@ function TipOfTheDay() {
             } else {
                 const newTip = await getTip();
                 setTip(newTip);
-                await set(cacheKey, { tip: newTip, timestamp: now });
+                await set('daily-tip', { tip: newTip, timestamp: now });
             }
         };
         fetchTip().catch(console.error);
     }, []);
 
     return (
-        <div className="max-w-md text-center">
+        <div className="max-w-md text-center [text-shadow:_0_1px_4px_rgb(0_0_0_/_50%)]">
             <p className="font-semibold text-white/90">{tip?.tip || 'Loading tip...'}</p>
         </div>
     );
@@ -78,8 +78,6 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                 data-ai-hint="grassy hill"
                 className="z-0"
             />
-            {/* Background overlay */}
-            <div className="absolute inset-0 bg-black/20 z-10" />
             
             {/* Spacer */}
             <div className="relative z-20" />
@@ -103,7 +101,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                 className="relative z-20 flex flex-col items-center gap-4"
             >
                 <motion.div 
-                    className="flex flex-col items-center gap-1 text-white/80"
+                    className="flex flex-col items-center gap-1 text-white/80 [text-shadow:_0_1px_4px_rgb(0_0_0_/_50%)]"
                     animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                 >
