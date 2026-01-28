@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -73,10 +72,10 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         >
             <Image
                 alt="A grassy hill under a blue sky"
-                src="https://picsum.photos/seed/grassy-hill-sky/1920/1080"
+                src="https://picsum.photos/seed/green-hill/1920/1080"
                 layout="fill"
                 objectFit="cover"
-                data-ai-hint="grassy hill"
+                data-ai-hint="grassy hill blue sky"
                 className="z-0 filter brightness-150 saturate-150"
             />
             
