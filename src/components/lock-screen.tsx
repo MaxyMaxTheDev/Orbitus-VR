@@ -73,7 +73,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
         >
             <Image
                 alt="A scenic landscape"
-                src="https://picsum.photos/seed/new-scenery/1920/1080"
+                src="https://picsum.photos/seed/another-scape/1920/1080"
                 layout="fill"
                 objectFit="cover"
                 data-ai-hint="scenic landscape"
