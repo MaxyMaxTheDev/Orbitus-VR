@@ -72,11 +72,11 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
             exit={{ opacity: 0 }}
         >
             <Image
-                alt="A scenic landscape"
-                src="https://picsum.photos/seed/another-scape/1920/1080"
+                alt="A grassy hill under a blue sky"
+                src="https://picsum.photos/seed/grassy-hill-sky/1920/1080"
                 layout="fill"
                 objectFit="cover"
-                data-ai-hint="scenic landscape"
+                data-ai-hint="grassy hill"
                 className="z-0 filter brightness-150 saturate-150"
             />
             
