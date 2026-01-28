@@ -8,10 +8,10 @@ import type { FirebaseOptions } from 'firebase/app';
 // 3. Select "Config" to see your firebaseConfig object.
 // 4. Copy the entire object and paste it here, replacing the placeholder below.
 export const firebaseConfig: FirebaseOptions = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  apiKey: "AIzaSyA9GAvEnemjS14uPFrJEKQCBdLiY_XmqTw",
   authDomain: "nexus-portal-ei12t.firebaseapp.com",
   projectId: "nexus-portal-ei12t",
-  storageBucket: "nexus-portal-ei12t.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID",
+  storageBucket: "nexus-portal-ei12t.firebasestorage.app",
+  messagingSenderId: "298897588834",
+  appId: "1:298897588834:web:25b5e707ff4ed38925473b"
 };
