@@ -34,8 +34,8 @@ export function SystemBar({ onSignOut, onRestart, onShutdown }: SystemBarProps) 
                     animate={{ y: isHovering ? 0 : '-100%', opacity: isHovering ? 1 : 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                 >
-                    <div className="flex justify-center">
-                        <div className="grid grid-cols-[minmax(0,_1fr)_auto_minmax(0,_1fr)] items-center gap-8 bg-card/80 backdrop-blur-xl border border-border rounded-b-2xl p-2 px-6 shadow-2xl shadow-black/20">
+                    <div className="flex justify-center pointer-events-none">
+                        <div className="grid grid-cols-[minmax(0,_1fr)_auto_minmax(0,_1fr)] items-center gap-8 bg-card/80 backdrop-blur-xl border border-border rounded-b-2xl p-2 px-6 shadow-2xl shadow-black/20 pointer-events-auto">
                             <div className="flex justify-end">
                                 {hasPlayed && <MusicControls />}
                             </div>
