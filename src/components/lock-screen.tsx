@@ -79,7 +79,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                 className="z-0"
             />
             {/* Background overlay */}
-            <div className="absolute inset-0 bg-black/50 z-10" />
+            <div className="absolute inset-0 bg-black/20 z-10" />
             
             {/* Spacer */}
             <div className="relative z-20" />
