@@ -18,41 +18,24 @@ import { XenovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
-import { cn } from '@/lib/utils';
 import { Browser } from './apps/browser';
 import { SystemBar } from './system-bar';
 import { SystemOverlay } from './system-overlay';
 import { LoginScreen } from './login-screen';
+import { LockScreen } from './lock-screen';
+
+type SystemState = 'loading' | 'setup' | 'lock' | 'login' | 'desktop';
 
 function DesktopContent() {
+    const [systemState, setSystemState] = useState<SystemState>('loading');
     const [selectedApp, setSelectedApp] = useState<App | null>(null);
     const [isLibraryOpen, setLibraryOpen] = useState(false);
-    const [isSetupComplete, setIsSetupComplete] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [progress, setProgress] = useState(0);
     const { uiScale } = useSettings();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [systemAction, setSystemAction] = useState<'shutdown' | 'restart' | null>(null);
-    const [showLoginScreen, setShowLoginScreen] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
-        const checkSystemState = async () => {
-            const setupFlag = await get<boolean>('xenova-vr-setup-complete');
-            
-            setTimeout(() => {
-                if (setupFlag) {
-                    setIsSetupComplete(true);
-                    // If setup is done, default to showing the login screen.
-                    setShowLoginScreen(true);
-                }
-                setIsLoading(false);
-            }, 1500);
-        };
-        checkSystemState();
-    }, []);
-
-    useEffect(() => {
-        if (!isLoading) return;
+        if (systemState !== 'loading') return;
         const interval = setInterval(() => {
             setProgress(prev => {
                 if (prev >= 100) {
@@ -63,21 +46,36 @@ function DesktopContent() {
             });
         }, 50);
         return () => clearInterval(interval);
-    }, [isLoading]);
+    }, [systemState]);
+
+    useEffect(() => {
+        const checkSystemState = async () => {
+            const setupFlag = await get<boolean>('xenova-vr-setup-complete');
+            setTimeout(() => {
+                if (setupFlag) {
+                    setSystemState('lock');
+                } else {
+                    setSystemState('setup');
+                }
+            }, 1500);
+        };
+        
+        if (systemState === 'loading') {
+            checkSystemState();
+        }
+    }, [systemState]);
 
     const handleSetupComplete = async () => {
         await set('xenova-vr-setup-complete', true);
-        setIsSetupComplete(true);
-        setIsLoggedIn(true);
+        setSystemState('desktop');
     };
 
-    const handleLoginSuccess = async () => {
-        setIsLoggedIn(true);
+    const handleLoginSuccess = () => {
+        setSystemState('desktop');
     };
     
-    const handleSignOut = async () => {
-        setIsLoggedIn(false);
-        setShowLoginScreen(true); // Always go to login screen on sign out.
+    const handleSignOut = () => {
+        setSystemState('lock');
     };
 
     const handleRestart = () => {
@@ -87,6 +85,8 @@ function DesktopContent() {
 
     const handleShutdown = () => {
         setSystemAction('shutdown');
+        // In a real app, this would be a call to an Electron/Tauri API.
+        // For the web, we can just close the tab/window.
         setTimeout(() => window.close(), 1500);
     };
 
@@ -102,15 +102,39 @@ function DesktopContent() {
         setSelectedApp(null);
     };
 
+    if (systemState === 'loading') {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                    className="flex flex-col items-center gap-6 w-full max-w-xs"
+                >
+                    <XenovaVRLogo className="w-24 h-24 text-primary" />
+                    <Progress value={progress} className="w-full h-2" />
+                </motion.div>
+            </div>
+        );
+    }
+    
+    if (systemState === 'setup') {
+        return <OsSetup onComplete={handleSetupComplete} onSwitchToLogin={() => setSystemState('login')} />;
+    }
+
+    if (systemState === 'lock') {
+        return <LockScreen onUnlock={() => setSystemState('login')} />;
+    }
+
+    if (systemState === 'login') {
+        return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setSystemState('setup')} />;
+    }
+    
+    const isBrowserOpen = selectedApp?.name === "Browser";
+
     const AppWindow = () => {
-        if (!selectedApp) return null;
-
+        if (!selectedApp || isBrowserOpen) return null;
         const AppContent = selectedApp.component;
-        
-        if (selectedApp.name === "Browser") {
-            return null;
-        }
-
         return (
             <motion.div
                 key={selectedApp.name}
@@ -137,31 +161,6 @@ function DesktopContent() {
             </motion.div>
         )
     };
-    
-    if (isLoading) {
-        return (
-            <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-6 w-full max-w-xs"
-                >
-                    <XenovaVRLogo className="w-24 h-24 text-primary" />
-                    <Progress value={progress} className="w-full h-2" />
-                </motion.div>
-            </div>
-        );
-    }
-    
-    if (!isSetupComplete || !isLoggedIn) {
-        if (showLoginScreen) {
-             return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setShowLoginScreen(false)} />;
-        }
-        return <OsSetup onComplete={handleSetupComplete} onSwitchToLogin={() => setShowLoginScreen(true)} />;
-    }
-    
-    const isBrowserOpen = selectedApp?.name === "Browser";
 
     return (
         <DesktopActionsProvider openApp={openApp}>
@@ -240,7 +239,5 @@ function DesktopContent() {
 }
 
 export function Desktop() {
-    return (
-        <DesktopContent />
-    );
+    return <DesktopContent />;
 }

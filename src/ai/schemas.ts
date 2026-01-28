@@ -123,3 +123,9 @@ export const NewsFeedOutputSchema = z.object({
   articles: z.array(NewsItemSchema),
 });
 export type NewsFeedOutput = z.infer<typeof NewsFeedOutputSchema>;
+
+// For tip-flow.ts
+export const TipOutputSchema = z.object({
+  tip: z.string().describe('A helpful tip for using the XenovaVR environment.'),
+});
+export type TipOutput = z.infer<typeof TipOutputSchema>;

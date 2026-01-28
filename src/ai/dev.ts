@@ -9,3 +9,4 @@ import './flows/explain-code-flow';
 import './flows/generate-app-banner-flow';
 import './flows/profile-code-flow';
 import './flows/news-feed-flow';
+import './flows/tip-flow';
