@@ -28,7 +28,7 @@ export function SystemBar({ onSignOut, onRestart, onShutdown }: SystemBarProps) 
                 onMouseLeave={() => setIsHovering(false)}
             >
                 <div
-                    className="absolute top-0 left-1/2 -translate-x-1/2 h-2 w-32 pointer-events-auto"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 h-5 w-32 pointer-events-auto"
                     onMouseEnter={() => setIsHovering(true)}
                 />
                 <motion.div
