@@ -51,7 +51,7 @@ The banner should be a high-quality, professional representation that reflects t
       if (e.message?.includes('429')) {
         throw new Error('You have exceeded your daily image generation quota. Please try again tomorrow.');
       }
-      throw new Error('The AI failed to generate the banner. Please try a different prompt.');
+      throw new Error('The AI failed to generate the banner. This might be due to safety restrictions or a network issue.');
     }
   }
 );
