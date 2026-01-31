@@ -31,6 +31,7 @@ import { CodeProfiler } from '@/components/apps/code-profiler';
 import { NewsFeedApp } from '@/components/apps/news-feed';
 import { FileExplorer } from '@/components/apps/file-explorer';
 import { XenovaDev } from '@/components/apps/xenova-dev';
+import { UserAppRunner } from '@/components/apps/user-app-runner';
 
 export type App = {
     name: string;
@@ -66,3 +67,5 @@ export const allApps: App[] = [
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
 ];
+
+export { UserAppRunner };

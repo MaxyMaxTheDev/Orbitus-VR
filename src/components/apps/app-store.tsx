@@ -12,22 +12,29 @@ import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import type { UserApp } from './xenova-dev';
 
+type InstallableApp = {
+    id: string;
+    name: string;
+};
+
 export function AppStore() {
-  const [isMinecraftInstalled, setIsMinecraftInstalled] = useState(false);
-  const [isInstalling, setIsInstalling] = useState(false);
+  const [installedApps, setInstalledApps] = useState<string[]>([]);
+  const [installingAppId, setInstallingAppId] = useState<string | null>(null);
   const [installProgress, setInstallProgress] = useState(0);
   const [isLoadingState, setIsLoadingState] = useState(true);
   const [publishedApps, setPublishedApps] = useState<UserApp[]>([]);
 
   const { toast } = useToast();
 
+  const minecraftApp: InstallableApp = { id: 'minecraft', name: 'Minecraft' };
+  
   useEffect(() => {
     const checkInstallationStatus = async () => {
       setIsLoadingState(true);
       try {
-        const installedStatus = await get<boolean>('minecraft-installed');
-        if (installedStatus) {
-          setIsMinecraftInstalled(true);
+        const installed = await get<string[]>('installed-apps');
+        if (installed) {
+          setInstalledApps(installed);
         }
         const apps = await get<UserApp[]>('published-apps');
         if (apps) {
@@ -42,23 +49,26 @@ export function AppStore() {
     checkInstallationStatus();
   }, []);
 
-  const handleInstall = () => {
-    setIsInstalling(true);
+  const handleInstall = (app: InstallableApp) => {
+    setInstallingAppId(app.id);
     setInstallProgress(0);
 
     const interval = setInterval(() => {
       setInstallProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
-          setIsInstalling(false);
-          setIsMinecraftInstalled(true);
-          set('minecraft-installed', true);
+          
+          const newInstalledApps = [...installedApps, app.id];
+          setInstalledApps(newInstalledApps);
+          set('installed-apps', newInstalledApps);
+
+          setInstallingAppId(null);
           
           setTimeout(() => {
             toast({
               icon: <CheckCircle className="h-5 w-5 text-green-500" />,
               title: "Installation Complete",
-              description: "Minecraft has been added to your app library.",
+              description: `${app.name} has been added to your app library.`,
             });
           }, 0);
 
@@ -69,16 +79,21 @@ export function AppStore() {
     }, 200);
   };
 
-  const handleUninstall = () => {
-    setIsMinecraftInstalled(false);
-    set('minecraft-installed', false);
+  const handleUninstall = (app: InstallableApp) => {
+    const newInstalledApps = installedApps.filter(id => id !== app.id);
+    setInstalledApps(newInstalledApps);
+    set('installed-apps', newInstalledApps);
+
     toast({
       icon: <Trash2 className="h-5 w-5" />,
       title: "Uninstalled",
-      description: "Minecraft has been removed from your app library.",
+      description: `${app.name} has been removed from your app library.`,
       variant: "destructive"
     });
   };
+
+  const isInstalling = (appId: string) => installingAppId === appId;
+  const isInstalled = (appId: string) => installedApps.includes(appId);
 
   return (
     <div className="h-full w-full p-4 sm:p-6 flex justify-center bg-black/20">
@@ -116,18 +131,18 @@ export function AppStore() {
                       </div>
 
                       <div className="mt-6">
-                          {isInstalling ? (
+                          {isInstalling(minecraftApp.id) ? (
                               <div className="space-y-2">
                                   <Progress value={installProgress} className="w-full" />
                                   <p className="text-sm text-center text-accent">Installing...</p>
                               </div>
-                          ) : isMinecraftInstalled ? (
-                              <Button onClick={handleUninstall} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
+                          ) : isInstalled(minecraftApp.id) ? (
+                              <Button onClick={() => handleUninstall(minecraftApp)} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
                                   <Trash2 className="mr-2" />
                                   Uninstall
                               </Button>
                           ) : (
-                              <Button onClick={handleInstall} size="lg" className="w-full bg-accent hover:bg-accent/80">
+                              <Button onClick={() => handleInstall(minecraftApp)} size="lg" className="w-full bg-accent hover:bg-accent/80">
                                   <Download className="mr-2" />
                                   Install
                               </Button>
@@ -140,23 +155,38 @@ export function AppStore() {
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-center font-headline tracking-wider text-accent mt-12">Community Apps</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {publishedApps.map(app => (
-                        <Card key={app.name} className="bg-transparent border-primary/30 flex flex-col justify-between shadow-lg shadow-black/20">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-3"><BrainCircuit/> {app.name}</CardTitle>
-                                <CardDescription className="flex items-center gap-2 pt-1 text-xs"><User className="w-3 h-3"/> by {app.creator}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-foreground/80">{app.description}</p>
-                            </CardContent>
-                            <div className="p-6 pt-2">
-                                <Button disabled className="w-full" variant="secondary">
-                                    <Download className="mr-2" />
-                                    Installation Unavailable
-                                </Button>
-                            </div>
-                        </Card>
-                      ))}
+                      {publishedApps.map(app => {
+                          const communityApp = { id: app.name, name: app.name };
+                          return (
+                            <Card key={app.name} className="bg-transparent border-primary/30 flex flex-col justify-between shadow-lg shadow-black/20">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-3"><BrainCircuit/> {app.name}</CardTitle>
+                                    <CardDescription className="flex items-center gap-2 pt-1 text-xs"><User className="w-3 h-3"/> by {app.creator}</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-foreground/80">{app.description}</p>
+                                </CardContent>
+                                <div className="p-6 pt-2">
+                                    {isInstalling(communityApp.id) ? (
+                                        <div className="space-y-2">
+                                            <Progress value={installProgress} className="w-full" />
+                                            <p className="text-sm text-center text-accent">Installing...</p>
+                                        </div>
+                                    ) : isInstalled(communityApp.id) ? (
+                                        <Button onClick={() => handleUninstall(communityApp)} variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
+                                            <Trash2 className="mr-2" />
+                                            Uninstall
+                                        </Button>
+                                    ) : (
+                                        <Button onClick={() => handleInstall(communityApp)} className="w-full bg-accent hover:bg-accent/80">
+                                            <Download className="mr-2" />
+                                            Install
+                                        </Button>
+                                    )}
+                                </div>
+                            </Card>
+                          )
+                      })}
                     </div>
                 </div>
               )}

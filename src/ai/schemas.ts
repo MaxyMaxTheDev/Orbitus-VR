@@ -129,3 +129,14 @@ export const TipOutputSchema = z.object({
   tip: z.string().describe('A helpful tip for using the XenovaVR environment.'),
 });
 export type TipOutput = z.infer<typeof TipOutputSchema>;
+
+// For run-code-flow.ts
+export const RunCodeInputSchema = z.object({
+  code: z.string().optional().describe('The code snippet to run.'),
+  prompt: z.string().optional().describe('The AI prompt describing the app.'),
+});
+export type RunCodeInput = z.infer<typeof RunCodeInputSchema>;
+export const RunCodeOutputSchema = z.object({
+  imageUrl: z.string().describe('The data URI of the generated app screenshot.'),
+});
+export type RunCodeOutput = z.infer<typeof RunCodeOutputSchema>;

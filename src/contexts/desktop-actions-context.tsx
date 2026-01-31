@@ -4,12 +4,12 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
 type DesktopActionsContextType = {
-  openApp: (appName: string) => void;
+  openApp: (appName: string) => Promise<void>;
 };
 
 const DesktopActionsContext = createContext<DesktopActionsContextType | undefined>(undefined);
 
-export function DesktopActionsProvider({ children, openApp }: { children: ReactNode; openApp: (appName: string) => void; }) {
+export function DesktopActionsProvider({ children, openApp }: { children: ReactNode; openApp: (appName: string) => Promise<void>; }) {
   return (
     <DesktopActionsContext.Provider value={{ openApp }}>
       {children}

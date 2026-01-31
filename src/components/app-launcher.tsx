@@ -6,11 +6,12 @@ import { allApps, App } from '@/lib/apps-config';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/contexts/settings-context';
 import { Button } from './ui/button';
 import { get, set } from '@/lib/idb';
+import type { UserApp } from './apps/xenova-dev';
 
 type AppLibraryProps = {
     onSelectApp: (appName: string) => void;
@@ -117,24 +118,27 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
     const [displayedApps, setDisplayedApps] = useState<App[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // This effect runs when the launcher is opened to check which apps are installed.
     useEffect(() => {
         const loadInstallableApps = async () => {
-            const isMinecraftInstalled = await get<boolean>('minecraft-installed');
+            const installedAppIds = await get<string[]>('installed-apps') || [];
             
             const filteredApps = allApps.filter(app => {
-                // If an app is installable, only show it if its flag is true in the DB.
                 if (app.isInstallable) {
-                    if (app.name === 'Minecraft') {
-                        return isMinecraftInstalled;
-                    }
-                    return false; // Hide other potential installable apps by default
+                    return installedAppIds.includes(app.name.toLowerCase());
                 }
-                // Always show regular, non-installable apps.
                 return true; 
             });
 
-            setDisplayedApps(filteredApps);
+            const publishedApps = await get<UserApp[]>('published-apps') || [];
+            const installedCommunityApps = publishedApps
+                .filter(pApp => installedAppIds.includes(pApp.name))
+                .map(pApp => ({
+                    ...pApp,
+                    icon: BrainCircuit,
+                    component: () => null, // Placeholder component
+                }));
+
+            setDisplayedApps([...filteredApps, ...installedCommunityApps]);
             setIsLoading(false);
         };
 
