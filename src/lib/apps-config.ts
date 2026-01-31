@@ -4,7 +4,7 @@ import {
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
-    Cpu, Gauge, Newspaper, FolderOpen, Download, BrainCircuit,
+    Cpu, Gauge, Newspaper, FolderOpen, Download, BrainCircuit, User,
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
