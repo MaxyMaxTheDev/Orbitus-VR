@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BrainCircuit, Code, Rocket, Loader2, Folder, File, FileCode, FileJson, Play, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { BrainCircuit, Code, Rocket, Loader2, Folder, File, FileCode, FileJson, Play, Settings, FilePlus } from 'lucide-react';
 import { useSettings } from '@/contexts/settings-context';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
@@ -35,11 +36,19 @@ export type UserApp = {
     aiPrompt?: string;
 };
 
-// A static file tree for the navigator
-const fileTree = [
+// Type for file tree items for better type safety
+type FileTreeNode = {
+    name: string;
+    icon: React.ElementType;
+    children?: FileTreeNode[];
+};
+
+
+// Initial static file tree
+const initialFileTree: FileTreeNode[] = [
     { name: 'MyAwesomeApp', icon: Folder, children: [
-        { name: 'node_modules', icon: Folder },
-        { name: 'public', icon: Folder },
+        { name: 'node_modules', icon: Folder, children: [] },
+        { name: 'public', icon: Folder, children: [] },
         { name: 'src', icon: Folder, children: [
             { name: 'app.tsx', icon: FileCode },
             { name: 'styles.css', icon: File },
@@ -48,7 +57,7 @@ const fileTree = [
     ]}
 ];
 
-const FileTreeItem = ({ name, icon: Icon, level = 0, children }: { name: string, icon: React.ElementType, level?: number, children?: any[] }) => {
+const FileTreeItem = ({ name, icon: Icon, level = 0, children }: { name: string, icon: React.ElementType, level?: number, children?: FileTreeNode[] }) => {
     const isFolder = !!children;
     return (
         <div>
@@ -72,6 +81,9 @@ export function XenovaDev() {
 
   const [aiPrompt, setAiPrompt] = useState("A simple pomodoro timer app with a start, stop, and reset button, on a dark background.");
   const [code, setCode] = useState(placeholderCode);
+  const [fileTree, setFileTree] = useState<FileTreeNode[]>(initialFileTree);
+  const [isCreateFileDialogOpen, setIsCreateFileDialogOpen] = useState(false);
+  const [newFileName, setNewFileName] = useState('');
 
   const [isPublishing, setIsPublishing] = useState(false);
   const { username } = useSettings();
@@ -128,6 +140,45 @@ export function XenovaDev() {
       }
   };
 
+  const handleCreateFile = () => {
+      if (!newFileName.trim()) {
+          toast({
+              variant: 'destructive',
+              title: 'Invalid Name',
+              description: 'File name cannot be empty.',
+          });
+          return;
+      }
+
+      const addFileToSrc = (nodes: FileTreeNode[], fileName: string): FileTreeNode[] => {
+          return nodes.map(node => {
+              if (node.name === 'src' && node.children) {
+                  // Check if file already exists
+                  if (node.children.some(child => child.name === fileName)) {
+                      toast({
+                          variant: 'destructive',
+                          title: 'File Exists',
+                          description: `A file named "${fileName}" already exists in the src folder.`,
+                      });
+                      return { ...node }; // Return node without changes
+                  }
+                  return {
+                      ...node,
+                      children: [...node.children, { name: fileName, icon: fileName.endsWith('.tsx') || fileName.endsWith('.jsx') ? FileCode : File }],
+                  };
+              }
+              if (node.children) {
+                  return { ...node, children: addFileToSrc(node.children, fileName) };
+              }
+              return node;
+          });
+      };
+
+      setFileTree(prevTree => addFileToSrc(prevTree, newFileName));
+      setNewFileName('');
+      setIsCreateFileDialogOpen(false);
+  };
+
   return (
     <div className="h-full w-full flex flex-col bg-card/50 text-sm">
         {/* Toolbar */}
@@ -153,7 +204,40 @@ export function XenovaDev() {
             
             {/* Left Navigator */}
             <div className="border-r border-border bg-background/30 p-2 overflow-y-auto">
-                <h2 className="text-xs font-bold text-muted-foreground px-2 py-1 uppercase">Navigator</h2>
+                <div className="flex justify-between items-center px-2 py-1">
+                    <h2 className="text-xs font-bold text-muted-foreground uppercase">Navigator</h2>
+                    <Dialog open={isCreateFileDialogOpen} onOpenChange={setIsCreateFileDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="w-6 h-6">
+                                <FilePlus className="w-4 h-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Create New File</DialogTitle>
+                            </DialogHeader>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="file-name" className="text-right">
+                                        Name
+                                    </Label>
+                                    <Input
+                                        id="file-name"
+                                        value={newFileName}
+                                        onChange={(e) => setNewFileName(e.target.value)}
+                                        className="col-span-3"
+                                        placeholder="e.g., component.tsx"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && handleCreateFile()}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button type="submit" onClick={handleCreateFile}>Create File</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
                 {fileTree.map(item => <FileTreeItem key={item.name} {...item} />)}
             </div>
 
@@ -235,3 +319,5 @@ export function XenovaDev() {
     </div>
   );
 }
+
+    
