@@ -72,7 +72,8 @@ function DesktopContent() {
         setSystemState('desktop');
     };
 
-    const handleLoginSuccess = () => {
+    const handleLoginSuccess = async () => {
+        await set('xenova-vr-setup-complete', true);
         setSystemState('desktop');
     };
     
