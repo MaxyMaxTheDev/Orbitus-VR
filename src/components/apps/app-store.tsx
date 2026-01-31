@@ -11,11 +11,35 @@ import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User } fr
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import type { UserApp } from './xenova-dev';
+import type { LucideIcon } from 'lucide-react';
 
-type InstallableApp = {
+type FeaturedApp = {
     id: string;
     name: string;
+    description: string;
+    icon: LucideIcon;
+    imageSrc: string;
+    imageHint: string;
 };
+
+const featuredApps: FeaturedApp[] = [
+    {
+        id: 'minecraft',
+        name: 'Minecraft',
+        description: 'The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.',
+        icon: Blocks,
+        imageSrc: 'https://placehold.co/400x500.png',
+        imageHint: 'minecraft landscape'
+    },
+    {
+        id: 'xenovadev',
+        name: 'XenovaDEV',
+        description: 'Create your own apps for XenovaVR using AI or by writing code, and publish them to the App Store for everyone to use.',
+        icon: BrainCircuit,
+        imageSrc: 'https://placehold.co/400x500.png',
+        imageHint: 'abstract code'
+    }
+];
 
 export function AppStore() {
   const [installedApps, setInstalledApps] = useState<string[]>([]);
@@ -25,8 +49,6 @@ export function AppStore() {
   const [publishedApps, setPublishedApps] = useState<UserApp[]>([]);
 
   const { toast } = useToast();
-
-  const minecraftApp: InstallableApp = { id: 'minecraft', name: 'Minecraft' };
   
   useEffect(() => {
     const checkInstallationStatus = async () => {
@@ -49,7 +71,7 @@ export function AppStore() {
     checkInstallationStatus();
   }, []);
 
-  const handleInstall = (app: InstallableApp) => {
+  const handleInstall = (app: {id: string, name: string}) => {
     setInstallingAppId(app.id);
     setInstallProgress(0);
 
@@ -79,7 +101,7 @@ export function AppStore() {
     }, 200);
   };
 
-  const handleUninstall = (app: InstallableApp) => {
+  const handleUninstall = (app: {id: string, name: string}) => {
     const newInstalledApps = installedApps.filter(id => id !== app.id);
     setInstalledApps(newInstalledApps);
     set('installed-apps', newInstalledApps);
@@ -95,6 +117,57 @@ export function AppStore() {
   const isInstalling = (appId: string) => installingAppId === appId;
   const isInstalled = (appId: string) => installedApps.includes(appId);
 
+  const FeaturedAppCard = ({ app }: { app: FeaturedApp }) => {
+    const AppIcon = app.icon;
+    const installableApp = { id: app.id, name: app.name };
+    
+    return (
+        <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20">
+            <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center">
+                <Image
+                    src={app.imageSrc}
+                    alt={app.name}
+                    width={400}
+                    height={500}
+                    className="rounded-md object-cover"
+                    data-ai-hint={app.imageHint}
+                />
+            </div>
+            <div className="md:col-span-2 p-6 flex flex-col justify-between">
+                <div>
+                    <CardHeader className="p-0">
+                        <CardTitle className="text-2xl font-bold flex items-center gap-3"><AppIcon/> {app.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 mt-4">
+                        <CardDescription className="text-base text-foreground/80">
+                            {app.description}
+                        </CardDescription>
+                    </CardContent>
+                </div>
+
+                <div className="mt-6">
+                    {isInstalling(installableApp.id) ? (
+                        <div className="space-y-2">
+                            <Progress value={installProgress} className="w-full" />
+                            <p className="text-sm text-center text-accent">Installing...</p>
+                        </div>
+                    ) : isInstalled(installableApp.id) ? (
+                        <Button onClick={() => handleUninstall(installableApp)} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
+                            <Trash2 className="mr-2" />
+                            Uninstall
+                        </Button>
+                    ) : (
+                        <Button onClick={() => handleInstall(installableApp)} size="lg" className="w-full bg-accent hover:bg-accent/80">
+                            <Download className="mr-2" />
+                            Install
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </Card>
+    );
+  }
+
   return (
     <div className="h-full w-full p-4 sm:p-6 flex justify-center bg-black/20">
       <ScrollArea className="h-full w-full max-w-4xl">
@@ -106,57 +179,15 @@ export function AppStore() {
                   <Loader2 className="w-8 h-8 animate-spin text-accent" />
               </div>
           ) : (
-            <>
-              <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20">
-                  <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center">
-                      <Image
-                          src="https://placehold.co/400x500.png"
-                          alt="Minecraft"
-                          width={400}
-                          height={500}
-                          className="rounded-md object-cover"
-                          data-ai-hint="minecraft landscape"
-                      />
-                  </div>
-                  <div className="md:col-span-2 p-6 flex flex-col justify-between">
-                      <div>
-                          <CardHeader className="p-0">
-                              <CardTitle className="text-2xl font-bold flex items-center gap-3"><Blocks/> Minecraft</CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-0 mt-4">
-                              <CardDescription className="text-base text-foreground/80">
-                                  The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.
-                              </CardDescription>
-                          </CardContent>
-                      </div>
-
-                      <div className="mt-6">
-                          {isInstalling(minecraftApp.id) ? (
-                              <div className="space-y-2">
-                                  <Progress value={installProgress} className="w-full" />
-                                  <p className="text-sm text-center text-accent">Installing...</p>
-                              </div>
-                          ) : isInstalled(minecraftApp.id) ? (
-                              <Button onClick={() => handleUninstall(minecraftApp)} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
-                                  <Trash2 className="mr-2" />
-                                  Uninstall
-                              </Button>
-                          ) : (
-                              <Button onClick={() => handleInstall(minecraftApp)} size="lg" className="w-full bg-accent hover:bg-accent/80">
-                                  <Download className="mr-2" />
-                                  Install
-                              </Button>
-                          )}
-                      </div>
-                  </div>
-              </Card>
+            <div className="space-y-8">
+              {featuredApps.map(app => <FeaturedAppCard key={app.id} app={app} />)}
 
               {publishedApps.length > 0 && (
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-center font-headline tracking-wider text-accent mt-12">Community Apps</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {publishedApps.map(app => {
-                          const communityApp = { id: app.name, name: app.name };
+                          const communityApp = { id: app.name.toLowerCase(), name: app.name };
                           return (
                             <Card key={app.name} className="bg-transparent border-primary/30 flex flex-col justify-between shadow-lg shadow-black/20">
                                 <CardHeader>
@@ -190,7 +221,7 @@ export function AppStore() {
                     </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </ScrollArea>

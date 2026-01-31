@@ -32,6 +32,8 @@ import { NewsFeedApp } from '@/components/apps/news-feed';
 import { FileExplorer } from '@/components/apps/file-explorer';
 import { XenovaDev } from '@/components/apps/xenova-dev';
 import { UserAppRunner } from '@/components/apps/user-app-runner';
+import { Wellness } from '@/components/apps/wellness';
+import { StarMap } from '@/components/apps/star-map';
 
 export type App = {
     name: string;
@@ -53,7 +55,6 @@ export const allApps: App[] = [
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
     { name: "Code Profiler", icon: Gauge, component: CodeProfiler, description: "Analyze code snippets with futuristic, AI-powered performance metrics." },
-    { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code." },
     { name: "News Feed", icon: Newspaper, component: NewsFeedApp, description: "A live feed of fictional news headlines from the world of XenovaVR." },
     { name: "File Explorer", icon: FolderOpen, component: FileExplorer, description: "Browse the virtual operating system's file structure." },
     { name: "Calculator", icon: Calculator, component: CalculatorApp, description: "A futuristic calculator for all your computational needs." },
@@ -65,6 +66,9 @@ export const allApps: App[] = [
     { name: "System Monitor", icon: Cpu, component: SystemMonitor, description: "Monitors the real-time performance of the virtual OS, including CPU, GPU, and memory." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
+    { name: "Wellness", icon: User, component: Wellness, description: "Monitor your vitals and wellness stats." },
+    { name: "Star Map", icon: Download, component: StarMap, description: "Explore a 3D map of nearby star systems." },
+    { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code.", isInstallable: true },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
 ];
 
