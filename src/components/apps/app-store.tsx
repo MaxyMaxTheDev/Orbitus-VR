@@ -7,25 +7,37 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Rocket, Trash2, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User } from 'lucide-react';
 import Image from 'next/image';
+import { ScrollArea } from '../ui/scroll-area';
+import type { UserApp } from './xenova-dev';
 
 export function AppStore() {
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isMinecraftInstalled, setIsMinecraftInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState(0);
   const [isLoadingState, setIsLoadingState] = useState(true);
+  const [publishedApps, setPublishedApps] = useState<UserApp[]>([]);
 
   const { toast } = useToast();
 
   useEffect(() => {
     const checkInstallationStatus = async () => {
       setIsLoadingState(true);
-      const installedStatus = await get<boolean>('minecraft-installed');
-      if (installedStatus) {
-        setIsInstalled(true);
+      try {
+        const installedStatus = await get<boolean>('minecraft-installed');
+        if (installedStatus) {
+          setIsMinecraftInstalled(true);
+        }
+        const apps = await get<UserApp[]>('published-apps');
+        if (apps) {
+          setPublishedApps(apps);
+        }
+      } catch (e) {
+        console.error("Failed to load app store data", e);
+      } finally {
+        setIsLoadingState(false);
       }
-      setIsLoadingState(false);
     };
     checkInstallationStatus();
   }, []);
@@ -39,7 +51,7 @@ export function AppStore() {
         if (prev >= 100) {
           clearInterval(interval);
           setIsInstalling(false);
-          setIsInstalled(true);
+          setIsMinecraftInstalled(true);
           set('minecraft-installed', true);
           
           setTimeout(() => {
@@ -58,7 +70,7 @@ export function AppStore() {
   };
 
   const handleUninstall = () => {
-    setIsInstalled(false);
+    setIsMinecraftInstalled(false);
     set('minecraft-installed', false);
     toast({
       icon: <Trash2 className="h-5 w-5" />,
@@ -69,60 +81,89 @@ export function AppStore() {
   };
 
   return (
-    <div className="h-full w-full p-4 sm:p-6 overflow-y-auto flex items-center justify-center bg-black/20">
-      <div className="w-full max-w-4xl space-y-8">
-        <h1 className="text-3xl font-bold text-center font-headline tracking-wider text-accent">App Store</h1>
-        
-        {isLoadingState ? (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
-            </div>
-        ) : (
-            <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20">
-                <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center">
-                    <Image
-                        src="https://placehold.co/400x500.png"
-                        alt="Minecraft"
-                        width={400}
-                        height={500}
-                        className="rounded-md object-cover"
-                        data-ai-hint="minecraft landscape"
-                    />
-                </div>
-                <div className="md:col-span-2 p-6 flex flex-col justify-between">
-                    <div>
-                        <CardHeader className="p-0">
-                            <CardTitle className="text-2xl font-bold flex items-center gap-3"><Blocks/> Minecraft</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0 mt-4">
-                            <CardDescription className="text-base text-foreground/80">
-                                The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.
-                            </CardDescription>
-                        </CardContent>
-                    </div>
+    <div className="h-full w-full p-4 sm:p-6 flex justify-center bg-black/20">
+      <ScrollArea className="h-full w-full max-w-4xl">
+        <div className="space-y-8 pr-4">
+          <h1 className="text-3xl font-bold text-center font-headline tracking-wider text-accent">App Store</h1>
+          
+          {isLoadingState ? (
+              <div className="flex justify-center items-center h-64">
+                  <Loader2 className="w-8 h-8 animate-spin text-accent" />
+              </div>
+          ) : (
+            <>
+              <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20">
+                  <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center">
+                      <Image
+                          src="https://placehold.co/400x500.png"
+                          alt="Minecraft"
+                          width={400}
+                          height={500}
+                          className="rounded-md object-cover"
+                          data-ai-hint="minecraft landscape"
+                      />
+                  </div>
+                  <div className="md:col-span-2 p-6 flex flex-col justify-between">
+                      <div>
+                          <CardHeader className="p-0">
+                              <CardTitle className="text-2xl font-bold flex items-center gap-3"><Blocks/> Minecraft</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-0 mt-4">
+                              <CardDescription className="text-base text-foreground/80">
+                                  The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.
+                              </CardDescription>
+                          </CardContent>
+                      </div>
 
-                    <div className="mt-6">
-                        {isInstalling ? (
-                            <div className="space-y-2">
-                                <Progress value={installProgress} className="w-full" />
-                                <p className="text-sm text-center text-accent">Installing...</p>
+                      <div className="mt-6">
+                          {isInstalling ? (
+                              <div className="space-y-2">
+                                  <Progress value={installProgress} className="w-full" />
+                                  <p className="text-sm text-center text-accent">Installing...</p>
+                              </div>
+                          ) : isMinecraftInstalled ? (
+                              <Button onClick={handleUninstall} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
+                                  <Trash2 className="mr-2" />
+                                  Uninstall
+                              </Button>
+                          ) : (
+                              <Button onClick={handleInstall} size="lg" className="w-full bg-accent hover:bg-accent/80">
+                                  <Download className="mr-2" />
+                                  Install
+                              </Button>
+                          )}
+                      </div>
+                  </div>
+              </Card>
+
+              {publishedApps.length > 0 && (
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-bold text-center font-headline tracking-wider text-accent mt-12">Community Apps</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {publishedApps.map(app => (
+                        <Card key={app.name} className="bg-transparent border-primary/30 flex flex-col justify-between shadow-lg shadow-black/20">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-3"><BrainCircuit/> {app.name}</CardTitle>
+                                <CardDescription className="flex items-center gap-2 pt-1 text-xs"><User className="w-3 h-3"/> by {app.creator}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-foreground/80">{app.description}</p>
+                            </CardContent>
+                            <div className="p-6 pt-2">
+                                <Button disabled className="w-full" variant="secondary">
+                                    <Download className="mr-2" />
+                                    Installation Unavailable
+                                </Button>
                             </div>
-                        ) : isInstalled ? (
-                            <Button onClick={handleUninstall} size="lg" variant="outline" className="w-full hover:bg-destructive/20 hover:text-destructive hover:border-destructive">
-                                <Trash2 className="mr-2" />
-                                Uninstall
-                            </Button>
-                        ) : (
-                            <Button onClick={handleInstall} size="lg" className="w-full bg-accent hover:bg-accent/80">
-                                <Download className="mr-2" />
-                                Install
-                            </Button>
-                        )}
+                        </Card>
+                      ))}
                     </div>
                 </div>
-            </Card>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 }
