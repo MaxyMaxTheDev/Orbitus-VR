@@ -1,9 +1,10 @@
+
 import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
-    Cpu, Gauge, Newspaper, FolderOpen, Download,
+    Cpu, Gauge, Newspaper, FolderOpen, Download, BrainCircuit,
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -29,6 +30,7 @@ import { SystemMonitor } from '@/components/apps/system-monitor';
 import { CodeProfiler } from '@/components/apps/code-profiler';
 import { NewsFeedApp } from '@/components/apps/news-feed';
 import { FileExplorer } from '@/components/apps/file-explorer';
+import { XenovaDev } from '@/components/apps/xenova-dev';
 
 export type App = {
     name: string;
@@ -50,6 +52,7 @@ export const allApps: App[] = [
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
     { name: "Code Profiler", icon: Gauge, component: CodeProfiler, description: "Analyze code snippets with futuristic, AI-powered performance metrics." },
+    { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code." },
     { name: "News Feed", icon: Newspaper, component: NewsFeedApp, description: "A live feed of fictional news headlines from the world of XenovaVR." },
     { name: "File Explorer", icon: FolderOpen, component: FileExplorer, description: "Browse the virtual operating system's file structure." },
     { name: "Calculator", icon: Calculator, component: CalculatorApp, description: "A futuristic calculator for all your computational needs." },
