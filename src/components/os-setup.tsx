@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -8,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, User, Loader2, Maximize, AppWindow } from 'lucide-react';
+import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download } from 'lucide-react';
 import { XenovaVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useAuth } from '@/firebase';
+import { downloadProjectZip } from '@/lib/export-action';
+import { useToast } from '@/hooks/use-toast';
 
 type SetupProps = {
   onComplete: () => void;
@@ -26,13 +27,42 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [password, setPassword] = useState('');
   
   const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
   const auth = useAuth();
+  const { toast } = useToast();
 
   const handleNext = () => setStep(s => s + 1);
 
   const handleFinish = () => {
     onComplete();
+  };
+
+  const handleDownloadBackup = async () => {
+    setIsDownloading(true);
+    try {
+      const base64 = await downloadProjectZip();
+      const link = document.createElement('a');
+      link.href = `data:application/zip;base64,${base64}`;
+      link.download = 'XenovaVR_Source_Backup.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Backup Started",
+        description: "Your project files are being downloaded as a .zip file.",
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Backup Failed",
+        description: "Could not generate the project backup.",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleSignUp = async () => {
@@ -64,12 +94,10 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
             message = 'Email/Password sign-up is not enabled. Please enable it in your Firebase project console.';
             break;
           default:
-            // For development, it's helpful to see the actual error code.
             message = `An unexpected error occurred: ${error.code}. Please check your Firebase configuration.`;
             break;
         }
       } else if (error.message) {
-        // Fallback for other types of errors
         message = error.message;
       }
       setSignupError(message);
@@ -92,9 +120,23 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
             <XenovaVRLogo className="w-24 h-24 mx-auto text-primary" />
             <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to XenovaVR</h1>
             <p className="text-muted-foreground text-lg">Your new virtual reality desktop. Let's get you set up.</p>
-            <Button size="lg" onClick={handleNext} className="mt-4">
-              Begin Setup <ArrowRight className="ml-2" />
-            </Button>
+            
+            <div className="flex flex-col gap-3 max-w-xs mx-auto mt-4">
+                <Button size="lg" onClick={handleNext} className="w-full">
+                Begin Setup <ArrowRight className="ml-2" />
+                </Button>
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={handleDownloadBackup} 
+                    disabled={isDownloading} 
+                    className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                >
+                {isDownloading ? <Loader2 className="animate-spin mr-2" /> : <Download className="mr-2" />}
+                Download Project (.zip)
+                </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic">Quickly backup your entire workspace before continuing.</p>
           </motion.div>
         );
       case 1: // Account creation
