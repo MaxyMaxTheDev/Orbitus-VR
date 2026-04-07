@@ -7,7 +7,7 @@ import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogIn, User, Eye, EyeOff } from 'lucide-react';
+import { Loader2, LogIn, User, Eye, EyeOff, UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -19,7 +19,7 @@ type LoginScreenProps = {
 
 export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenProps) {
   const { setUsername: setContextUsername } = useSettings();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
@@ -27,14 +27,29 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   const [error, setError] = useState<string | null>(null);
   const auth = useAuth();
 
-  const handleSignIn = async () => {
-    if (email.trim() === '' || password.trim() === '') return;
+  const handleSignIn = async (e?: React.FormEvent | string, pass?: string) => {
+    if (e && typeof e !== 'string') e.preventDefault();
+    
+    const loginId = typeof e === 'string' ? e : identifier;
+    const loginPass = pass || password;
+
+    if (loginId.trim() === '' || loginPass.trim() === '') return;
+    
     setIsLoading(true);
     setError(null);
+
+    // Map username to email if it's the guest account
+    let emailToUse = loginId;
+    if (loginId.toLowerCase() === 'guest') {
+      emailToUse = 'guest@xenovavr.local';
+    }
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, loginPass);
       if (userCredential.user.displayName) {
         setContextUsername(userCredential.user.displayName);
+      } else if (loginId.toLowerCase() === 'guest') {
+        setContextUsername('Guest');
       }
       onLoginSuccess();
     } catch (err: any) {
@@ -44,16 +59,16 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           case 'auth/user-not-found':
           case 'auth/wrong-password':
           case 'auth/invalid-credential':
-            message = 'Incorrect email or password. Please try again.';
+            message = 'Incorrect username/email or password. Please try again.';
             break;
           case 'auth/invalid-email':
-            message = 'The email address you entered is not valid.';
+            message = 'Please enter a valid email address or username.';
             break;
           case 'auth/operation-not-allowed':
              message = 'Email/Password sign-in is not enabled for this project.';
              break;
           default:
-            message = `Login failed: ${err.code}. Please check your Firebase configuration and try again.`;
+            message = `Login failed: ${err.code}. Ensure this account exists in your Firebase console.`;
             break;
         }
       } else if (err.message) {
@@ -63,6 +78,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGuestLogin = () => {
+    setIdentifier('guest');
+    setPassword('xenova_guest');
+    handleSignIn('guest', 'xenova_guest');
   };
   
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -97,15 +118,15 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         
         <div className="space-y-6 text-left">
           <div>
-            <Label htmlFor="email-login">Email</Label>
+            <Label htmlFor="identifier-login">Username or Email</Label>
             <Input
-              id="email-login"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              id="identifier-login"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Username or email"
               onKeyDown={onKeyDown}
-              autoComplete="email"
+              autoComplete="username"
             />
           </div>
           <div className="space-y-2">
@@ -141,9 +162,15 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           </div>
         </div>
         
-        <Button size="lg" className="w-full mt-10" onClick={handleSignIn} disabled={email.trim() === '' || password.trim() === '' || isLoading}>
-          {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2" /> Sign In</>}
-        </Button>
+        <div className="flex flex-col gap-3 mt-10">
+            <Button size="lg" className="w-full" onClick={() => handleSignIn()} disabled={identifier.trim() === '' || password.trim() === '' || isLoading}>
+            {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2" /> Sign In</>}
+            </Button>
+            
+            <Button variant="outline" size="lg" className="w-full border-primary/30 hover:bg-primary/10" onClick={handleGuestLogin} disabled={isLoading}>
+                <UserCircle className="mr-2" /> Use as Guest
+            </Button>
+        </div>
         
         {error && <p className="text-sm text-destructive mt-4">{error}</p>}
       </motion.div>
