@@ -4,12 +4,13 @@
 import { motion } from 'framer-motion';
 import { allApps, App } from '@/lib/apps-config';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
-import { Loader2, X, BrainCircuit } from 'lucide-react';
+import { Loader2, X, BrainCircuit, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/contexts/settings-context';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { get, set } from '@/lib/idb';
 import type { UserApp } from './apps/xenova-dev';
 
@@ -56,7 +57,7 @@ function AppCardWithBanner({ app, onSelectApp }: { app: App; onSelectApp: (appNa
 
     return (
         <div
-            className="group bg-secondary/50 rounded-2xl border border-border hover:border-accent transition-all duration-300 flex flex-col overflow-hidden"
+            className="group bg-secondary/50 rounded-2xl border border-border hover:border-accent transition-all duration-300 flex flex-col overflow-hidden cursor-pointer"
             onClick={() => onSelectApp(app.name)}
         >
             <div className="relative w-full aspect-video bg-black/20 flex items-center justify-center text-center">
@@ -115,7 +116,8 @@ function SimpleAppIcon({ app, onSelectApp }: { app: App; onSelectApp: (appName: 
 
 export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
     const { showAppBanners } = useSettings();
-    const [displayedApps, setDisplayedApps] = useState<App[]>([]);
+    const [allDisplayedApps, setAllDisplayedApps] = useState<App[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -138,12 +140,21 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
                     component: () => null, // Placeholder component
                 }));
 
-            setDisplayedApps([...filteredApps, ...installedCommunityApps]);
+            setAllDisplayedApps([...filteredApps, ...installedCommunityApps]);
             setIsLoading(false);
         };
 
         loadInstallableApps();
     }, []);
+
+    const filteredApps = useMemo(() => {
+        if (!searchQuery.trim()) return allDisplayedApps;
+        const lowerQuery = searchQuery.toLowerCase();
+        return allDisplayedApps.filter(app => 
+            app.name.toLowerCase().includes(lowerQuery) || 
+            app.description.toLowerCase().includes(lowerQuery)
+        );
+    }, [allDisplayedApps, searchQuery]);
 
     const stopPropagation = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -166,22 +177,45 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
                 className="relative w-full h-full p-8 overflow-y-auto"
                 onClick={stopPropagation}
             >
-                <h2 className="text-3xl font-bold text-foreground/90 mb-8 px-4 text-center">App Library</h2>
-                 {isLoading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                <div className="max-w-7xl mx-auto space-y-8">
+                    <h2 className="text-3xl font-bold text-foreground/90 text-center">App Library</h2>
+                    
+                    <div className="max-w-md mx-auto relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
+                        <Input
+                            placeholder="Search apps..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 bg-black/20 border-primary/30 focus:ring-accent h-12 rounded-xl text-lg"
+                            autoFocus
+                        />
                     </div>
-                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 max-w-7xl mx-auto">
-                        {displayedApps.map((app) =>
-                            showAppBanners ? (
-                                <AppCardWithBanner key={app.name} app={app} onSelectApp={onSelectApp} />
+
+                    {isLoading ? (
+                        <div className="flex justify-center items-center h-64">
+                            <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                        </div>
+                    ) : (
+                        <>
+                            {filteredApps.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                                    {filteredApps.map((app) =>
+                                        showAppBanners ? (
+                                            <AppCardWithBanner key={app.name} app={app} onSelectApp={onSelectApp} />
+                                        ) : (
+                                            <SimpleAppIcon key={app.name} app={app} onSelectApp={onSelectApp} />
+                                        )
+                                    )}
+                                </div>
                             ) : (
-                                <SimpleAppIcon key={app.name} app={app} onSelectApp={onSelectApp} />
-                            )
-                        )}
-                    </div>
-                 )}
+                                <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                                    <Search className="w-12 h-12 mb-4 opacity-20" />
+                                    <p className="text-xl">No apps found matching "{searchQuery}"</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
         </motion.div>
     );
