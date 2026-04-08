@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User } from 'lucide-react';
+import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import type { UserApp } from './xenova-dev';
@@ -30,6 +30,14 @@ const featuredApps: FeaturedApp[] = [
         icon: Blocks,
         imageSrc: 'https://placehold.co/400x500.png',
         imageHint: 'minecraft landscape'
+    },
+    {
+        id: 'geometry dash',
+        name: 'Geometry Dash',
+        description: 'Jump and fly your way through danger in this rhythm-based action platformer! Prepare for a near impossible challenge in the world of Geometry Dash.',
+        icon: Gamepad,
+        imageSrc: 'https://placehold.co/400x500.png',
+        imageHint: 'neon platformer'
     },
     {
         id: 'xenovadev',

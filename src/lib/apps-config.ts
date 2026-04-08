@@ -5,6 +5,7 @@ import {
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
     Cpu, Gauge, Newspaper, FolderOpen, Download, BrainCircuit, User,
+    Gamepad
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -34,6 +35,7 @@ import { XenovaDev } from '@/components/apps/xenova-dev';
 import { UserAppRunner } from '@/components/apps/user-app-runner';
 import { Wellness } from '@/components/apps/wellness';
 import { StarMap } from '@/components/apps/star-map';
+import { GeometryDashApp } from '@/components/apps/geometry-dash';
 
 export type App = {
     name: string;
@@ -70,6 +72,7 @@ export const allApps: App[] = [
     { name: "Star Map", icon: Download, component: StarMap, description: "Explore a 3D map of nearby star systems." },
     { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code.", isInstallable: true },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
+    { name: "Geometry Dash", icon: Gamepad, component: GeometryDashApp, description: "Jump and fly your way through danger in this rhythm-based action platformer!", isInstallable: true },
 ];
 
 export { UserAppRunner };
