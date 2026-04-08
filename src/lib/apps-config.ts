@@ -5,7 +5,7 @@ import {
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
     Cpu, Gauge, Newspaper, FolderOpen, Download, BrainCircuit, User,
-    Gamepad
+    Gamepad, Bird
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -36,6 +36,7 @@ import { UserAppRunner } from '@/components/apps/user-app-runner';
 import { Wellness } from '@/components/apps/wellness';
 import { StarMap } from '@/components/apps/star-map';
 import { GeometryDashApp } from '@/components/apps/geometry-dash';
+import { FlappyBirdApp } from '@/components/apps/flappy-bird';
 
 export type App = {
     name: string;
@@ -73,6 +74,7 @@ export const allApps: App[] = [
     { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code.", isInstallable: true },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
     { name: "Geometry Dash", icon: Gamepad, component: GeometryDashApp, description: "Jump and fly your way through danger in this rhythm-based action platformer!", isInstallable: true },
+    { name: "Flappy Bird", icon: Bird, component: FlappyBirdApp, description: "The legendary bird-flapping challenge. Avoid the pipes and aim for a high score!", isInstallable: true },
 ];
 
 export { UserAppRunner };

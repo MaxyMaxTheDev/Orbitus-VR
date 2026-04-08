@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad } from 'lucide-react';
+import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad, Bird } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import type { UserApp } from './xenova-dev';
@@ -28,7 +28,7 @@ const featuredApps: FeaturedApp[] = [
         name: 'Minecraft',
         description: 'The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.',
         icon: Blocks,
-        imageSrc: 'https://placehold.co/400x500.png',
+        imageSrc: 'https://picsum.photos/seed/minecraft/400/500',
         imageHint: 'minecraft landscape'
     },
     {
@@ -36,15 +36,23 @@ const featuredApps: FeaturedApp[] = [
         name: 'Geometry Dash',
         description: 'Jump and fly your way through danger in this rhythm-based action platformer! Prepare for a near impossible challenge in the world of Geometry Dash.',
         icon: Gamepad,
-        imageSrc: 'https://placehold.co/400x500.png',
+        imageSrc: 'https://picsum.photos/seed/geometry/400/500',
         imageHint: 'neon platformer'
+    },
+    {
+        id: 'flappy bird',
+        name: 'Flappy Bird',
+        description: 'The legendary bird-flapping challenge. Simple to play, impossible to master. Can you beat your friends\' high scores?',
+        icon: Bird,
+        imageSrc: 'https://picsum.photos/seed/bird/400/500',
+        imageHint: 'yellow bird'
     },
     {
         id: 'xenovadev',
         name: 'XenovaDEV',
         description: 'Create your own apps for XenovaVR using AI or by writing code, and publish them to the App Store for everyone to use.',
         icon: BrainCircuit,
-        imageSrc: 'https://placehold.co/400x500.png',
+        imageSrc: 'https://picsum.photos/seed/code/400/500',
         imageHint: 'abstract code'
     }
 ];
