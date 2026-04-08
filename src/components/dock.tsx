@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from './ui/button';
@@ -19,7 +18,10 @@ const pinnedApps = [
 export function Dock({ onToggleLibrary, onOpenApp }: DockProps) {
     return (
         <TooltipProvider delayDuration={100}>
-            <div className="flex items-center gap-2 bg-card/60 backdrop-blur-xl border border-border rounded-full p-2 shadow-2xl shadow-black/20">
+            <div 
+                className="flex items-center gap-2 bg-card/60 border border-border rounded-full p-2 shadow-2xl shadow-black/20 transition-[backdrop-filter] duration-300"
+                style={{ backdropFilter: 'blur(var(--ui-blur))' }}
+            >
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" className="w-14 h-14 rounded-full text-foreground/80 hover:bg-primary/20 hover:text-primary" onClick={onToggleLibrary}>

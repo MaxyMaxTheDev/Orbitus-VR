@@ -1,4 +1,3 @@
-
 "use client";
 
 import { motion } from 'framer-motion';
@@ -166,7 +165,8 @@ export function AppLauncher({ onSelectApp, onClose }: AppLibraryProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="absolute inset-0 z-20 bg-card/90 backdrop-blur-2xl"
+            className="absolute inset-0 z-20 bg-card/90 transition-[backdrop-filter] duration-300"
+            style={{ backdropFilter: 'blur(var(--ui-blur))' }}
             onClick={onClose}
         >
              <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-30 w-12 h-12 rounded-full hover:bg-white/10" onClick={onClose}>

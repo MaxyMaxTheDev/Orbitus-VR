@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -172,7 +171,10 @@ function DesktopContent() {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="w-full h-full"
             >
-                <div className="w-full h-full flex flex-col bg-card/80 backdrop-blur-lg border border-border shadow-2xl shadow-black/30 rounded-2xl">
+                <div 
+                    className="w-full h-full flex flex-col bg-card/80 border border-border shadow-2xl shadow-black/30 rounded-2xl transition-[backdrop-filter] duration-300"
+                    style={{ backdropFilter: 'blur(var(--ui-blur))' }}
+                >
                     <header className="flex items-center justify-between p-3 pl-5 border-b border-border bg-card/50 flex-shrink-0 rounded-t-2xl">
                         <div className="flex items-center gap-3">
                             <app.icon className="w-5 h-5 text-accent" />

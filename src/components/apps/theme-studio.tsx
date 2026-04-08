@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Sparkles } from 'lucide-react';
 
 const ColorSetting = ({ label, value, onChange }: { label: string; value: number[]; onChange: (value: number[]) => void }) => {
   const [h, s, l] = value;
@@ -39,6 +38,8 @@ const defaultTheme = {
   accent: [217, 91, 60],
   background: [220, 13, 18],
   card: [220, 13, 22],
+  uiBlur: 16,
+  bgBlur: 0,
 };
 
 export function ThemeStudio() {
@@ -46,14 +47,16 @@ export function ThemeStudio() {
     const [accentColor, setAccentColor] = useState(defaultTheme.accent);
     const [backgroundColor, setBackgroundColor] = useState(defaultTheme.background);
     const [cardColor, setCardColor] = useState(defaultTheme.card);
+    const [uiBlur, setUiBlur] = useState(defaultTheme.uiBlur);
+    const [bgBlur, setBgBlur] = useState(defaultTheme.bgBlur);
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    const updateCssVar = (varName: string, hsl: number[]) => {
-        document.documentElement.style.setProperty(varName, `${hsl[0]} ${hsl[1]}% ${hsl[2]}%`);
+    const updateCssVar = (varName: string, value: string) => {
+        document.documentElement.style.setProperty(varName, value);
     }
 
     const handleReset = () => {
@@ -61,48 +64,59 @@ export function ThemeStudio() {
         setAccentColor(defaultTheme.accent);
         setBackgroundColor(defaultTheme.background);
         setCardColor(defaultTheme.card);
+        setUiBlur(defaultTheme.uiBlur);
+        setBgBlur(defaultTheme.bgBlur);
     };
 
     useEffect(() => {
         if (!isClient) return;
-        updateCssVar('--primary', primaryColor);
+        updateCssVar('--primary', `${primaryColor[0]} ${primaryColor[1]}% ${primaryColor[2]}%`);
     }, [primaryColor, isClient]);
     
     useEffect(() => {
         if (!isClient) return;
-        updateCssVar('--accent', accentColor);
-        updateCssVar('--ring', accentColor);
+        updateCssVar('--accent', `${accentColor[0]} ${accentColor[1]}% ${accentColor[2]}%`);
+        updateCssVar('--ring', `${accentColor[0]} ${accentColor[1]}% ${accentColor[2]}%`);
     }, [accentColor, isClient]);
 
     useEffect(() => {
         if (!isClient) return;
-        updateCssVar('--card', cardColor);
+        updateCssVar('--card', `${cardColor[0]} ${cardColor[1]}% ${cardColor[2]}%`);
     }, [cardColor, isClient]);
 
     useEffect(() => {
         if (!isClient) return;
-        updateCssVar('--background', backgroundColor);
-        
-        const isDark = backgroundColor[2] < 50;
-        const [hue, sat] = backgroundColor;
+        updateCssVar('--ui-blur', `${uiBlur}px`);
+    }, [uiBlur, isClient]);
 
+    useEffect(() => {
+        if (!isClient) return;
+        updateCssVar('--bg-blur', `${bgBlur}px`);
+    }, [bgBlur, isClient]);
+
+    useEffect(() => {
+        if (!isClient) return;
+        const [h, s, l] = backgroundColor;
+        updateCssVar('--background', `${h} ${s}% ${l}%`);
+        
+        const isDark = l < 50;
         const foregroundLightness = isDark ? 98 : 10;
-        updateCssVar('--foreground', [210, 40, foregroundLightness]);
+        updateCssVar('--foreground', `210 40% ${foregroundLightness}%`);
         
         const calculateLightness = (base: number, offset: number) => Math.max(0, Math.min(100, base + (isDark ? offset : -offset)));
 
-        updateCssVar('--popover', [hue, sat, calculateLightness(backgroundColor[2], 4)]);
-        updateCssVar('--secondary', [hue, sat, calculateLightness(backgroundColor[2], 10)]);
-        updateCssVar('--muted', [hue, sat, calculateLightness(backgroundColor[2], 10)]);
-        updateCssVar('--muted-foreground', [215, 20, calculateLightness(foregroundLightness, -33)]);
-        updateCssVar('--border', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
-        updateCssVar('--input', [hue, sat, calculateLightness(backgroundColor[2], 13)]);
+        updateCssVar('--popover', `${h} ${s}% ${calculateLightness(l, 4)}%`);
+        updateCssVar('--secondary', `${h} ${s}% ${calculateLightness(l, 10)}%`);
+        updateCssVar('--muted', `${h} ${s}% ${calculateLightness(l, 10)}%`);
+        updateCssVar('--muted-foreground', `215 20% ${calculateLightness(foregroundLightness, -33)}%`);
+        updateCssVar('--border', `${h} ${s}% ${calculateLightness(l, 13)}%`);
+        updateCssVar('--input', `${h} ${s}% ${calculateLightness(l, 13)}%`);
         
         const primaryIsDark = primaryColor[2] < 50;
-        updateCssVar('--primary-foreground', [0, 0, primaryIsDark ? 98 : 10]);
+        updateCssVar('--primary-foreground', `0 0% ${primaryIsDark ? 98 : 10}%`);
 
         const accentIsDark = accentColor[2] < 50;
-        updateCssVar('--accent-foreground', [0, 0, accentIsDark ? 98 : 10]);
+        updateCssVar('--accent-foreground', `0 0% ${accentIsDark ? 98 : 10}%`);
 
     }, [backgroundColor, primaryColor, accentColor, isClient]);
 
@@ -118,7 +132,7 @@ export function ThemeStudio() {
                 Reset to Default
             </Button>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             <Card className="bg-transparent border-primary/20">
                 <CardHeader>
                     <CardTitle className="text-primary text-xl font-headline tracking-wider">PRIMARY</CardTitle>
@@ -135,6 +149,14 @@ export function ThemeStudio() {
                     <ColorSetting label="Accent Color" value={accentColor} onChange={setAccentColor} />
                 </CardContent>
             </Card>
+            <Card className="bg-transparent border-foreground/20">
+                <CardHeader>
+                    <CardTitle className="text-xl font-headline tracking-wider">BACKGROUND</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ColorSetting label="Background" value={backgroundColor} onChange={setBackgroundColor} />
+                </CardContent>
+            </Card>
             <Card className="bg-transparent border-border/50">
                 <CardHeader>
                     <CardTitle className="text-xl font-headline tracking-wider">CARD</CardTitle>
@@ -143,12 +165,34 @@ export function ThemeStudio() {
                     <ColorSetting label="Card Color" value={cardColor} onChange={setCardColor} />
                 </CardContent>
             </Card>
-            <Card className="bg-transparent border-foreground/20">
+            <Card className="bg-transparent border-accent/20 xl:col-span-2">
                 <CardHeader>
-                    <CardTitle className="text-xl font-headline tracking-wider">BACKGROUND</CardTitle>
+                    <CardTitle className="text-accent text-xl font-headline tracking-wider flex items-center gap-2">
+                        <Sparkles className="w-5 h-5"/>
+                        EFFECTS
+                    </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <ColorSetting label="Background" value={backgroundColor} onChange={setBackgroundColor} />
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                        <Label className="text-lg font-medium font-headline">UI Blur ({uiBlur}px)</Label>
+                        <Slider 
+                            value={[uiBlur]} 
+                            max={40} 
+                            step={1} 
+                            onValueChange={([val]) => setUiBlur(val)} 
+                        />
+                        <p className="text-xs text-muted-foreground">Adjust transparency and blur depth for windows and the dock.</p>
+                    </div>
+                    <div className="space-y-4">
+                        <Label className="text-lg font-medium font-headline">Background Blur ({bgBlur}px)</Label>
+                        <Slider 
+                            value={[bgBlur]} 
+                            max={100} 
+                            step={1} 
+                            onValueChange={([val]) => setBgBlur(val)} 
+                        />
+                        <p className="text-xs text-muted-foreground">Control how much the desktop background is blurred.</p>
+                    </div>
                 </CardContent>
             </Card>
         </div>

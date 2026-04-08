@@ -33,6 +33,10 @@
     --ring: 217 91% 60%;
 
     --radius: 1rem;
+
+    /* Effects */
+    --ui-blur: 16px;
+    --bg-blur: 0px;
   }
 }
 
