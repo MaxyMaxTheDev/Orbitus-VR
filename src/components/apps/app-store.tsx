@@ -10,6 +10,7 @@ import { get, set } from '@/lib/idb';
 import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad, Bird } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
+import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
 import type { UserApp } from './xenova-dev';
 import type { LucideIcon } from 'lucide-react';
 
@@ -18,8 +19,6 @@ type FeaturedApp = {
     name: string;
     description: string;
     icon: LucideIcon;
-    imageSrc: string;
-    imageHint: string;
 };
 
 const featuredApps: FeaturedApp[] = [
@@ -28,34 +27,74 @@ const featuredApps: FeaturedApp[] = [
         name: 'Minecraft',
         description: 'The classic block-building adventure. Explore infinite worlds and build everything from the simplest of homes to the grandest of castles.',
         icon: Blocks,
-        imageSrc: 'https://picsum.photos/seed/minecraft/400/500',
-        imageHint: 'minecraft landscape'
     },
     {
         id: 'geometry dash',
         name: 'Geometry Dash',
         description: 'Jump and fly your way through danger in this rhythm-based action platformer! Prepare for a near impossible challenge in the world of Geometry Dash.',
         icon: Gamepad,
-        imageSrc: 'https://picsum.photos/seed/geometry/400/500',
-        imageHint: 'neon platformer'
     },
     {
         id: 'flappy bird',
         name: 'Flappy Bird',
         description: 'The legendary bird-flapping challenge. Simple to play, impossible to master. Can you beat your friends\' high scores?',
         icon: Bird,
-        imageSrc: 'https://picsum.photos/seed/bird/400/500',
-        imageHint: 'yellow bird'
     },
     {
         id: 'xenovadev',
         name: 'XenovaDEV',
         description: 'Create your own apps for XenovaVR using AI or by writing code, and publish them to the App Store for everyone to use.',
         icon: BrainCircuit,
-        imageSrc: 'https://picsum.photos/seed/code/400/500',
-        imageHint: 'abstract code'
     }
 ];
+
+function FeaturedAppBanner({ appName, description }: { appName: string; description: string }) {
+    const [bannerUrl, setBannerUrl] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBanner = async () => {
+            const cacheKey = `store-banner-${appName}`;
+            const cached = await get<string>(cacheKey);
+            
+            if (cached) {
+                setBannerUrl(cached);
+                setIsLoading(false);
+                return;
+            }
+
+            try {
+                const result = await generateAppBanner({ appName, description });
+                setBannerUrl(result.imageUrl);
+                await set(cacheKey, result.imageUrl);
+            } catch (e) {
+                console.error("Failed to generate store banner:", e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchBanner();
+    }, [appName, description]);
+
+    if (isLoading) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-black/20 rounded-md">
+                <Loader2 className="w-8 h-8 animate-spin text-accent/50" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full h-full">
+            <Image
+                src={bannerUrl}
+                alt={appName}
+                fill
+                className="rounded-md object-cover"
+            />
+        </div>
+    );
+}
 
 export function AppStore() {
   const [installedApps, setInstalledApps] = useState<string[]>([]);
@@ -138,16 +177,9 @@ export function AppStore() {
     const installableApp = { id: app.id, name: app.name };
     
     return (
-        <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20">
-            <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center">
-                <Image
-                    src={app.imageSrc}
-                    alt={app.name}
-                    width={400}
-                    height={500}
-                    className="rounded-md object-cover"
-                    data-ai-hint={app.imageHint}
-                />
+        <Card className="bg-transparent border-primary/30 grid grid-cols-1 md:grid-cols-3 overflow-hidden shadow-lg shadow-black/20 min-h-[300px]">
+            <div className="md:col-span-1 bg-black/20 p-4 flex items-center justify-center aspect-video md:aspect-auto">
+                <FeaturedAppBanner appName={app.name} description={app.description} />
             </div>
             <div className="md:col-span-2 p-6 flex flex-col justify-between">
                 <div>
