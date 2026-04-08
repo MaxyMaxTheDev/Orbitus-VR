@@ -55,4 +55,13 @@
   textarea {
     cursor: none;
   }
+
+  /* Support for native cursor in fullscreen/immersive modes */
+  .native-cursor, .native-cursor * {
+    cursor: auto !important;
+  }
+
+  .native-cursor .virtual-cursor {
+    display: none !important;
+  }
 }
