@@ -140,7 +140,7 @@ function DesktopContent() {
         return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setSystemState('setup')} />;
     }
     
-    const fullscreenApps = ["Browser", "Minecraft", "Geometry Dash", "Flappy Bird", "2048"];
+    const fullscreenApps = ["Browser", "Minecraft", "Geometry Dash", "Flappy Bird", "2048", "Hextris", "Tower Game", "PAC-MAN"];
     const isFullscreenApp = selectedApp && fullscreenApps.includes(selectedApp.name);
 
     const renderAppContent = () => {

@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad, Bird, Hash } from 'lucide-react';
+import { 
+    Blocks, Download, Trash2, Loader2, CheckCircle, 
+    BrainCircuit, User, Gamepad, Bird, Hash, 
+    Hexagon, Layers, Ghost 
+} from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
@@ -32,6 +36,24 @@ const featuredApps: FeaturedApp[] = [
         name: 'Geometry Dash',
         description: 'Jump and fly your way through danger in this rhythm-based action platformer! Prepare for a near impossible challenge in the world of Geometry Dash.',
         icon: Gamepad,
+    },
+    {
+        id: 'hextris',
+        name: 'Hextris',
+        description: 'A fast-paced hexagonal puzzle game inspired by Tetris. Rotate the hexagon to match colored blocks and prevent them from reaching the outer edge.',
+        icon: Hexagon,
+    },
+    {
+        id: 'tower game',
+        name: 'Tower Game',
+        description: 'Test your timing and precision! Stack the moving blocks to build the tallest skyscraper possible. One wrong move and it is game over.',
+        icon: Layers,
+    },
+    {
+        id: 'pac-man',
+        name: 'PAC-MAN',
+        description: 'Relive the golden age of arcade gaming. Navigate the maze, eat all the pellets, and avoid the ghosts in this faithful recreation.',
+        icon: Ghost,
     },
     {
         id: 'flappy bird',

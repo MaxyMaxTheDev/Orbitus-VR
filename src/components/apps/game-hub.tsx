@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
     RotateCcw, Trophy, Gamepad2, Blocks, Bird, Gamepad, 
-    Hash, Download, Play, Search, Info, Loader2 
+    Hash, Download, Play, Search, Info, Loader2,
+    Hexagon, Layers, Ghost
 } from 'lucide-react';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 import { get } from '@/lib/idb';
@@ -107,6 +108,9 @@ function NumberGuesser({ onBack }: { onBack: () => void }) {
 const gameCatalog = [
     { id: 'minecraft', name: 'Minecraft', icon: Blocks, type: 'external', description: 'Infinite blocks, infinite worlds.' },
     { id: 'geometry dash', name: 'Geometry Dash', icon: Gamepad, type: 'external', description: 'Rhythm-based action platforming.' },
+    { id: 'hextris', name: 'Hextris', icon: Hexagon, type: 'external', description: 'Addictive hexagonal color matching.' },
+    { id: 'tower game', name: 'Tower Game', icon: Layers, type: 'external', description: 'Build the tallest skyscraper.' },
+    { id: 'pac-man', name: 'PAC-MAN', icon: Ghost, type: 'external', description: 'The ultimate arcade classic.' },
     { id: 'flappy bird', name: 'Flappy Bird', icon: Bird, type: 'external', description: 'Simple flapping, extreme challenge.' },
     { id: '2048', name: '2048', icon: Hash, type: 'external', description: 'The viral addictive puzzle.' },
     { id: 'number-guesser', name: 'Number Guesser', icon: Trophy, type: 'built-in', description: 'System diagnostic logic game.' },
