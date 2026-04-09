@@ -4,7 +4,7 @@ import {
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
     Cpu, Gauge, Newspaper, FolderOpen, BrainCircuit,
-    Gamepad, Bird
+    Gamepad, Bird, Hash
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -34,6 +34,7 @@ import { XenovaDev } from '@/components/apps/xenova-dev';
 import { UserAppRunner } from '@/components/apps/user-app-runner';
 import { GeometryDashApp } from '@/components/apps/geometry-dash';
 import { FlappyBirdApp } from '@/components/apps/flappy-bird';
+import { Game2048App } from '@/components/apps/game-2048';
 
 export type App = {
     name: string;
@@ -50,7 +51,7 @@ export const allApps: App[] = [
     { name: "VR Chat", icon: Users, component: VRChat, description: "A social chat room with AI personalities to interact with." },
     { name: "360 Gallery", icon: View, component: Gallery360, description: "An immersive gallery for viewing 360-degree panoramic images." },
     { name: "SculptVR", icon: BoxSelect, component: SculptVR, description: "A creative tool to generate 3D models from text descriptions using AI." },
-    { name: "Game Hub", icon: Gamepad2, component: GameHub, description: "A portal for playing simple, fun mini-games." },
+    { name: "Game Hub", icon: Gamepad2, component: GameHub, description: "Your central portal for immersive and casual gaming." },
     { name: "Workspace", icon: Briefcase, component: Workspace, description: "A productivity app with a to-do list for managing tasks." },
     { name: "Theme Studio", icon: Palette, component: ThemeStudio, description: "A customization tool to change the UI's color theme in real-time." },
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
@@ -70,6 +71,7 @@ export const allApps: App[] = [
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
     { name: "Geometry Dash", icon: Gamepad, component: GeometryDashApp, description: "Jump and fly your way through danger in this rhythm-based action platformer!", isInstallable: true },
     { name: "Flappy Bird", icon: Bird, component: FlappyBirdApp, description: "The legendary bird-flapping challenge. Avoid the pipes and aim for a high score!", isInstallable: true },
+    { name: "2048", icon: Hash, component: Game2048App, description: "Join the numbers and get to the 2048 tile!", isInstallable: true },
 ];
 
 export { UserAppRunner };

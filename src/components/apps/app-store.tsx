@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad, Bird } from 'lucide-react';
+import { Blocks, Download, Trash2, Loader2, CheckCircle, BrainCircuit, User, Gamepad, Bird, Hash } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
@@ -39,6 +38,12 @@ const featuredApps: FeaturedApp[] = [
         name: 'Flappy Bird',
         description: 'The legendary bird-flapping challenge. Simple to play, impossible to master. Can you beat your friends\' high scores?',
         icon: Bird,
+    },
+    {
+        id: '2048',
+        name: '2048',
+        description: 'The classic addictive number puzzle game. Join the numbers and get to the 2048 tile!',
+        icon: Hash,
     },
     {
         id: 'xenovadev',
