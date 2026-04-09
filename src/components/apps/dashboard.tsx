@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useMemo } from 'react';
@@ -9,8 +8,6 @@ import { getQuote, QuoteOutput } from '@/ai/flows/quote-flow';
 import { get, set } from '@/lib/idb';
 import { Bot, Loader2, Newspaper, ArrowRight, Bell, ListChecks, HardDrive, X, GripVertical, Check, Plus, Heart, Music, CheckSquare } from 'lucide-react';
 import { useSettings, type WidgetName } from '@/contexts/settings-context';
-import { getNewsFeed } from '@/ai/flows/news-feed-flow';
-import type { NewsItem } from '@/ai/flows/news-feed-flow';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -129,7 +126,7 @@ const StorageWidget = () => {
 };
 
 const NewsWidget = () => {
-    const [news, setNews] = useState<NewsItem[]>([]);
+    const [news, setNews] = useState<any[]>([]);
     const [isNewsLoading, setIsNewsLoading] = useState(true);
     const { openApp } = useDesktopActions();
 
@@ -137,10 +134,11 @@ const NewsWidget = () => {
         const fetchNews = async () => {
             setIsNewsLoading(true);
             try {
-                const newsFeed = await getNewsFeed();
-                setNews(newsFeed.articles.slice(0, 3));
+                const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss');
+                const data = await response.json();
+                setNews(data.items.slice(0, 3));
             } catch (error) {
-                setNews([{ title: 'HoloNet Signal Lost', source: 'System', timestamp: 'Now', content: 'Could not retrieve news headlines.' }]);
+                setNews([]);
             } finally {
                 setIsNewsLoading(false);
             }
@@ -152,7 +150,7 @@ const NewsWidget = () => {
         <Card className="bg-card/50 border-border h-full">
             <CardHeader className="flex flex-row items-center justify-between p-4">
                 <CardTitle className="text-sm font-medium text-accent flex items-center gap-2">
-                    <Newspaper className="w-4 h-4" /> HOLONET NEWS
+                    <Newspaper className="w-4 h-4" /> LIVE HEADLINES
                 </CardTitle>
                 <Button variant="ghost" onClick={() => openApp('News Feed')} className="text-xs text-accent hover:underline flex items-center gap-1 h-auto p-0">
                     View All <ArrowRight className="w-3 h-3" />
@@ -160,15 +158,16 @@ const NewsWidget = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
                 {isNewsLoading ? (
-                    <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /><span>Loading headlines...</span></div>
+                    <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /><span>Fetching headlines...</span></div>
                 ) : (
                     <div className="space-y-4">
                         {news.map((item, index) => (
                             <div key={index} className="group cursor-pointer" onClick={() => openApp('News Feed')}>
-                                <p className="font-semibold text-foreground truncate group-hover:text-accent transition-colors">{item.title}</p>
-                                <p className="text-xs text-muted-foreground">{item.source} - {item.timestamp}</p>
+                                <p className="font-semibold text-foreground truncate group-hover:text-accent transition-colors text-sm">{item.title}</p>
+                                <p className="text-[10px] text-muted-foreground uppercase">{item.author || 'Google News'}</p>
                             </div>
                         ))}
+                        {news.length === 0 && <p className="text-xs text-muted-foreground">Unable to load live news feed.</p>}
                     </div>
                 )}
             </CardContent>
@@ -176,34 +175,9 @@ const NewsWidget = () => {
     );
 };
 
-const WellnessWidget = () => {
-    const [heartRate, setHeartRate] = useState(72);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setHeartRate(Math.floor(65 + Math.random() * 15));
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-         <Card className="bg-card/50 border-border h-full">
-            <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
-                <CardTitle className="text-sm font-medium text-accent">WELLNESS</CardTitle>
-                <Heart className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-                 <div className="text-2xl font-bold text-foreground flex items-baseline gap-2">
-                    {heartRate} <span className="text-base font-normal text-muted-foreground">BPM</span>
-                </div>
-                <p className="text-xs text-muted-foreground">Sleep: 7h 15m</p>
-            </CardContent>
-        </Card>
-    );
-};
-
 const TasksWidget = () => {
     const tasks = [
-        { id: 1, text: 'Finalize NexusVR launch trailer', completed: false },
+        { id: 1, text: 'Connect real mail account', completed: false },
         { id: 2, text: 'Debug spatial audio glitches', completed: false },
     ];
     return (
@@ -236,7 +210,7 @@ const widgetComponentMap: Record<WidgetName, { component: React.FC, colSpan: str
     overview: { component: OverviewWidget, colSpan: 'md:col-span-1' },
     storage: { component: StorageWidget, colSpan: 'md:col-span-1' },
     news: { component: NewsWidget, colSpan: 'md:col-span-2 lg:col-span-3' },
-    wellness: { component: WellnessWidget, colSpan: 'md:col-span-1' },
+    wellness: { component: () => null, colSpan: 'hidden' }, // Removed
     tasks: { component: TasksWidget, colSpan: 'md:col-span-1' },
     music: { component: MusicWidget, colSpan: 'md:col-span-2' },
 };
@@ -245,8 +219,7 @@ const allAvailableWidgets: { id: WidgetName; name: string; description: string; 
     { id: 'insight', name: 'AI Insight', description: 'Displays a daily AI-generated quote.', icon: Bot },
     { id: 'overview', name: 'Overview', description: 'Shows notifications and task shortcuts.', icon: Bell },
     { id: 'storage', name: 'Storage', description: 'Monitors virtual drive capacity.', icon: HardDrive },
-    { id: 'news', name: 'News', description: 'A feed of the latest news headlines.', icon: Newspaper },
-    { id: 'wellness', name: 'Wellness', description: 'A summary of your wellness data.', icon: Heart },
+    { id: 'news', name: 'Live Headlines', description: 'Real-time feed of the latest world news.', icon: Newspaper },
     { id: 'tasks', name: 'Tasks', description: 'A quick view of your pending tasks.', icon: ListChecks },
     { id: 'music', name: 'Music Player', description: 'Controls for the music player.', icon: Music },
 ];
@@ -355,7 +328,7 @@ export function Dashboard() {
                 <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", isEditingDashboard && "opacity-50 pointer-events-none")}>
                     {dashboardWidgets.map((widgetId) => {
                         const widget = widgetComponentMap[widgetId];
-                        if (!widget) return null;
+                        if (!widget || widgetId === 'wellness') return null;
                         const WidgetComponent = widget.component;
                         return (
                             <div key={widgetId} className={cn(widget.colSpan)}>
@@ -371,5 +344,3 @@ export function Dashboard() {
         </div>
     );
 }
-
-    
