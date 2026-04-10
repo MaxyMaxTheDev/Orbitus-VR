@@ -1,10 +1,11 @@
+
 import type { LucideIcon } from 'lucide-react';
 import { 
     Clapperboard, Globe, LayoutGrid, Mail, Music, Settings,
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
     Cpu, Gauge, Newspaper, FolderOpen, BrainCircuit,
-    Gamepad, Bird, Hash, Hexagon, Layers, Ghost
+    Gamepad, Bird, Hash, Hexagon, Layers, Ghost, Monitor
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -37,6 +38,7 @@ import { FlappyBirdApp } from '@/components/apps/flappy-bird';
 import { Game2048App } from '@/components/apps/game-2048';
 import { HextrisApp } from '@/components/apps/hextris';
 import { PacmanApp } from '@/components/apps/pacman';
+import { XenovaVM } from '@/components/apps/xenova-vm';
 
 export type App = {
     name: string;
@@ -70,6 +72,7 @@ export const allApps: App[] = [
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
     { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for XenovaVR." },
     { name: "XenovaDEV", icon: BrainCircuit, component: XenovaDev, description: "Create your own apps for XenovaVR using AI or by writing code.", isInstallable: true },
+    { name: "XenovaVM", icon: Monitor, component: XenovaVM, description: "An immersive x86 virtual machine running Linux directly in your browser.", isInstallable: true },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
     { name: "Geometry Dash", icon: Gamepad, component: GeometryDashApp, description: "Jump and fly your way through danger in this rhythm-based action platformer!", isInstallable: true },
     { name: "Flappy Bird", icon: Bird, component: FlappyBirdApp, description: "The legendary bird-flapping challenge. Avoid the pipes and aim for a high score!", isInstallable: true },

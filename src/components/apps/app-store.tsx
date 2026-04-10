@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -9,7 +10,7 @@ import { get, set } from '@/lib/idb';
 import { 
     Blocks, Download, Trash2, Loader2, CheckCircle, 
     BrainCircuit, User, Gamepad, Bird, Hash, 
-    Hexagon, Ghost 
+    Hexagon, Ghost, Monitor
 } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
@@ -26,6 +27,12 @@ type FeaturedApp = {
 };
 
 const featuredApps: FeaturedApp[] = [
+    {
+        id: 'xenovavm',
+        name: 'XenovaVM',
+        description: 'Run a real Linux virtual machine inside your browser. A powerful, x86-based virtualization tool for developers and explorers.',
+        icon: Monitor,
+    },
     {
         id: 'minecraft',
         name: 'Minecraft',
