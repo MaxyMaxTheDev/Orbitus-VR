@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -6,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { get, set } from '@/lib/idb';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, AlertCircle } from 'lucide-react';
+import { useSettings } from '@/contexts/settings-context';
 
 const STORAGE_KEY = 'notepad-content';
 
@@ -15,6 +15,7 @@ export function NotepadApp() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const { isGuest } = useSettings();
 
   useEffect(() => {
     const loadContent = async () => {
@@ -38,6 +39,16 @@ export function NotepadApp() {
   }, [toast]);
 
   const handleSave = async () => {
+    if (isGuest) {
+        toast({
+            variant: 'destructive',
+            icon: <AlertCircle className="w-5 h-5"/>,
+            title: 'Guest Mode',
+            description: 'Persistence is disabled for Guest accounts. Your notes will not be saved.',
+        });
+        return;
+    }
+
     setIsSaving(true);
     try {
       await set(STORAGE_KEY, content);
@@ -70,10 +81,12 @@ export function NotepadApp() {
       <Textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Type your notes here..."
+        placeholder={isGuest ? "Notes written here will disappear after your session..." : "Type your notes here..."}
         className="flex-1 bg-background/50 border-primary/30 focus:ring-accent resize-none text-base font-sans"
       />
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        {isGuest && <p className="text-xs text-muted-foreground italic flex items-center gap-1"><AlertCircle className="w-3 h-3"/> Session-only mode</p>}
+        <div className="flex-1" />
         <Button onClick={handleSave} disabled={isSaving} className="bg-accent hover:bg-accent/80">
           {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
           Save Note

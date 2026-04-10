@@ -9,13 +9,14 @@ import { get, set } from '@/lib/idb';
 import { 
     Blocks, Download, Trash2, Loader2, CheckCircle, 
     BrainCircuit, User, Gamepad, Bird, Hash, 
-    Hexagon, Layers, Ghost 
+    Hexagon, Ghost 
 } from 'lucide-react';
 import Image from 'next/image';
 import { ScrollArea } from '../ui/scroll-area';
 import { generateAppBanner } from '@/ai/flows/generate-app-banner-flow';
 import type { UserApp } from './xenova-dev';
 import type { LucideIcon } from 'lucide-react';
+import { useSettings } from '@/contexts/settings-context';
 
 type FeaturedApp = {
     id: string;
@@ -124,6 +125,7 @@ export function AppStore() {
   const [isLoadingState, setIsLoadingState] = useState(true);
   const [publishedApps, setPublishedApps] = useState<UserApp[]>([]);
 
+  const { isGuest } = useSettings();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -158,7 +160,10 @@ export function AppStore() {
           
           const newInstalledApps = [...installedApps, app.id];
           setInstalledApps(newInstalledApps);
-          set('installed-apps', newInstalledApps);
+          
+          if (!isGuest) {
+            set('installed-apps', newInstalledApps);
+          }
 
           setInstallingAppId(null);
           
@@ -166,7 +171,9 @@ export function AppStore() {
             toast({
               icon: <CheckCircle className="h-5 w-5 text-green-500" />,
               title: "Installation Complete",
-              description: `${app.name} has been added to your app library.`,
+              description: isGuest 
+                ? `${app.name} is available for this session (Guest mode - not saved).`
+                : `${app.name} has been added to your app library.`,
             });
           }, 0);
 
@@ -180,7 +187,10 @@ export function AppStore() {
   const handleUninstall = (app: {id: string, name: string}) => {
     const newInstalledApps = installedApps.filter(id => id !== app.id);
     setInstalledApps(newInstalledApps);
-    set('installed-apps', newInstalledApps);
+    
+    if (!isGuest) {
+        set('installed-apps', newInstalledApps);
+    }
 
     toast({
       icon: <Trash2 className="h-5 w-5" />,
@@ -241,7 +251,10 @@ export function AppStore() {
     <div className="h-full w-full p-4 sm:p-6 flex justify-center bg-black/20">
       <ScrollArea className="h-full w-full max-w-4xl">
         <div className="space-y-8 pr-4">
-          <h1 className="text-3xl font-bold text-center font-headline tracking-wider text-accent">App Store</h1>
+          <div className="flex flex-col items-center">
+            <h1 className="text-3xl font-bold text-center font-headline tracking-wider text-accent">App Store</h1>
+            {isGuest && <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Guest Mode Active: Downloads won't persist</p>}
+          </div>
           
           {isLoadingState ? (
               <div className="flex justify-center items-center h-64">

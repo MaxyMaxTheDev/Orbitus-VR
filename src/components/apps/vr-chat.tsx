@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -14,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Message } from "@/ai/schemas";
 import { get, set } from "@/lib/idb";
+import { useSettings } from "@/contexts/settings-context";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message cannot be empty"),
@@ -30,6 +30,7 @@ export function VRChat() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
+  const { isGuest } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,12 +50,13 @@ export function VRChat() {
   }, []);
 
   useEffect(() => {
-    if (isHistoryLoaded) {
+    // Skip saving if Guest
+    if (isHistoryLoaded && !isGuest) {
       set('vr-chat-messages', messages).catch(error => {
         console.error("Failed to save chat history:", error);
       });
     }
-  }, [messages, isHistoryLoaded]);
+  }, [messages, isHistoryLoaded, isGuest]);
 
   const {
     register,

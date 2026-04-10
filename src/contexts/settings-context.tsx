@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -27,6 +26,7 @@ type SettingsContextType = {
   setDashboardWidgets: (widgets: WidgetName[]) => void;
   isEditingDashboard: boolean;
   setIsEditingDashboard: (isEditing: boolean) => void;
+  isGuest: boolean;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -40,6 +40,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [uiScale, setUiScale] = useState(100);
   const [dashboardWidgets, setDashboardWidgets] = useState<WidgetName[]>(defaultWidgets);
   const [isEditingDashboard, setIsEditingDashboard] = useState(false);
+
+  const isGuest = username.toLowerCase() === 'guest';
+
+  // Helper to skip saving if Guest
+  const persist = async (key: string, val: any) => {
+    if (isGuest) return;
+    try {
+      await set(key, val);
+    } catch (e) {
+      console.error(`Failed to save ${key} to DB`, e);
+    }
+  };
 
   // This effect runs once on mount to load settings from IndexedDB
   useEffect(() => {
@@ -80,30 +92,32 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Handler to update state and IndexedDB for banner settings
   const handleSetShowAppBanners = (show: boolean) => {
     setShowAppBanners(show);
-    set('xenova-vr-show-banners', show).catch(e => console.error("Failed to save banner setting to DB", e));
+    persist('xenova-vr-show-banners', show);
   };
 
   // Handler to update state and IndexedDB for username
   const handleSetUsername = (name: string) => {
     setUsername(name);
-    set('xenova-vr-username', name).catch(e => console.error("Failed to save username to DB", e));
+    // We ALWAYS save username unless it's explicitly the 'Guest' session trigger
+    // but typically Guest is set via login, so we follow the skip logic.
+    persist('xenova-vr-username', name);
   };
   
   // Handler to update state and IndexedDB for notification position
   const handleSetNotificationPosition = (position: NotificationPosition) => {
     setNotificationPosition(position);
-    set('xenova-vr-notification-position', position).catch(e => console.error("Failed to save notification position to DB", e));
+    persist('xenova-vr-notification-position', position);
   };
 
   // Handler to update state and IndexedDB for UI Scale
   const handleSetUiScale = (scale: number) => {
     setUiScale(scale);
-    set('xenova-vr-ui-scale', scale).catch(e => console.error("Failed to save ui scale to DB", e));
+    persist('xenova-vr-ui-scale', scale);
   };
 
   const handleSetDashboardWidgets = (widgets: WidgetName[]) => {
     setDashboardWidgets(widgets);
-    set('xenova-vr-dashboard-widgets', widgets).catch(e => console.error("Failed to save dashboard widgets to DB", e));
+    persist('xenova-vr-dashboard-widgets', widgets);
   };
 
   const handleSetIsEditingDashboard = (isEditing: boolean) => {
@@ -124,6 +138,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setDashboardWidgets: handleSetDashboardWidgets,
         isEditingDashboard,
         setIsEditingDashboard: handleSetIsEditingDashboard,
+        isGuest,
     }}>
       {children}
     </SettingsContext.Provider>
@@ -137,5 +152,3 @@ export function useSettings() {
   }
   return context;
 }
-
-    
