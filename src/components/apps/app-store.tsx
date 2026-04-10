@@ -44,12 +44,6 @@ const featuredApps: FeaturedApp[] = [
         icon: Hexagon,
     },
     {
-        id: 'tower game',
-        name: 'Tower Game',
-        description: 'Test your timing and precision! Stack the moving blocks to build the tallest skyscraper possible. One wrong move and it is game over.',
-        icon: Layers,
-    },
-    {
         id: 'pac-man',
         name: 'PAC-MAN',
         description: 'Relive the golden age of arcade gaming. Navigate the maze, eat all the pellets, and avoid the ghosts in this faithful recreation.',

@@ -36,7 +36,6 @@ import { GeometryDashApp } from '@/components/apps/geometry-dash';
 import { FlappyBirdApp } from '@/components/apps/flappy-bird';
 import { Game2048App } from '@/components/apps/game-2048';
 import { HextrisApp } from '@/components/apps/hextris';
-import { TowerGameApp } from '@/components/apps/tower-game';
 import { PacmanApp } from '@/components/apps/pacman';
 
 export type App = {
@@ -76,7 +75,6 @@ export const allApps: App[] = [
     { name: "Flappy Bird", icon: Bird, component: FlappyBirdApp, description: "The legendary bird-flapping challenge. Avoid the pipes and aim for a high score!", isInstallable: true },
     { name: "2048", icon: Hash, component: Game2048App, description: "Join the numbers and get to the 2048 tile!", isInstallable: true },
     { name: "Hextris", icon: Hexagon, component: HextrisApp, description: "A fast-paced hexagonal puzzle game. Match colors to survive!", isInstallable: true },
-    { name: "Tower Game", icon: Layers, component: TowerGameApp, description: "Defend your base against waves of enemies in this high-intensity tower defense strategy game.", isInstallable: true },
     { name: "PAC-MAN", icon: Ghost, component: PacmanApp, description: "The ultimate arcade classic. Waka waka your way to a high score!", isInstallable: true },
 ];
 
