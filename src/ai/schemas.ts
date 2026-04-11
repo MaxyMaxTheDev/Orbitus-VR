@@ -50,6 +50,19 @@ export const SummarizeUrlOutputSchema = z.object({
 });
 export type SummarizeUrlOutput = z.infer<typeof SummarizeUrlOutputSchema>;
 
+// For browse-url-flow.ts (Simulated AI Browser)
+export const BrowseUrlOutputSchema = z.object({
+  title: z.string().describe('The title of the website.'),
+  description: z.string().describe('A brief description of the website metadata.'),
+  content: z.array(z.object({
+    type: z.enum(['header', 'text', 'link', 'list', 'alert']).describe('The type of content block.'),
+    title: z.string().optional().describe('An optional title for the block.'),
+    text: z.string().describe('The main text or content of the block.'),
+    url: z.string().optional().describe('A URL if the block is a link or contains a reference.'),
+  })).describe('A list of structured content blocks representing the page.'),
+});
+export type BrowseUrlOutput = z.infer<typeof BrowseUrlOutputSchema>;
+
 // For vr-chat-flow.ts
 export const MessageSchema = z.object({
   author: z.string(),

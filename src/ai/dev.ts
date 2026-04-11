@@ -3,6 +3,7 @@
 import './flows/chat';
 import './flows/quote-flow';
 import './flows/summarize-url-flow';
+import './flows/browse-url-flow';
 import './flows/vr-chat-flow';
 import './flows/image-generation-flow';
 import './flows/explain-code-flow';
