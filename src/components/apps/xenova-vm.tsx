@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { 
     Loader2, Terminal, Plus, Play, Maximize2, 
     Trash2, Monitor, Cpu, HardDrive, ArrowLeft, 
-    ShieldAlert, Info, Globe
+    ShieldAlert, Info, Globe, FileUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ type VM = {
     isoUrl: string;
     arch: 'x86_64' | 'i386';
     memory: string;
+    fileName?: string;
 };
 
 const DEFAULT_LINUX_ISO = "https://copy.sh/v86/?profile=linux26";
@@ -46,7 +47,7 @@ export function XenovaVM() {
   
   // New VM Form State
   const [newVmName, setNewVmName] = useState('');
-  const [newVmIso, setNewVmIso] = useState(DEFAULT_LINUX_ISO);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
@@ -75,20 +76,35 @@ export function XenovaVM() {
   const handleCreateVM = async () => {
       if (!newVmName.trim()) return;
 
+      let isoUrl = DEFAULT_LINUX_ISO;
+      let fileName = undefined;
+
+      if (selectedFile) {
+          // Create an object URL for the local file
+          // Note: These URLs are session-based and won't work after reload.
+          isoUrl = URL.createObjectURL(selectedFile);
+          fileName = selectedFile.name;
+      }
+
       const newVm: VM = {
           id: Date.now().toString(),
           name: newVmName,
-          isoUrl: newVmIso || DEFAULT_LINUX_ISO,
+          isoUrl: isoUrl,
           arch: 'x86_64',
-          memory: '512MB'
+          memory: '512MB',
+          fileName: fileName
       };
 
       const updatedVms = [...vms, newVm];
       setVms(updatedVms);
-      if (!isGuest) await set('xenova-vms', updatedVms);
+      
+      // Only persist if it's the cloud default, as Blobs can't be saved to IDB as strings
+      if (!isGuest && !selectedFile) {
+          await set('xenova-vms', updatedVms);
+      }
       
       setNewVmName('');
-      setNewVmIso(DEFAULT_LINUX_ISO);
+      setSelectedFile(null);
       setIsCreateOpen(false);
   };
 
@@ -202,7 +218,7 @@ export function XenovaVM() {
             <DialogContent className="bg-card border-border sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle className="text-accent font-headline tracking-widest">PROVISION VIRTUAL MACHINE</DialogTitle>
-                    <DialogDescription className="text-xs">Configure the identity and source for your new virtual environment.</DialogDescription>
+                    <DialogDescription className="text-xs">Select a local bootable image to configure your new virtual environment.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
                     <div className="space-y-2">
@@ -216,15 +232,26 @@ export function XenovaVM() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="vm-iso">Source ISO / URL</Label>
-                        <Input 
-                            id="vm-iso" 
-                            placeholder="https://..." 
-                            value={newVmIso}
-                            onChange={(e) => setNewVmIso(e.target.value)}
-                            className="bg-black/30 border-primary/30"
-                        />
-                        <p className="text-[10px] text-muted-foreground italic">Leave empty to use the default Xenova Linux profile.</p>
+                        <Label htmlFor="vm-iso">Boot Image (ISO/IMG)</Label>
+                        <div className="relative">
+                            <Input 
+                                id="vm-iso" 
+                                type="file"
+                                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                className="bg-black/30 border-primary/30 file:bg-accent file:text-accent-foreground file:border-0 file:rounded file:text-[10px] file:font-bold file:mr-4 file:px-2 file:py-1 h-12 pt-3 cursor-pointer"
+                                accept=".iso,.img,.bin"
+                            />
+                            {selectedFile && (
+                                <p className="mt-2 text-[10px] text-accent font-mono truncate px-1">
+                                    SELECTED: {selectedFile.name} ({ (selectedFile.size / (1024 * 1024)).toFixed(2) } MB)
+                                </p>
+                            )}
+                            {!selectedFile && (
+                                <p className="mt-2 text-[10px] text-muted-foreground italic px-1">
+                                    Leave empty to use the default Xenova Linux cloud profile.
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <DialogFooter>
@@ -276,7 +303,8 @@ export function XenovaVM() {
                                 </CardHeader>
                                 <CardContent className="pt-4 flex flex-col gap-2">
                                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2 truncate">
-                                        <Globe className="w-3 h-3 flex-shrink-0" /> {vm.isoUrl}
+                                        {vm.fileName ? <FileUp className="w-3 h-3 flex-shrink-0" /> : <Globe className="w-3 h-3 flex-shrink-0" />}
+                                        {vm.fileName || 'Cloud Image'}
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <Button 
