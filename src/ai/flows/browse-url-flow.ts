@@ -33,6 +33,26 @@ const browseUrlPrompt = ai.definePrompt({
     `
 });
 
+/**
+ * Utility to convert all relative URLs in HTML to absolute URLs.
+ * This is essential for srcDoc to load CSS, JS, and Images correctly.
+ */
+function absoluteify(html: string, baseUrl: string): string {
+    const root = new URL(baseUrl);
+    // Regex to match src, href, action, etc. attributes that don't start with a protocol or data URI
+    return html.replace(
+        /(href|src|action|srcset|poster)=["'](?!(?:[a-z]+:)?\/\/|data:)([^"']+)["']/gi,
+        (match, attr, path) => {
+            try {
+                const absUrl = new URL(path, root.href).href;
+                return `${attr}="${absUrl}"`;
+            } catch (e) {
+                return match;
+            }
+        }
+    );
+}
+
 export async function browseUrl(input: SummarizeUrlInput): Promise<BrowseUrlOutput> {
   if (!process.env.GOOGLE_API_KEY && !process.env.GEMINI_API_KEY) {
     return {
@@ -56,8 +76,9 @@ const browseUrlFlow = ai.defineFlow(
     try {
         const response = await fetch(input.url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept-Language': 'en-US,en;q=0.9',
             }
         });
         if (!response.ok) {
@@ -72,6 +93,9 @@ const browseUrlFlow = ai.defineFlow(
             content: [{ type: 'alert', text: `Connection Error: ${e.message}. Site may be blocking server-side requests.` }]
         };
     }
+
+    // Rewrite all relative URLs to absolute URLs so assets load in the portal
+    const processedHtml = absoluteify(rawHtml, input.url);
 
     // Basic cleaning to strip noise before sending to LLM for parsing
     const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
@@ -98,7 +122,7 @@ const browseUrlFlow = ai.defineFlow(
         return {
             ...aiResult.output,
             isFallback: false,
-            fullHtml: rawHtml,
+            fullHtml: processedHtml,
             rawContent: limitedText
         };
     } catch (aiError: any) {
@@ -108,7 +132,7 @@ const browseUrlFlow = ai.defineFlow(
             title: "Live Projection (Bypass Mode)",
             description: `The AI engine was bypassed (${aiError.message}). Rendering live source feed.`,
             isFallback: true,
-            fullHtml: rawHtml,
+            fullHtml: processedHtml,
             rawContent: limitedText,
             content: [] 
         };

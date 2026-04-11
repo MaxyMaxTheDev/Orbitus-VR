@@ -121,19 +121,17 @@ export function Browser() {
     }
   }
 
-  // Memoize the HTML content to prevent unnecessary iframe reloads and inject <base> tag
+  // Memoize the HTML content to prevent unnecessary iframe reloads
   const portalHtml = useMemo(() => {
     if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
     const data = viewContent as BrowseUrlOutput;
     if (!data || !data.isFallback || !data.fullHtml) return '';
 
-    // The <base> tag is the standard way to resolve relative assets (CSS/JS) in srcDoc
-    // We add a trailing slash if not present to ensure correct directory resolution
+    // We still inject the base tag as a secondary safety measure
     const baseUrl = currentUrl.endsWith('/') ? currentUrl : `${currentUrl}/`;
     const baseTag = `<base href="${baseUrl}">`;
     let html = data.fullHtml;
     
-    // Attempt to inject as early as possible in the head
     if (html.toLowerCase().includes('<head>')) {
         return html.replace(/<head>/i, `<head>${baseTag}`);
     } else if (html.toLowerCase().includes('<html>')) {
@@ -149,7 +147,7 @@ export function Browser() {
 
     if (data.isFallback) {
         return (
-            <div className="flex flex-col h-full w-full bg-white rounded-xl overflow-hidden relative">
+            <div className="flex flex-col h-full w-full bg-white relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
                     <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Transmission Mode</span>
@@ -226,7 +224,7 @@ export function Browser() {
         return (
             <iframe
               src={currentUrl}
-              className="w-full h-full flex-1 bg-white rounded-xl"
+              className="w-full h-full flex-1 bg-white"
               sandbox="allow-forms allow-same-origin allow-popups allow-scripts"
               title="Browser"
               onError={() => setViewMode(ViewMode.Error)}
@@ -244,7 +242,7 @@ export function Browser() {
         return renderAIPortalContent();
       case ViewMode.Summary:
         return (
-            <ScrollArea className="h-full border border-primary/30 rounded-lg p-6 bg-black/20">
+            <ScrollArea className="h-full border border-primary/30 rounded-lg p-6 bg-black/20 m-2">
                 <div className="prose prose-invert prose-sm max-w-none text-foreground whitespace-pre-wrap leading-loose">
                     <h2 className="text-accent font-headline tracking-widest uppercase mb-4 flex items-center gap-2">
                         <FileText className="w-5 h-5"/> Insight Summary
@@ -255,7 +253,7 @@ export function Browser() {
         );
       case ViewMode.Error:
          return (
-          <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 rounded-lg p-4">
+          <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 p-4 m-2 rounded-lg">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
             <h3 className="text-xl font-bold font-headline">Projection Failure</h3>
             <p className="text-center max-w-md">The website is blocking portal connections or the engine encountered a critical error. Try <b>AI Portal Mode</b> again or use a different URL.</p>
@@ -276,7 +274,7 @@ export function Browser() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full w-full bg-black/40">
+      <div className="flex flex-col h-full w-full bg-black">
         <div className="p-4 border-b border-primary/30 bg-card/30 backdrop-blur-md flex-shrink-0">
           <form onSubmit={handleSubmit(handlePortal)} className="flex items-center gap-2">
             <div className="relative flex-1 group">
@@ -320,7 +318,7 @@ export function Browser() {
           </form>
           {errors.url && <p className="text-destructive text-xs mt-1">{errors.url.message}</p>}
         </div>
-        <div className="flex-1 p-2 flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {renderContent()}
         </div>
       </div>
