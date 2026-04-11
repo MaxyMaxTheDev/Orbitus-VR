@@ -126,7 +126,6 @@ export function Browser() {
     if (!data) return null;
 
     if (data.isFallback) {
-        // Advanced Fallback: Render original HTML with a <base> tag to fix relative assets
         const baseTag = `<base href="${currentUrl}">`;
         let htmlWithBase = data.fullHtml || '';
         
@@ -139,15 +138,15 @@ export function Browser() {
         }
 
         return (
-            <div className="flex flex-col h-full bg-white rounded-xl overflow-hidden relative">
+            <div className="flex flex-col h-full w-full bg-white rounded-xl overflow-hidden relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
                     <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Sandboxed Live Feed</span>
                 </div>
                 <iframe
                     srcDoc={htmlWithBase}
-                    className="w-full h-full border-0"
-                    sandbox="allow-scripts allow-same-origin allow-forms"
+                    className="w-full flex-1 border-0"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
                     title="AI Portal Live Fallback"
                 />
             </div>
@@ -157,7 +156,7 @@ export function Browser() {
     if (!data.content) return null;
 
     return (
-        <div className="space-y-6 pb-12">
+        <div className="space-y-6 pb-12 h-full">
             <header className="p-6 border-b border-primary/20 bg-black/20 rounded-t-xl">
                 <h1 className="text-3xl font-bold text-accent font-headline tracking-wider">{data.title}</h1>
                 <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
@@ -227,9 +226,13 @@ export function Browser() {
             </div>
         );
       case ViewMode.AI_Portal:
+        const data = viewContent as BrowseUrlOutput;
+        if (data?.isFallback) {
+            return renderAIPortal(); // Full page view, no ScrollArea wrapper
+        }
         return (
-            <div className="h-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
-                <ScrollArea className="h-full">
+            <div className="h-full w-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
+                <ScrollArea className="h-full w-full">
                     {renderAIPortal()}
                 </ScrollArea>
             </div>
