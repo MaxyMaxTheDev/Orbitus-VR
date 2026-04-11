@@ -14,17 +14,17 @@ import type { SummarizeUrlInput, BrowseUrlOutput } from '../schemas';
 export type { SummarizeUrlInput, BrowseUrlOutput };
 
 /**
- * Utility to convert all relative URLs in HTML to absolute URLs.
- * This is essential for srcDoc to load CSS, JS, and Images correctly.
+ * Aggressively converts all relative URLs in HTML to absolute URLs.
+ * This ensures that CSS, JS, and Images load correctly when the HTML is rendered via srcDoc.
  */
 function absoluteify(html: string, baseUrl: string): string {
     const root = new URL(baseUrl);
-    // Regex to match src, href, action, etc. attributes that don't start with a protocol or data URI
+    // Regex to match src, href, action, etc. attributes that don't start with a protocol, hash, or data URI
     return html.replace(
-        /(href|src|action|srcset|poster)=["'](?!(?:[a-z]+:)?\/\/|data:)([^"']+)["']/gi,
+        /(href|src|action|srcset|poster)=["'](?!(?:[a-z]+:)?\/\/|#|data:)([^"']+)["']/gi,
         (match, attr, path) => {
             try {
-                // Remove leading slashes if they exist to handle both root-relative and relative paths
+                // Ensure the path is joined correctly to the base URL
                 const absUrl = new URL(path, root.href).href;
                 return `${attr}="${absUrl}"`;
             } catch (e) {
@@ -35,7 +35,6 @@ function absoluteify(html: string, baseUrl: string): string {
 }
 
 export async function browseUrl(input: SummarizeUrlInput): Promise<BrowseUrlOutput> {
-  // We no longer require API keys for the base fetching logic, only for AI summaries
   return browseUrlFlow(input);
 }
 
@@ -47,46 +46,42 @@ const browseUrlFlow = ai.defineFlow(
   },
   async (input) => {
     let rawHtml = '';
+    let finalUrl = input.url;
+
     try {
         const response = await fetch(input.url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.9',
-            }
+            },
+            redirect: 'follow'
         });
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+
         rawHtml = await response.text();
+        finalUrl = response.url; // Capture redirected URL
     } catch (e: any) {
         return { 
-            title: "Network Isolation", 
-            description: "The remote server refused the connection or is currently unreachable.",
+            title: "Projection Error", 
+            description: "The remote server refused the connection or is unreachable.",
             isFallback: true,
-            content: [{ type: 'alert', text: `Connection Error: ${e.message}. Site may be blocking server-side requests.` }]
+            content: [{ type: 'alert', text: `Connection Error: ${e.message}. The site might be blocking server-side requests.` }]
         };
     }
 
     // Rewrite all relative URLs to absolute URLs so assets load in the portal
-    const processedHtml = absoluteify(rawHtml, input.url);
+    const processedHtml = absoluteify(rawHtml, finalUrl);
 
-    // Basic cleaning to strip noise for raw text reference
-    const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
-                                .replace(/<script[^>]*>.*<\/script>/gs, '')
-                                .replace(/<[^>]+>/g, ' ')
-                                .replace(/\s\s+/g, ' ')
-                                .trim();
-    
-    const limitedText = textOnly.substring(0, 15000);
-
-    // Default to Live Projection Mode immediately for performance
+    // Default to Live Projection Mode immediately
     return {
         title: "Live Projection",
-        description: `Direct source transmission from ${input.url}`,
-        isFallback: true, // This triggers the Live Projection iframe in the UI
+        description: `Direct source transmission from ${finalUrl}`,
+        isFallback: true,
         fullHtml: processedHtml,
-        rawContent: limitedText,
         content: [] 
     };
   }

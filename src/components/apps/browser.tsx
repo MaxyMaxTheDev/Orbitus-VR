@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 enum ViewMode {
   Idle,
   Browsing, // Standard Iframe
-  AI_Portal, // Structured AI View / Live Projection
+  AI_Portal, // Live Projection (Server-side fetch + Absoluteify)
   Loading,
   Summary,
   Error,
@@ -77,8 +77,8 @@ export function Browser() {
         console.error("Portal Execution Error:", e);
         toast({
             variant: 'destructive',
-            title: 'Portal Engine Failure',
-            description: e.message || 'AI engine was unable to initialize.',
+            title: 'Projection Failure',
+            description: e.message || 'System was unable to establish a projection.',
         });
         setViewMode(ViewMode.Error);
     }
@@ -125,28 +125,30 @@ export function Browser() {
   const portalHtml = useMemo(() => {
     if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
     const data = viewContent as BrowseUrlOutput;
-    if (!data || !data.fullHtml) return '';
+    return data?.fullHtml || '';
+  }, [viewContent, viewMode]);
 
-    // Inject base tag as a safety measure for root-relative paths
-    const baseUrl = currentUrl.endsWith('/') ? currentUrl : `${currentUrl}/`;
-    const baseTag = `<base href="${baseUrl}">`;
-    let html = data.fullHtml;
-    
-    if (html.toLowerCase().includes('<head>')) {
-        return html.replace(/<head>/i, `<head>${baseTag}`);
-    } else if (html.toLowerCase().includes('<html>')) {
-        return html.replace(/<html>/i, `<html><head>${baseTag}</head>`);
-    } else {
-        return baseTag + html;
-    }
-  }, [viewContent, viewMode, currentUrl]);
-
-  const renderAIPortalContent = () => {
-    const data = viewContent as BrowseUrlOutput;
-    if (!data) return null;
-
-    // Full-screen iframe mode for live projection
-    if (data.isFallback || data.fullHtml) {
+  const renderContent = () => {
+    switch (viewMode) {
+      case ViewMode.Browsing:
+        return (
+            <iframe
+              src={currentUrl}
+              className="w-full h-full flex-1 bg-white"
+              sandbox="allow-forms allow-same-origin allow-popups allow-scripts allow-popups-to-escape-sandbox"
+              title="Browser"
+              onError={() => setViewMode(ViewMode.Error)}
+            />
+        );
+      case ViewMode.Loading:
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
+              <Loader2 className="w-16 h-16 animate-spin text-accent" />
+              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing Projection...</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing restrictions & absoluteifying assets</p>
+            </div>
+        );
+      case ViewMode.AI_Portal:
         return (
             <div className="flex flex-col h-full w-full bg-white relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
@@ -161,87 +163,6 @@ export function Browser() {
                 />
             </div>
         );
-    }
-
-    // Structured View (rarely used now since fetch is default)
-    if (!data.content) return null;
-
-    return (
-        <div className="h-full w-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
-            <ScrollArea className="h-full w-full">
-                <div className="space-y-6 pb-12 h-full">
-                    <header className="p-6 border-b border-primary/20 bg-black/20 rounded-t-xl">
-                        <h1 className="text-3xl font-bold text-accent font-headline tracking-wider">{data.title}</h1>
-                        <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
-                            <Globe2 className="w-4 h-4"/> {currentUrl}
-                        </p>
-                        <p className="text-xs text-muted-foreground/60 italic mt-1">{data.description}</p>
-                    </header>
-
-                    <div className="grid grid-cols-1 gap-4 px-4">
-                        {data.content.map((block, idx) => (
-                            <Card key={idx} className={cn(
-                                "bg-black/20 border-primary/10 overflow-hidden",
-                                block.type === 'alert' && "border-destructive/50 bg-destructive/5"
-                            )}>
-                                {block.title && (
-                                    <CardHeader className="py-3 px-4 bg-primary/5 border-b border-primary/5">
-                                        <CardTitle className="text-sm uppercase tracking-widest text-accent/80 font-headline">{block.title}</CardTitle>
-                                    </CardHeader>
-                                )}
-                                <CardContent className="p-4">
-                                    {block.type === 'link' ? (
-                                        <div className="flex items-center justify-between gap-4">
-                                            <p className="text-foreground font-semibold">{block.text}</p>
-                                            <Button size="sm" variant="outline" className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground" onClick={() => {
-                                                if (block.url) {
-                                                    setValue('url', block.url);
-                                                    handlePortal({ url: block.url });
-                                                }
-                                            }}>
-                                                <ExternalLink className="w-3 h-3 mr-2" /> Navigate
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <p className={cn(
-                                            "text-foreground/90 leading-relaxed",
-                                            block.type === 'header' && "text-xl font-bold text-accent"
-                                        )}>
-                                            {block.text}
-                                        </p>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            </ScrollArea>
-        </div>
-    );
-  };
-
-  const renderContent = () => {
-    switch (viewMode) {
-      case ViewMode.Browsing:
-        return (
-            <iframe
-              src={currentUrl}
-              className="w-full h-full flex-1 bg-white"
-              sandbox="allow-forms allow-same-origin allow-popups allow-scripts"
-              title="Browser"
-              onError={() => setViewMode(ViewMode.Error)}
-            />
-        );
-      case ViewMode.Loading:
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
-              <Loader2 className="w-16 h-16 animate-spin text-accent" />
-              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing Projection...</p>
-              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing site restrictions & absoluteifying assets</p>
-            </div>
-        );
-      case ViewMode.AI_Portal:
-        return renderAIPortalContent();
       case ViewMode.Summary:
         return (
             <ScrollArea className="h-full border border-primary/30 rounded-lg p-6 bg-black/20 m-2">
@@ -291,11 +212,11 @@ export function Browser() {
             
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="submit" size="icon" className="bg-accent hover:bg-accent/80 text-accent-foreground" title="AI Portal Mode">
+                <Button type="submit" size="icon" className="bg-accent hover:bg-accent/80 text-accent-foreground" title="Go (Live Projection)">
                   <Zap className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Launch Live Projection (Bypass Restrictions)</p></TooltipContent>
+              <TooltipContent><p>Go: Establish Live Projection (Bypass Restrictions)</p></TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -304,7 +225,7 @@ export function Browser() {
                   <Globe2 className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Standard Iframe View</p></TooltipContent>
+              <TooltipContent><p>Standard Mode (Direct Iframe)</p></TooltipContent>
             </Tooltip>
 
             <div className="w-px h-6 bg-border mx-1" />
