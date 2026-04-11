@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI flow to simulate browsing by fetching and restructuring website content.
- * Includes a 60-second timeout with a deep-linked live HTML fallback.
+ * Optimized for direct Live Source Projection by default.
  */
 
 import { ai, z } from '@/ai/genkit';
@@ -12,26 +12,6 @@ import {
 import type { SummarizeUrlInput, BrowseUrlOutput } from '../schemas';
 
 export type { SummarizeUrlInput, BrowseUrlOutput };
-
-const browseUrlPrompt = ai.definePrompt({
-    name: 'browseUrlPrompt',
-    input: { schema: SummarizeUrlInputSchema.extend({ pageContent: z.string() }) },
-    output: { schema: BrowseUrlOutputSchema },
-    prompt: `You are an AI Web Browser Portal for the XenovaVR operating system.
-    A user has requested to view the following website content from URL: {{{url}}}. 
-    Your task is to parse the raw text and structure it into a functional, clean, and highly readable layout.
-    
-    Website Content:
-    {{{pageContent}}}
-    
-    Instructions:
-    1. Identify the primary title and metadata.
-    2. Break the content down into logical sections (Header, Main Text, Key Links, Alerts, etc.).
-    3. For 'links', identify significant navigation or call-to-action links mentioned in the text.
-    4. Use a journalistic and professional tone.
-    5. If there is a clear "Main Story" or "Primary Purpose", highlight it in the content array.
-    `
-});
 
 /**
  * Utility to convert all relative URLs in HTML to absolute URLs.
@@ -44,6 +24,7 @@ function absoluteify(html: string, baseUrl: string): string {
         /(href|src|action|srcset|poster)=["'](?!(?:[a-z]+:)?\/\/|data:)([^"']+)["']/gi,
         (match, attr, path) => {
             try {
+                // Remove leading slashes if they exist to handle both root-relative and relative paths
                 const absUrl = new URL(path, root.href).href;
                 return `${attr}="${absUrl}"`;
             } catch (e) {
@@ -54,14 +35,7 @@ function absoluteify(html: string, baseUrl: string): string {
 }
 
 export async function browseUrl(input: SummarizeUrlInput): Promise<BrowseUrlOutput> {
-  if (!process.env.GOOGLE_API_KEY && !process.env.GEMINI_API_KEY) {
-    return {
-      title: "AI Features Disabled",
-      description: "Please provide a GOOGLE_API_KEY in your .env file.",
-      isFallback: true,
-      content: [{ type: 'alert', text: 'API Key missing. Cannot initialize AI Portal.' }]
-    };
-  }
+  // We no longer require API keys for the base fetching logic, only for AI summaries
   return browseUrlFlow(input);
 }
 
@@ -76,7 +50,7 @@ const browseUrlFlow = ai.defineFlow(
     try {
         const response = await fetch(input.url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                 'Accept-Language': 'en-US,en;q=0.9',
             }
@@ -97,7 +71,7 @@ const browseUrlFlow = ai.defineFlow(
     // Rewrite all relative URLs to absolute URLs so assets load in the portal
     const processedHtml = absoluteify(rawHtml, input.url);
 
-    // Basic cleaning to strip noise before sending to LLM for parsing
+    // Basic cleaning to strip noise for raw text reference
     const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
                                 .replace(/<script[^>]*>.*<\/script>/gs, '')
                                 .replace(/<[^>]+>/g, ' ')
@@ -106,36 +80,14 @@ const browseUrlFlow = ai.defineFlow(
     
     const limitedText = textOnly.substring(0, 15000);
 
-    // AI Processing with 60s timeout
-    const timeoutPromise = new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('AI Projection timed out after 60s')), 60000)
-    );
-
-    try {
-        const aiResult = await Promise.race([
-            browseUrlPrompt({ ...input, pageContent: limitedText }),
-            timeoutPromise
-        ]);
-
-        if (!aiResult || !aiResult.output) throw new Error("AI engine returned no data.");
-
-        return {
-            ...aiResult.output,
-            isFallback: false,
-            fullHtml: processedHtml,
-            rawContent: limitedText
-        };
-    } catch (aiError: any) {
-        console.warn("AI Projection Bypassed:", aiError.message);
-        // Fallback: return the original HTML for direct rendering via base-tag injection
-        return {
-            title: "Live Projection (Bypass Mode)",
-            description: `The AI engine was bypassed (${aiError.message}). Rendering live source feed.`,
-            isFallback: true,
-            fullHtml: processedHtml,
-            rawContent: limitedText,
-            content: [] 
-        };
-    }
+    // Default to Live Projection Mode immediately for performance
+    return {
+        title: "Live Projection",
+        description: `Direct source transmission from ${input.url}`,
+        isFallback: true, // This triggers the Live Projection iframe in the UI
+        fullHtml: processedHtml,
+        rawContent: limitedText,
+        content: [] 
+    };
   }
 );

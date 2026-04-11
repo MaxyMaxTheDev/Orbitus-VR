@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 enum ViewMode {
   Idle,
   Browsing, // Standard Iframe
-  AI_Portal, // Structured AI View
+  AI_Portal, // Structured AI View / Live Projection
   Loading,
   Summary,
   Error,
@@ -125,9 +125,9 @@ export function Browser() {
   const portalHtml = useMemo(() => {
     if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
     const data = viewContent as BrowseUrlOutput;
-    if (!data || !data.isFallback || !data.fullHtml) return '';
+    if (!data || !data.fullHtml) return '';
 
-    // We still inject the base tag as a secondary safety measure
+    // Inject base tag as a safety measure for root-relative paths
     const baseUrl = currentUrl.endsWith('/') ? currentUrl : `${currentUrl}/`;
     const baseTag = `<base href="${baseUrl}">`;
     let html = data.fullHtml;
@@ -145,23 +145,25 @@ export function Browser() {
     const data = viewContent as BrowseUrlOutput;
     if (!data) return null;
 
-    if (data.isFallback) {
+    // Full-screen iframe mode for live projection
+    if (data.isFallback || data.fullHtml) {
         return (
             <div className="flex flex-col h-full w-full bg-white relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
-                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Transmission Mode</span>
+                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Projection Active</span>
                 </div>
                 <iframe
                     srcDoc={portalHtml}
                     className="w-full h-full border-0 flex-1"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                    title="AI Portal Live Fallback"
+                    title="Live Site Projection"
                 />
             </div>
         );
     }
 
+    // Structured View (rarely used now since fetch is default)
     if (!data.content) return null;
 
     return (
@@ -176,7 +178,7 @@ export function Browser() {
                         <p className="text-xs text-muted-foreground/60 italic mt-1">{data.description}</p>
                     </header>
 
-                    <div className="grid grid-cols-1 gap-4 px-2">
+                    <div className="grid grid-cols-1 gap-4 px-4">
                         {data.content.map((block, idx) => (
                             <Card key={idx} className={cn(
                                 "bg-black/20 border-primary/10 overflow-hidden",
@@ -234,8 +236,8 @@ export function Browser() {
         return (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
-              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing AI Portal...</p>
-              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Syncing deep assets & establishing secure connection<br/>(60s timeout active)</p>
+              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing Projection...</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing site restrictions & absoluteifying assets</p>
             </div>
         );
       case ViewMode.AI_Portal:
@@ -256,7 +258,7 @@ export function Browser() {
           <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 p-4 m-2 rounded-lg">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
             <h3 className="text-xl font-bold font-headline">Projection Failure</h3>
-            <p className="text-center max-w-md">The website is blocking portal connections or the engine encountered a critical error. Try <b>AI Portal Mode</b> again or use a different URL.</p>
+            <p className="text-center max-w-md">The website is blocking portal connections or the server encountered a critical error.</p>
             <div className="mt-2 text-xs font-mono p-2 bg-black/30 rounded w-full text-center truncate">{currentUrl}</div>
           </div>
         )
@@ -293,7 +295,7 @@ export function Browser() {
                   <Zap className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Launch AI Portal (Bypass Restrictions)</p></TooltipContent>
+              <TooltipContent><p>Launch Live Projection (Bypass Restrictions)</p></TooltipContent>
             </Tooltip>
 
             <Tooltip>
