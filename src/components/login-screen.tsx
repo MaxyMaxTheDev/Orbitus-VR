@@ -7,7 +7,7 @@ import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogIn, User, Eye, EyeOff, UserCircle, UserPlus, ChevronRight } from 'lucide-react';
+import { Loader2, LogIn, User, Eye, EyeOff, UserCircle, UserPlus, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -34,12 +34,22 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<SavedAccount | null>(null);
+  const [isManualEntry, setIsManualEntry] = useState(false);
+  
   const auth = useAuth();
 
   useEffect(() => {
     const loadAccounts = async () => {
       const accounts = await get<SavedAccount[]>('saved-accounts');
-      if (accounts) setSavedAccounts(accounts);
+      if (accounts && accounts.length > 0) {
+        setSavedAccounts(accounts);
+        // Default to the most recent account (first in list)
+        setSelectedAccount(accounts[0]);
+        setIdentifier(accounts[0].email);
+      } else {
+        setIsManualEntry(true);
+      }
     };
     loadAccounts();
   }, []);
@@ -81,7 +91,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           case 'auth/user-not-found':
           case 'auth/wrong-password':
           case 'auth/invalid-credential':
-            message = 'Incorrect username/email or password.';
+            message = 'Incorrect password.';
             break;
           case 'auth/invalid-email':
             message = 'Please enter a valid email address or username.';
@@ -100,9 +110,11 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   };
 
   const selectAccount = (acc: SavedAccount) => {
+    setSelectedAccount(acc);
     setIdentifier(acc.email);
     setPassword('');
     setError(null);
+    setIsManualEntry(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -122,85 +134,174 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         )}
       >
         {/* Main Login Area */}
-        <div className="flex-1 flex flex-col p-8 sm:p-12">
-          <div className="text-center mb-10">
-            <Avatar className="w-20 h-20 mx-auto border-4 border-primary mb-4">
-              <AvatarFallback className="bg-primary/20 text-primary">
-                <User className="w-10 h-10" />
-              </AvatarFallback>
-            </Avatar>
-            <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Authentication</h1>
-            <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the Nexus</p>
-          </div>
-
-          <form onSubmit={(e) => handleSignIn(e)} className="space-y-6 flex-1">
-            <div className="space-y-2">
-              <Label htmlFor="identifier-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email/User)</Label>
-              <Input
-                id="identifier-login"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="identity@nexus.net"
-                onKeyDown={onKeyDown}
-                className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
-              <div className="relative">
-                <Input
-                  id="password-login"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  onKeyDown={onKeyDown}
-                  className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl pr-12"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-muted-foreground"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            {error && (
-              <motion.p 
-                initial={{ opacity: 0, x: -10 }} 
-                animate={{ opacity: 1, x: 0 }}
-                className="text-xs text-destructive font-semibold bg-destructive/10 p-3 rounded-lg border border-destructive/20"
+        <div className="flex-1 flex flex-col p-8 sm:p-12 items-center justify-center relative">
+          
+          <AnimatePresence mode="wait">
+            {!isManualEntry && selectedAccount ? (
+              <motion.div 
+                key="windows-style"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full max-w-xs text-center space-y-8"
               >
-                {error}
-              </motion.p>
+                <div className="space-y-4">
+                  <Avatar className="w-32 h-32 mx-auto border-4 border-primary shadow-xl">
+                    <AvatarFallback className="bg-primary/20 text-primary text-4xl font-bold">
+                      {selectedAccount.displayName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h1 className="text-3xl font-bold font-headline tracking-tight">{selectedAccount.displayName}</h1>
+                </div>
+
+                <form onSubmit={(e) => handleSignIn(e)} className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      id="password-windows"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter Password"
+                      onKeyDown={onKeyDown}
+                      autoFocus
+                      className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl pr-12 text-center text-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-muted-foreground"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+
+                  {error && (
+                    <motion.p 
+                      initial={{ opacity: 0, x: -10 }} 
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-xs text-destructive font-semibold"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+
+                  <div className="flex flex-col gap-3">
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin" /> : "SIGN IN"}
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => setIsManualEntry(true)}
+                    >
+                      Sign in with another identity
+                    </Button>
+                  </div>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="manual-entry"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="w-full max-w-sm space-y-8"
+              >
+                {savedAccounts.length > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="absolute top-4 left-4 text-muted-foreground"
+                    onClick={() => setIsManualEntry(false)}
+                  >
+                    <ArrowLeft className="mr-2 w-4 h-4" /> Back
+                  </Button>
+                )}
+
+                <div className="text-center">
+                  <Avatar className="w-20 h-20 mx-auto border-4 border-primary mb-4">
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      <User className="w-10 h-10" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Authentication</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the Nexus</p>
+                </div>
+
+                <form onSubmit={(e) => handleSignIn(e)} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="identifier-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email/User)</Label>
+                    <Input
+                      id="identifier-login"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="identity@nexus.net"
+                      onKeyDown={onKeyDown}
+                      autoFocus
+                      className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
+                    <div className="relative">
+                      <Input
+                        id="password-login"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        onKeyDown={onKeyDown}
+                        className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl pr-12"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-muted-foreground"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <motion.p 
+                      initial={{ opacity: 0, x: -10 }} 
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-xs text-destructive font-semibold bg-destructive/10 p-3 rounded-lg border border-destructive/20"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
+
+                  <div className="pt-4 space-y-3">
+                    <Button size="lg" className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2 w-5 h-5" /> SIGN IN</>}
+                    </Button>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => { setIdentifier(''); setPassword(''); setError(null); setIsManualEntry(true); }} type="button">
+                        <UserPlus className="mr-2 w-4 h-4" /> NEW
+                      </Button>
+                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => handleSignIn('guest', 'xenova_guest')} type="button">
+                        <UserCircle className="mr-2 w-4 h-4" /> GUEST
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+
+                <div className="text-center border-t border-border/50 pt-6">
+                  <p className="text-xs text-muted-foreground">
+                    Don't have an account? <Button variant="link" className="p-0 text-accent h-auto text-xs" onClick={onSwitchToSignUp}>Create identity</Button>
+                  </p>
+                </div>
+              </motion.div>
             )}
-
-            <div className="pt-4 space-y-3">
-              <Button size="lg" className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest h-12 rounded-xl" disabled={isLoading}>
-                {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2 w-5 h-5" /> SIGN IN</>}
-              </Button>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => { setIdentifier(''); setPassword(''); setError(null); }} type="button">
-                  <UserPlus className="mr-2 w-4 h-4" /> NEW
-                </Button>
-                <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => handleSignIn('guest', 'xenova_guest')} type="button">
-                  <UserCircle className="mr-2 w-4 h-4" /> GUEST
-                </Button>
-              </div>
-            </div>
-          </form>
-
-          <div className="mt-8 text-center border-t border-border/50 pt-6">
-            <p className="text-xs text-muted-foreground">
-              Don't have an account? <Button variant="link" className="p-0 text-accent h-auto text-xs" onClick={onSwitchToSignUp}>Create identity</Button>
-            </p>
-          </div>
+          </AnimatePresence>
         </div>
 
         {/* User List Sidebar */}
