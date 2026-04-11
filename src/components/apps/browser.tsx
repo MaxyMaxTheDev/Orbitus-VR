@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Wrench, Zap, Info, ExternalLink, Link as LinkIcon } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlOutput } from '@/ai/schemas';
@@ -74,10 +74,11 @@ export function Browser() {
       setViewContent(result);
       setViewMode(ViewMode.AI_Portal);
     } catch (e: any) {
+        console.error("Portal Execution Error:", e);
         toast({
             variant: 'destructive',
-            title: 'Portal Connection Error',
-            description: 'AI was unable to safely project this website.',
+            title: 'Portal Engine Failure',
+            description: e.message || 'AI engine was unable to initialize.',
         });
         setViewMode(ViewMode.Error);
     }
@@ -215,7 +216,7 @@ export function Browser() {
           <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 rounded-lg p-4">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
             <h3 className="text-xl font-bold font-headline">Connection Error</h3>
-            <p className="text-center max-w-md">The website may be offline or blocking connections. Use <b>AI Portal Mode</b> to view this site securely.</p>
+            <p className="text-center max-w-md">The website is blocking standard frame connections or the AI engine encountered a critical error. Use <b>AI Portal Mode</b> to attempt a secure projection.</p>
             <div className="mt-2 text-xs font-mono p-2 bg-black/30 rounded w-full text-center truncate">{currentUrl}</div>
           </div>
         )
