@@ -13,34 +13,6 @@ import type { SummarizeUrlInput, BrowseUrlOutput } from '../schemas';
 
 export type { SummarizeUrlInput, BrowseUrlOutput };
 
-/**
- * Utility to convert relative URLs in HTML to absolute URLs.
- * This ensures that CSS, JS, and Images load correctly in the iframe.
- */
-function absoluteify(html: string, baseUrl: string): string {
-    const url = new URL(baseUrl);
-    const origin = url.origin;
-    const baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-
-    return html.replace(/(src|href|action)\s*=\s*["']([^"']+)["']/gi, (match, attr, path) => {
-        // Skip absolute URLs, data URIs, and anchors
-        if (/^(https?:|data:|#|\/\/)/i.test(path)) {
-            return match;
-        }
-
-        let absolutePath = '';
-        if (path.startsWith('/')) {
-            // Root-relative
-            absolutePath = origin + path;
-        } else {
-            // Path-relative
-            absolutePath = baseDir + path;
-        }
-
-        return `${attr}="${absolutePath}"`;
-    });
-}
-
 const browseUrlPrompt = ai.definePrompt({
     name: 'browseUrlPrompt',
     input: { schema: SummarizeUrlInputSchema.extend({ pageContent: z.string() }) },
@@ -101,10 +73,7 @@ const browseUrlFlow = ai.defineFlow(
         };
     }
 
-    // Process HTML for fallback rendering (fix links/assets)
-    const processedHtml = absoluteify(rawHtml, input.url);
-
-    // Basic cleaning to strip noise before sending to LLM
+    // Basic cleaning to strip noise before sending to LLM for parsing
     const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
                                 .replace(/<script[^>]*>.*<\/script>/gs, '')
                                 .replace(/<[^>]+>/g, ' ')
@@ -129,19 +98,19 @@ const browseUrlFlow = ai.defineFlow(
         return {
             ...aiResult.output,
             isFallback: false,
-            fullHtml: processedHtml,
+            fullHtml: rawHtml,
             rawContent: limitedText
         };
     } catch (aiError: any) {
         console.warn("AI Projection Bypassed:", aiError.message);
-        // Fallback: return the original HTML for direct rendering
+        // Fallback: return the original HTML for direct rendering via base-tag injection
         return {
             title: "Live Projection (Bypass Mode)",
             description: `The AI engine was bypassed (${aiError.message}). Rendering live source feed.`,
             isFallback: true,
-            fullHtml: processedHtml,
+            fullHtml: rawHtml,
             rawContent: limitedText,
-            content: [] // No structured blocks
+            content: [] 
         };
     }
   }

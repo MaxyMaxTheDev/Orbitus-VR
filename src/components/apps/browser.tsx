@@ -121,19 +121,23 @@ export function Browser() {
     }
   }
 
-  // Memoize the HTML content to prevent unnecessary iframe reloads
+  // Memoize the HTML content to prevent unnecessary iframe reloads and inject <base> tag
   const portalHtml = useMemo(() => {
     if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
     const data = viewContent as BrowseUrlOutput;
-    if (!data || !data.isFallback) return '';
+    if (!data || !data.isFallback || !data.fullHtml) return '';
 
-    const baseTag = `<base href="${currentUrl}">`;
-    let html = data.fullHtml || '';
+    // The <base> tag is the standard way to resolve relative assets (CSS/JS) in srcDoc
+    // We add a trailing slash if not present to ensure correct directory resolution
+    const baseUrl = currentUrl.endsWith('/') ? currentUrl : `${currentUrl}/`;
+    const baseTag = `<base href="${baseUrl}">`;
+    let html = data.fullHtml;
     
-    if (html.includes('<head>')) {
-        return html.replace('<head>', `<head>${baseTag}`);
-    } else if (html.includes('<html>')) {
-        return html.replace('<html>', `<html><head>${baseTag}</head>`);
+    // Attempt to inject as early as possible in the head
+    if (html.toLowerCase().includes('<head>')) {
+        return html.replace(/<head>/i, `<head>${baseTag}`);
+    } else if (html.toLowerCase().includes('<html>')) {
+        return html.replace(/<html>/i, `<html><head>${baseTag}</head>`);
     } else {
         return baseTag + html;
     }
@@ -148,7 +152,7 @@ export function Browser() {
             <div className="flex flex-col h-full w-full bg-white rounded-xl overflow-hidden relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
-                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Sandboxed Live Feed</span>
+                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Transmission Mode</span>
                 </div>
                 <iframe
                     srcDoc={portalHtml}
@@ -232,8 +236,8 @@ export function Browser() {
         return (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
-              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Initializing AI Portal...</p>
-              <p className="text-[10px] opacity-50 uppercase tracking-tighter">Live projection fallback active (60s limit)</p>
+              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing AI Portal...</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Syncing deep assets & establishing secure connection<br/>(60s timeout active)</p>
             </div>
         );
       case ViewMode.AI_Portal:
