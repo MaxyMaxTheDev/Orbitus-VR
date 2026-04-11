@@ -1,7 +1,7 @@
 'use server';
 /**
- * @fileOverview An AI flow to simulated browsing by fetching and restructuring website content.
- * Includes a 60-second timeout with a full live HTML fallback.
+ * @fileOverview An AI flow to simulate browsing by fetching and restructuring website content.
+ * Includes a 60-second timeout with a deep-linked live HTML fallback.
  */
 
 import { ai, z } from '@/ai/genkit';
@@ -12,6 +12,34 @@ import {
 import type { SummarizeUrlInput, BrowseUrlOutput } from '../schemas';
 
 export type { SummarizeUrlInput, BrowseUrlOutput };
+
+/**
+ * Utility to convert relative URLs in HTML to absolute URLs.
+ * This ensures that CSS, JS, and Images load correctly in the iframe.
+ */
+function absoluteify(html: string, baseUrl: string): string {
+    const url = new URL(baseUrl);
+    const origin = url.origin;
+    const baseDir = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
+
+    return html.replace(/(src|href|action)\s*=\s*["']([^"']+)["']/gi, (match, attr, path) => {
+        // Skip absolute URLs, data URIs, and anchors
+        if (/^(https?:|data:|#|\/\/)/i.test(path)) {
+            return match;
+        }
+
+        let absolutePath = '';
+        if (path.startsWith('/')) {
+            // Root-relative
+            absolutePath = origin + path;
+        } else {
+            // Path-relative
+            absolutePath = baseDir + path;
+        }
+
+        return `${attr}="${absolutePath}"`;
+    });
+}
 
 const browseUrlPrompt = ai.definePrompt({
     name: 'browseUrlPrompt',
@@ -73,6 +101,9 @@ const browseUrlFlow = ai.defineFlow(
         };
     }
 
+    // Process HTML for fallback rendering (fix links/assets)
+    const processedHtml = absoluteify(rawHtml, input.url);
+
     // Basic cleaning to strip noise before sending to LLM
     const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
                                 .replace(/<script[^>]*>.*<\/script>/gs, '')
@@ -98,7 +129,7 @@ const browseUrlFlow = ai.defineFlow(
         return {
             ...aiResult.output,
             isFallback: false,
-            fullHtml: rawHtml,
+            fullHtml: processedHtml,
             rawContent: limitedText
         };
     } catch (aiError: any) {
@@ -108,7 +139,7 @@ const browseUrlFlow = ai.defineFlow(
             title: "Live Projection (Bypass Mode)",
             description: `The AI engine was bypassed (${aiError.message}). Rendering live source feed.`,
             isFallback: true,
-            fullHtml: rawHtml,
+            fullHtml: processedHtml,
             rawContent: limitedText,
             content: [] // No structured blocks
         };

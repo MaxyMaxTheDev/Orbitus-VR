@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, Terminal, ShieldCheck } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, ShieldCheck } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlOutput } from '@/ai/schemas';
@@ -121,22 +121,29 @@ export function Browser() {
     }
   }
 
-  const renderAIPortal = () => {
+  // Memoize the HTML content to prevent unnecessary iframe reloads
+  const portalHtml = useMemo(() => {
+    if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
+    const data = viewContent as BrowseUrlOutput;
+    if (!data || !data.isFallback) return '';
+
+    const baseTag = `<base href="${currentUrl}">`;
+    let html = data.fullHtml || '';
+    
+    if (html.includes('<head>')) {
+        return html.replace('<head>', `<head>${baseTag}`);
+    } else if (html.includes('<html>')) {
+        return html.replace('<html>', `<html><head>${baseTag}</head>`);
+    } else {
+        return baseTag + html;
+    }
+  }, [viewContent, viewMode, currentUrl]);
+
+  const renderAIPortalContent = () => {
     const data = viewContent as BrowseUrlOutput;
     if (!data) return null;
 
     if (data.isFallback) {
-        const baseTag = `<base href="${currentUrl}">`;
-        let htmlWithBase = data.fullHtml || '';
-        
-        if (htmlWithBase.includes('<head>')) {
-            htmlWithBase = htmlWithBase.replace('<head>', `<head>${baseTag}`);
-        } else if (htmlWithBase.includes('<html>')) {
-            htmlWithBase = htmlWithBase.replace('<html>', `<html><head>${baseTag}</head>`);
-        } else {
-            htmlWithBase = baseTag + htmlWithBase;
-        }
-
         return (
             <div className="flex flex-col h-full w-full bg-white rounded-xl overflow-hidden relative">
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
@@ -144,8 +151,8 @@ export function Browser() {
                     <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Sandboxed Live Feed</span>
                 </div>
                 <iframe
-                    srcDoc={htmlWithBase}
-                    className="w-full flex-1 border-0"
+                    srcDoc={portalHtml}
+                    className="w-full h-full border-0 flex-1"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
                     title="AI Portal Live Fallback"
                 />
@@ -156,51 +163,55 @@ export function Browser() {
     if (!data.content) return null;
 
     return (
-        <div className="space-y-6 pb-12 h-full">
-            <header className="p-6 border-b border-primary/20 bg-black/20 rounded-t-xl">
-                <h1 className="text-3xl font-bold text-accent font-headline tracking-wider">{data.title}</h1>
-                <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
-                    <Globe2 className="w-4 h-4"/> {currentUrl}
-                </p>
-                <p className="text-xs text-muted-foreground/60 italic mt-1">{data.description}</p>
-            </header>
+        <div className="h-full w-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
+            <ScrollArea className="h-full w-full">
+                <div className="space-y-6 pb-12 h-full">
+                    <header className="p-6 border-b border-primary/20 bg-black/20 rounded-t-xl">
+                        <h1 className="text-3xl font-bold text-accent font-headline tracking-wider">{data.title}</h1>
+                        <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
+                            <Globe2 className="w-4 h-4"/> {currentUrl}
+                        </p>
+                        <p className="text-xs text-muted-foreground/60 italic mt-1">{data.description}</p>
+                    </header>
 
-            <div className="grid grid-cols-1 gap-4 px-2">
-                {data.content.map((block, idx) => (
-                    <Card key={idx} className={cn(
-                        "bg-black/20 border-primary/10 overflow-hidden",
-                        block.type === 'alert' && "border-destructive/50 bg-destructive/5"
-                    )}>
-                        {block.title && (
-                            <CardHeader className="py-3 px-4 bg-primary/5 border-b border-primary/5">
-                                <CardTitle className="text-sm uppercase tracking-widest text-accent/80 font-headline">{block.title}</CardTitle>
-                            </CardHeader>
-                        )}
-                        <CardContent className="p-4">
-                            {block.type === 'link' ? (
-                                <div className="flex items-center justify-between gap-4">
-                                    <p className="text-foreground font-semibold">{block.text}</p>
-                                    <Button size="sm" variant="outline" className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground" onClick={() => {
-                                        if (block.url) {
-                                            setValue('url', block.url);
-                                            handlePortal({ url: block.url });
-                                        }
-                                    }}>
-                                        <ExternalLink className="w-3 h-3 mr-2" /> Navigate
-                                    </Button>
-                                </div>
-                            ) : (
-                                <p className={cn(
-                                    "text-foreground/90 leading-relaxed",
-                                    block.type === 'header' && "text-xl font-bold text-accent"
-                                )}>
-                                    {block.text}
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+                    <div className="grid grid-cols-1 gap-4 px-2">
+                        {data.content.map((block, idx) => (
+                            <Card key={idx} className={cn(
+                                "bg-black/20 border-primary/10 overflow-hidden",
+                                block.type === 'alert' && "border-destructive/50 bg-destructive/5"
+                            )}>
+                                {block.title && (
+                                    <CardHeader className="py-3 px-4 bg-primary/5 border-b border-primary/5">
+                                        <CardTitle className="text-sm uppercase tracking-widest text-accent/80 font-headline">{block.title}</CardTitle>
+                                    </CardHeader>
+                                )}
+                                <CardContent className="p-4">
+                                    {block.type === 'link' ? (
+                                        <div className="flex items-center justify-between gap-4">
+                                            <p className="text-foreground font-semibold">{block.text}</p>
+                                            <Button size="sm" variant="outline" className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground" onClick={() => {
+                                                if (block.url) {
+                                                    setValue('url', block.url);
+                                                    handlePortal({ url: block.url });
+                                                }
+                                            }}>
+                                                <ExternalLink className="w-3 h-3 mr-2" /> Navigate
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <p className={cn(
+                                            "text-foreground/90 leading-relaxed",
+                                            block.type === 'header' && "text-xl font-bold text-accent"
+                                        )}>
+                                            {block.text}
+                                        </p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </ScrollArea>
         </div>
     );
   };
@@ -226,17 +237,7 @@ export function Browser() {
             </div>
         );
       case ViewMode.AI_Portal:
-        const data = viewContent as BrowseUrlOutput;
-        if (data?.isFallback) {
-            return renderAIPortal(); // Full page view, no ScrollArea wrapper
-        }
-        return (
-            <div className="h-full w-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
-                <ScrollArea className="h-full w-full">
-                    {renderAIPortal()}
-                </ScrollArea>
-            </div>
-        );
+        return renderAIPortalContent();
       case ViewMode.Summary:
         return (
             <ScrollArea className="h-full border border-primary/30 rounded-lg p-6 bg-black/20">
@@ -271,8 +272,8 @@ export function Browser() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full w-full">
-        <div className="p-4 border-b border-primary/30 bg-card/30 backdrop-blur-md">
+      <div className="flex flex-col h-full w-full bg-black/40">
+        <div className="p-4 border-b border-primary/30 bg-card/30 backdrop-blur-md flex-shrink-0">
           <form onSubmit={handleSubmit(handlePortal)} className="flex items-center gap-2">
             <div className="relative flex-1 group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -280,7 +281,7 @@ export function Browser() {
                 {...register('url')}
                 placeholder="search the nexus..."
                 autoComplete="off"
-                className="pl-10 bg-black/30 border-primary/50 focus:ring-accent"
+                className="pl-10 bg-black/30 border-primary/50 focus:ring-accent h-10"
                 />
             </div>
             
@@ -315,7 +316,7 @@ export function Browser() {
           </form>
           {errors.url && <p className="text-destructive text-xs mt-1">{errors.url.message}</p>}
         </div>
-        <div className="flex-1 p-4 flex flex-col gap-4 overflow-hidden">
+        <div className="flex-1 p-2 flex flex-col gap-4 overflow-hidden">
           {renderContent()}
         </div>
       </div>
