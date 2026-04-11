@@ -2,65 +2,314 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Loader2, Terminal, Info, ShieldAlert } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { 
+    Loader2, Terminal, Plus, Play, Maximize2, 
+    Trash2, Monitor, Cpu, HardDrive, ArrowLeft, 
+    ShieldAlert, Info, Globe
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogTrigger,
+    DialogFooter,
+    DialogDescription
+} from '@/components/ui/dialog';
+import { useSettings } from '@/contexts/settings-context';
+import { get, set } from '@/lib/idb';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '../ui/scroll-area';
+import { AnimatePresence, motion } from 'framer-motion';
+
+type VM = {
+    id: string;
+    name: string;
+    isoUrl: string;
+    arch: 'x86_64' | 'i386';
+    memory: string;
+};
+
+const DEFAULT_LINUX_ISO = "https://copy.sh/v86/?profile=linux26";
 
 export function XenovaVM() {
-  const [isLoading, setIsLoading] = useState(true);
+  const { isGuest } = useSettings();
+  const [vms, setVms] = useState<VM[]>([]);
+  const [activeVm, setActiveVm] = useState<VM | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isBooting, setIsBooting] = useState(false);
+  
+  // New VM Form State
+  const [newVmName, setNewVmName] = useState('');
+  const [newVmIso, setNewVmIso] = useState(DEFAULT_LINUX_ISO);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   useEffect(() => {
-    // Simulate BIOS/Kernel boot time
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    const loadVms = async () => {
+        setIsLoading(true);
+        const storedVms = await get<VM[]>('xenova-vms');
+        if (storedVms) {
+            setVms(storedVms);
+        } else {
+            // Default VM for new users
+            const defaultVm: VM = {
+                id: 'default-linux',
+                name: 'Xenova Linux (Default)',
+                isoUrl: DEFAULT_LINUX_ISO,
+                arch: 'x86_64',
+                memory: '512MB'
+            };
+            setVms([defaultVm]);
+            if (!isGuest) await set('xenova-vms', [defaultVm]);
+        }
+        setIsLoading(false);
+    };
+    loadVms();
+  }, [isGuest]);
+
+  const handleCreateVM = async () => {
+      if (!newVmName.trim()) return;
+
+      const newVm: VM = {
+          id: Date.now().toString(),
+          name: newVmName,
+          isoUrl: newVmIso || DEFAULT_LINUX_ISO,
+          arch: 'x86_64',
+          memory: '512MB'
+      };
+
+      const updatedVms = [...vms, newVm];
+      setVms(updatedVms);
+      if (!isGuest) await set('xenova-vms', updatedVms);
+      
+      setNewVmName('');
+      setNewVmIso(DEFAULT_LINUX_ISO);
+      setIsCreateOpen(false);
+  };
+
+  const handleDeleteVM = async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const updatedVms = vms.filter(v => v.id !== id);
+      setVms(updatedVms);
+      if (!isGuest) await set('xenova-vms', updatedVms);
+  };
+
+  const launchVm = (vm: VM, fullscreen: boolean = false) => {
+      setIsBooting(true);
+      setActiveVm(vm);
+      setIsFullscreen(fullscreen);
+      
+      // Simulate hardware initialization
+      setTimeout(() => {
+          setIsBooting(false);
+      }, 2000);
+  };
+
+  if (activeVm) {
+      return (
+          <div className={cn(
+              "bg-[#0c0c0c] flex flex-col relative overflow-hidden",
+              isFullscreen ? "fixed inset-0 z-[100] w-screen h-screen" : "w-full h-full"
+          )}>
+              {/* VM Header / Status Bar */}
+              <div className="h-10 bg-black/60 border-b border-white/5 flex items-center justify-between px-4 text-[10px] font-mono text-white/40 select-none">
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    VM: {activeVm.name.toUpperCase()}
+                  </span>
+                  <span className="hidden sm:inline">ARCH: {activeVm.arch}</span>
+                  <span className="hidden sm:inline">MEM: {activeVm.memory}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 text-[10px] hover:bg-white/10 text-white/60"
+                    onClick={() => {
+                        setActiveVm(null);
+                        setIsFullscreen(false);
+                    }}
+                  >
+                    <ArrowLeft className="w-3 h-3 mr-1" /> EXIT VM
+                  </Button>
+                  {!isFullscreen && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 text-[10px] hover:bg-white/10 text-white/60"
+                        onClick={() => setIsFullscreen(true)}
+                      >
+                        <Maximize2 className="w-3 h-3 mr-1" /> FULLSCREEN
+                      </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 relative">
+                {isBooting ? (
+                  <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center gap-4">
+                    <div className="font-mono text-xs text-green-500 space-y-1">
+                      <p>[    0.000000] Linux version 4.19.0-x86_64</p>
+                      <p>[    0.004512] Xenova Hypervisor detected</p>
+                      <p>[    0.124851] Initializing CPU modules...</p>
+                      <p>[    0.458712] Mounting virtual drives...</p>
+                      <p>[    0.895124] Starting systemd-journald...</p>
+                    </div>
+                    <Loader2 className="w-8 h-8 animate-spin text-primary mt-4" />
+                  </div>
+                ) : (
+                  <iframe
+                    src={activeVm.isoUrl}
+                    className="w-full h-full border-0"
+                    title={`VM: ${activeVm.name}`}
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                  />
+                )}
+              </div>
+
+              <div className="absolute bottom-4 right-4 p-2 px-3 bg-black/60 backdrop-blur-md border border-white/10 rounded text-[10px] font-mono text-white/60 pointer-events-none">
+                <span className="flex items-center gap-2 uppercase tracking-widest">
+                  <Terminal className="w-3 h-3 text-primary" />
+                  XenovaVM Secure Runtime
+                </span>
+              </div>
+          </div>
+      );
+  }
 
   return (
-    <div className="w-full h-full bg-[#0c0c0c] flex flex-col relative overflow-hidden">
-      {/* VM Header / Status Bar */}
-      <div className="h-8 bg-black/40 border-b border-white/5 flex items-center justify-between px-4 text-[10px] font-mono text-white/40 select-none">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            VM STATE: RUNNING
-          </span>
-          <span>CPU: X86_64</span>
-          <span>MEM: 512MB</span>
+    <div className="h-full w-full flex flex-col bg-black/20">
+      <header className="p-6 border-b border-primary/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-black/20">
+        <div>
+            <h1 className="text-3xl font-bold font-headline tracking-widest text-accent flex items-center gap-3">
+                <Monitor className="w-8 h-8"/> VM DASHBOARD
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage your virtual hardware and environments</p>
         </div>
-        <div className="flex items-center gap-4">
-          <span>ETH0: CONNECTED</span>
-          <span>IO: STDOUT/TTY1</span>
-        </div>
-      </div>
+        
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest">
+                    <Plus className="mr-2 w-5 h-5" /> CREATE NEW VM
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card border-border sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle className="text-accent font-headline tracking-widest">PROVISION VIRTUAL MACHINE</DialogTitle>
+                    <DialogDescription className="text-xs">Configure the identity and source for your new virtual environment.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="vm-name">VM Identifier</Label>
+                        <Input 
+                            id="vm-name" 
+                            placeholder="e.g., Debian-Stable-01" 
+                            value={newVmName}
+                            onChange={(e) => setNewVmName(e.target.value)}
+                            className="bg-black/30 border-primary/30"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="vm-iso">Source ISO / URL</Label>
+                        <Input 
+                            id="vm-iso" 
+                            placeholder="https://..." 
+                            value={newVmIso}
+                            onChange={(e) => setNewVmIso(e.target.value)}
+                            className="bg-black/30 border-primary/30"
+                        />
+                        <p className="text-[10px] text-muted-foreground italic">Leave empty to use the default Xenova Linux profile.</p>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                    <Button onClick={handleCreateVM} className="bg-accent text-accent-foreground" disabled={!newVmName}>Provision</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+      </header>
 
-      <div className="flex-1 relative">
+      <ScrollArea className="flex-1 p-6">
         {isLoading ? (
-          <div className="absolute inset-0 z-10 bg-black flex flex-col items-center justify-center gap-4">
-            <div className="font-mono text-xs text-green-500 space-y-1">
-              <p>[    0.000000] Linux version 4.19.0-x86_64</p>
-              <p>[    0.004512] Xenova Hypervisor detected</p>
-              <p>[    0.124851] Initializing CPU modules...</p>
-              <p>[    0.458712] Mounting virtual drives...</p>
-              <p>[    0.895124] Starting systemd-journald...</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+                <Loader2 className="w-12 h-12 animate-spin text-accent" />
+                <p className="font-headline tracking-widest opacity-50 uppercase">Accessing Hypervisor...</p>
             </div>
-            <Loader2 className="w-8 h-8 animate-spin text-primary mt-4" />
-          </div>
         ) : (
-          <iframe
-            src="https://copy.sh/v86/?profile=linux26"
-            className="w-full h-full border-0"
-            title="XenovaVM x86 Emulator"
-            sandbox="allow-scripts allow-same-origin allow-forms"
-          />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                    {vms.map((vm) => (
+                        <motion.div
+                            key={vm.id}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            layout
+                        >
+                            <Card className="group bg-transparent border-primary/20 hover:border-accent transition-all duration-300 overflow-hidden shadow-lg shadow-black/20">
+                                <CardHeader className="pb-2 bg-black/20 border-b border-primary/5">
+                                    <div className="flex items-start justify-between">
+                                        <div className="p-3 rounded-xl bg-black/30 text-accent group-hover:bg-accent group-hover:text-accent-foreground transition-colors">
+                                            <Terminal className="w-6 h-6" />
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                onClick={(e) => handleDeleteVM(vm.id, e)}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <CardTitle className="mt-4 text-xl tracking-tight">{vm.name}</CardTitle>
+                                    <CardDescription className="flex items-center gap-2 pt-1 text-[10px] font-mono">
+                                        <Cpu className="w-3 h-3" /> {vm.arch} &bull; <HardDrive className="w-3 h-3" /> {vm.memory}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="pt-4 flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2 truncate">
+                                        <Globe className="w-3 h-3 flex-shrink-0" /> {vm.isoUrl}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button 
+                                            onClick={() => launchVm(vm)}
+                                            className="bg-primary/20 hover:bg-primary text-primary-foreground border border-primary/30 transition-all font-bold text-xs"
+                                        >
+                                            <Play className="mr-2 w-3 h-3" /> RUN
+                                        </Button>
+                                        <Button 
+                                            onClick={() => launchVm(vm, true)}
+                                            className="bg-accent/20 hover:bg-accent text-accent-foreground border border-accent/30 transition-all font-bold text-xs"
+                                        >
+                                            <Maximize2 className="mr-2 w-3 h-3" /> FULLSCREEN
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
         )}
-      </div>
 
-      {/* Overlay Warning for guest access */}
-      <div className="absolute bottom-4 left-4 p-2 px-3 bg-black/60 backdrop-blur-md border border-white/10 rounded text-[10px] font-mono text-white/60 pointer-events-none">
-        <span className="flex items-center gap-2">
-          <Terminal className="w-3 h-3 text-primary" />
-          XENOVA VIRTUAL MACHINE v3.0.4-LTS
-        </span>
-      </div>
+        {!isLoading && vms.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 text-muted-foreground gap-4 text-center">
+                <ShieldAlert className="w-16 h-16 opacity-20" />
+                <div className="space-y-1">
+                    <p className="text-xl font-headline opacity-50 uppercase tracking-widest">No VMs provisioned</p>
+                    <p className="text-xs max-w-xs mx-auto">Create a new virtual machine to start testing software in a secure sandbox.</p>
+                </div>
+            </div>
+        )}
+      </ScrollArea>
     </div>
   );
 }
