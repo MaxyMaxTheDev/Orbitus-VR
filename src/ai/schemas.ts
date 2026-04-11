@@ -54,6 +54,8 @@ export type SummarizeUrlOutput = z.infer<typeof SummarizeUrlOutputSchema>;
 export const BrowseUrlOutputSchema = z.object({
   title: z.string().describe('The title of the website.'),
   description: z.string().describe('A brief description of the website metadata.'),
+  isFallback: z.boolean().optional().describe('Whether the content is raw fallback data due to timeout.'),
+  rawContent: z.string().optional().describe('The raw text content of the page.'),
   content: z.array(z.object({
     type: z.enum(['header', 'text', 'link', 'list', 'alert']).describe('The type of content block.'),
     title: z.string().optional().describe('An optional title for the block.'),

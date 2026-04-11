@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI flow to simulated browsing by fetching and restructuring website content.
+ * Includes a 60-second timeout with raw content fallback.
  */
 
 import { ai, z } from '@/ai/genkit';
@@ -78,15 +79,36 @@ const browseUrlFlow = ai.defineFlow(
     
     const limitedContent = textContent.substring(0, 15000);
 
+    // AI Processing with 60s timeout
+    const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('AI Portal execution timed out after 60s')), 60000)
+    );
+
     try {
-        const { output } = await browseUrlPrompt({ ...input, pageContent: limitedContent });
-        return output!;
-    } catch (aiError: any) {
-        console.error("AI Portal Error:", aiError);
+        const aiResult = await Promise.race([
+            browseUrlPrompt({ ...input, pageContent: limitedContent }),
+            timeoutPromise
+        ]);
+
+        if (!aiResult) throw new Error("AI engine returned no result.");
+
         return {
-            title: "AI Portal Offline",
-            description: "The AI engine was unable to process this site.",
-            content: [{ type: 'alert', text: `AI engine returned an error: ${aiError.message}. This usually means the API key is invalid or quota has been reached.` }]
+            ...aiResult.output!,
+            isFallback: false,
+            rawContent: limitedContent
+        };
+    } catch (aiError: any) {
+        console.warn("AI Portal Fallback Engaged:", aiError.message);
+        // Fallback to just returning the raw text if AI fails or times out
+        return {
+            title: "Portal Raw Feed",
+            description: `The AI engine was bypassed (${aiError.message}). Showing raw data stream.`,
+            isFallback: true,
+            rawContent: limitedContent,
+            content: [{
+                type: 'text',
+                text: limitedContent
+            }]
         };
     }
   }

@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, Terminal } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlOutput } from '@/ai/schemas';
@@ -123,7 +123,23 @@ export function Browser() {
 
   const renderAIPortal = () => {
     const data = viewContent as BrowseUrlOutput;
-    if (!data || !data.content) return null;
+    if (!data) return null;
+
+    if (data.isFallback) {
+        return (
+            <div className="p-6 space-y-4">
+                <div className="flex items-center gap-3 text-orange-400 mb-4 bg-orange-400/10 p-3 rounded-lg border border-orange-400/20">
+                    <Terminal className="w-5 h-5" />
+                    <p className="text-sm font-bold uppercase tracking-wider">Fallback Raw Feed Engaged</p>
+                </div>
+                <div className="font-mono text-xs text-foreground/70 bg-black/40 p-4 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed">
+                    {data.rawContent || "No data stream available."}
+                </div>
+            </div>
+        );
+    }
+
+    if (!data.content) return null;
 
     return (
         <div className="space-y-6 pb-12">
@@ -192,6 +208,7 @@ export function Browser() {
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
               <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Syncing AI Portal...</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter">Automatic fallback engaged (60s limit)</p>
             </div>
         );
       case ViewMode.AI_Portal:
