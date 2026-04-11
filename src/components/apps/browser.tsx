@@ -84,7 +84,7 @@ export function Browser() {
     establishPortal(data.url);
   };
 
-  // Intercept navigation messages from the portal script
+  // Listen for navigation messages from the projected site's interceptor
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
         if (event.data?.type === 'PORTAL_NAVIGATE' && event.data?.url) {
@@ -134,15 +134,15 @@ export function Browser() {
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4 bg-black">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
               <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing Projection...</p>
-              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing restrictions & absoluteifying assets</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing security headers & re-routing assets</p>
             </div>
         );
       case ViewMode.AI_Portal:
         return (
             <div className="flex flex-col h-full w-full bg-white relative overflow-hidden">
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none shadow-2xl">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none shadow-2xl transition-opacity duration-1000">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
-                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Projection Active</span>
+                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Virtual Projection Active</span>
                 </div>
                 <iframe
                     srcDoc={portalHtml}
@@ -168,7 +168,7 @@ export function Browser() {
           <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 p-4 rounded-lg m-2">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
             <h3 className="text-xl font-bold font-headline">Projection Failure</h3>
-            <p className="text-center max-w-md">The website is blocking portal connections or the server encountered a critical error.</p>
+            <p className="text-center max-w-md">The remote host is blocking virtual connections or the projection engine failed.</p>
             <div className="mt-2 text-xs font-mono p-2 bg-black/30 rounded w-full text-center truncate">{currentUrl}</div>
           </div>
         )
@@ -178,7 +178,7 @@ export function Browser() {
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2 bg-black">
             <Globe2 className="w-24 h-24 text-primary/10" strokeWidth={0.5}/>
             <p className="font-headline text-lg tracking-widest uppercase opacity-50">Web Browser</p>
-            <p className="text-xs">Enter a URL to access the decentralized web.</p>
+            <p className="text-xs">Enter a URL to establish a virtual projection.</p>
           </div>
         )
     }
@@ -212,7 +212,7 @@ export function Browser() {
                   <Zap className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Go: Establish Live Projection (Bypass Restrictions)</p></TooltipContent>
+              <TooltipContent><p>Establish Live Virtual Projection</p></TooltipContent>
             </Tooltip>
 
             <div className="w-px h-6 bg-border mx-1" />
