@@ -47,6 +47,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         // Default to the most recent account (first in list)
         setSelectedAccount(accounts[0]);
         setIdentifier(accounts[0].email);
+        setIsManualEntry(false);
       } else {
         setIsManualEntry(true);
       }
@@ -54,30 +55,27 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     loadAccounts();
   }, []);
 
-  const handleSignIn = async (e?: React.FormEvent | string, pass?: string) => {
-    if (e && typeof e !== 'string') e.preventDefault();
+  const handleSignIn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
-    const loginId = typeof e === 'string' ? e : identifier;
-    const loginPass = pass || password;
-
-    if (loginId.trim() === '' || loginPass.trim() === '') return;
+    if (identifier.trim() === '' || password.trim() === '') return;
     
     setIsLoading(true);
     setError(null);
 
-    let emailToUse = loginId;
-    if (loginId.toLowerCase() === 'guest') {
+    let emailToUse = identifier;
+    if (identifier.toLowerCase() === 'guest') {
       emailToUse = 'guest@xenovavr.local';
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, loginPass);
-      const displayName = userCredential.user.displayName || (loginId.toLowerCase() === 'guest' ? 'Guest' : loginId.split('@')[0]);
+      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
+      const displayName = userCredential.user.displayName || (identifier.toLowerCase() === 'guest' ? 'Guest' : identifier.split('@')[0]);
       
       setContextUsername(displayName);
 
       // Save account for next time if not guest
-      if (loginId.toLowerCase() !== 'guest') {
+      if (identifier.toLowerCase() !== 'guest') {
         const newAccount: SavedAccount = { email: emailToUse, displayName };
         const updatedAccounts = [newAccount, ...savedAccounts.filter(a => a.email !== emailToUse)].slice(0, 5);
         await set('saved-accounts', updatedAccounts);
@@ -130,7 +128,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         animate={{ opacity: 1, scale: 1 }}
         className={cn(
           "bg-card/40 backdrop-blur-2xl border border-border shadow-2xl rounded-3xl overflow-hidden flex flex-col md:flex-row transition-all duration-500",
-          hasMultipleAccounts ? "w-full max-w-4xl min-h-[500px]" : "w-full max-w-md"
+          hasMultipleAccounts ? "w-full max-w-4xl min-h-[550px]" : "w-full max-w-md"
         )}
       >
         {/* Main Login Area */}
@@ -154,10 +152,9 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                   <h1 className="text-3xl font-bold font-headline tracking-tight">{selectedAccount.displayName}</h1>
                 </div>
 
-                <form onSubmit={(e) => handleSignIn(e)} className="space-y-4">
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="relative">
                     <Input
-                      id="password-windows"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -193,6 +190,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     </Button>
                     <Button 
                       variant="ghost" 
+                      type="button"
                       className="text-xs text-muted-foreground hover:text-foreground"
                       onClick={() => setIsManualEntry(true)}
                     >
@@ -213,6 +211,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                   <Button 
                     variant="ghost" 
                     size="sm" 
+                    type="button"
                     className="absolute top-4 left-4 text-muted-foreground"
                     onClick={() => setIsManualEntry(false)}
                   >
@@ -230,11 +229,10 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                   <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the Nexus</p>
                 </div>
 
-                <form onSubmit={(e) => handleSignIn(e)} className="space-y-6">
+                <form onSubmit={handleSignIn} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="identifier-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email/User)</Label>
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email/User)</Label>
                     <Input
-                      id="identifier-login"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder="identity@nexus.net"
@@ -245,10 +243,9 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password-login" className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
                     <div className="relative">
                       <Input
-                        id="password-login"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -284,10 +281,10 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     </Button>
                     
                     <div className="grid grid-cols-2 gap-3">
-                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => { setIdentifier(''); setPassword(''); setError(null); setIsManualEntry(true); }} type="button">
+                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={onSwitchToSignUp} type="button">
                         <UserPlus className="mr-2 w-4 h-4" /> NEW
                       </Button>
-                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => handleSignIn('guest', 'xenova_guest')} type="button">
+                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => { setIdentifier('guest'); setPassword('xenova_guest'); }} type="button">
                         <UserCircle className="mr-2 w-4 h-4" /> GUEST
                       </Button>
                     </div>
@@ -318,7 +315,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     onClick={() => selectAccount(acc)}
                     className={cn(
                       "w-full flex items-center gap-3 p-3 rounded-2xl transition-all group hover:bg-white/5",
-                      identifier === acc.email ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
+                      identifier === acc.email && !isManualEntry ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
                     )}
                   >
                     <Avatar className="w-10 h-10 border border-border group-hover:border-primary/50 transition-colors">
@@ -332,7 +329,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     </div>
                     <ChevronRight className={cn(
                       "w-4 h-4 text-muted-foreground transition-transform",
-                      identifier === acc.email ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
+                      identifier === acc.email && !isManualEntry ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
                     )} />
                   </button>
                 ))}
