@@ -56,12 +56,13 @@ export const BrowseUrlOutputSchema = z.object({
   description: z.string().describe('A brief description of the website metadata.'),
   isFallback: z.boolean().optional().describe('Whether the content is raw fallback data due to timeout.'),
   rawContent: z.string().optional().describe('The raw text content of the page.'),
+  fullHtml: z.string().optional().describe('The full original HTML content of the page.'),
   content: z.array(z.object({
     type: z.enum(['header', 'text', 'link', 'list', 'alert']).describe('The type of content block.'),
     title: z.string().optional().describe('An optional title for the block.'),
     text: z.string().describe('The main text or content of the block.'),
     url: z.string().optional().describe('A URL if the block is a link or contains a reference.'),
-  })).describe('A list of structured content blocks representing the page.'),
+  })).optional().describe('A list of structured content blocks representing the page.'),
 });
 export type BrowseUrlOutput = z.infer<typeof BrowseUrlOutputSchema>;
 

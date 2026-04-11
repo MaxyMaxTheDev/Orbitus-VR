@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI flow to simulated browsing by fetching and restructuring website content.
- * Includes a 60-second timeout with raw content fallback.
+ * Includes a 60-second timeout with a full live HTML fallback.
  */
 
 import { ai, z } from '@/ai/genkit';
@@ -38,7 +38,8 @@ export async function browseUrl(input: SummarizeUrlInput): Promise<BrowseUrlOutp
     return {
       title: "AI Features Disabled",
       description: "Please provide a GOOGLE_API_KEY in your .env file.",
-      content: [{ type: 'alert', text: 'API Key missing.' }]
+      isFallback: true,
+      content: [{ type: 'alert', text: 'API Key missing. Cannot initialize AI Portal.' }]
     };
   }
   return browseUrlFlow(input);
@@ -51,64 +52,65 @@ const browseUrlFlow = ai.defineFlow(
     outputSchema: BrowseUrlOutputSchema,
   },
   async (input) => {
-    let rawContent = '';
+    let rawHtml = '';
     try {
         const response = await fetch(input.url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        rawContent = await response.text();
+        rawHtml = await response.text();
     } catch (e: any) {
         return { 
-            title: "Connection Failed", 
-            description: "The site could not be reached via standard retrieval.",
-            content: [{ type: 'alert', text: `Could not fetch content: ${e.message}. The website might be down or blocking automated requests.` }]
+            title: "Network Isolation", 
+            description: "The remote server refused the connection or is currently unreachable.",
+            isFallback: true,
+            content: [{ type: 'alert', text: `Connection Error: ${e.message}. Site may be blocking server-side requests.` }]
         };
     }
 
     // Basic cleaning to strip noise before sending to LLM
-    const textContent = rawContent.replace(/<style[^>]*>.*<\/style>/gs, '')
+    const textOnly = rawHtml.replace(/<style[^>]*>.*<\/style>/gs, '')
                                 .replace(/<script[^>]*>.*<\/script>/gs, '')
                                 .replace(/<[^>]+>/g, ' ')
                                 .replace(/\s\s+/g, ' ')
                                 .trim();
     
-    const limitedContent = textContent.substring(0, 15000);
+    const limitedText = textOnly.substring(0, 15000);
 
     // AI Processing with 60s timeout
     const timeoutPromise = new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('AI Portal execution timed out after 60s')), 60000)
+        setTimeout(() => reject(new Error('AI Projection timed out after 60s')), 60000)
     );
 
     try {
         const aiResult = await Promise.race([
-            browseUrlPrompt({ ...input, pageContent: limitedContent }),
+            browseUrlPrompt({ ...input, pageContent: limitedText }),
             timeoutPromise
         ]);
 
-        if (!aiResult) throw new Error("AI engine returned no result.");
+        if (!aiResult || !aiResult.output) throw new Error("AI engine returned no data.");
 
         return {
-            ...aiResult.output!,
+            ...aiResult.output,
             isFallback: false,
-            rawContent: limitedContent
+            fullHtml: rawHtml,
+            rawContent: limitedText
         };
     } catch (aiError: any) {
-        console.warn("AI Portal Fallback Engaged:", aiError.message);
-        // Fallback to just returning the raw text if AI fails or times out
+        console.warn("AI Projection Bypassed:", aiError.message);
+        // Fallback: return the original HTML for direct rendering
         return {
-            title: "Portal Raw Feed",
-            description: `The AI engine was bypassed (${aiError.message}). Showing raw data stream.`,
+            title: "Live Projection (Bypass Mode)",
+            description: `The AI engine was bypassed (${aiError.message}). Rendering live source feed.`,
             isFallback: true,
-            rawContent: limitedContent,
-            content: [{
-                type: 'text',
-                text: limitedContent
-            }]
+            fullHtml: rawHtml,
+            rawContent: limitedText,
+            content: [] // No structured blocks
         };
     }
   }

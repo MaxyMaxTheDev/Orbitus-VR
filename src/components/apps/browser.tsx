@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, Terminal } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, Terminal, ShieldCheck } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlOutput } from '@/ai/schemas';
@@ -126,15 +126,30 @@ export function Browser() {
     if (!data) return null;
 
     if (data.isFallback) {
+        // Advanced Fallback: Render original HTML with a <base> tag to fix relative assets
+        const baseTag = `<base href="${currentUrl}">`;
+        let htmlWithBase = data.fullHtml || '';
+        
+        if (htmlWithBase.includes('<head>')) {
+            htmlWithBase = htmlWithBase.replace('<head>', `<head>${baseTag}`);
+        } else if (htmlWithBase.includes('<html>')) {
+            htmlWithBase = htmlWithBase.replace('<html>', `<html><head>${baseTag}</head>`);
+        } else {
+            htmlWithBase = baseTag + htmlWithBase;
+        }
+
         return (
-            <div className="p-6 space-y-4">
-                <div className="flex items-center gap-3 text-orange-400 mb-4 bg-orange-400/10 p-3 rounded-lg border border-orange-400/20">
-                    <Terminal className="w-5 h-5" />
-                    <p className="text-sm font-bold uppercase tracking-wider">Fallback Raw Feed Engaged</p>
+            <div className="flex flex-col h-full bg-white rounded-xl overflow-hidden relative">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
+                    <ShieldCheck className="w-3 h-3 text-green-400" />
+                    <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Sandboxed Live Feed</span>
                 </div>
-                <div className="font-mono text-xs text-foreground/70 bg-black/40 p-4 rounded-lg border border-white/5 whitespace-pre-wrap leading-relaxed">
-                    {data.rawContent || "No data stream available."}
-                </div>
+                <iframe
+                    srcDoc={htmlWithBase}
+                    className="w-full h-full border-0"
+                    sandbox="allow-scripts allow-same-origin allow-forms"
+                    title="AI Portal Live Fallback"
+                />
             </div>
         );
     }
@@ -197,7 +212,7 @@ export function Browser() {
         return (
             <iframe
               src={currentUrl}
-              className="w-full h-full flex-1 bg-white"
+              className="w-full h-full flex-1 bg-white rounded-xl"
               sandbox="allow-forms allow-same-origin allow-popups allow-scripts"
               title="Browser"
               onError={() => setViewMode(ViewMode.Error)}
@@ -207,15 +222,17 @@ export function Browser() {
         return (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
-              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Syncing AI Portal...</p>
-              <p className="text-[10px] opacity-50 uppercase tracking-tighter">Automatic fallback engaged (60s limit)</p>
+              <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Initializing AI Portal...</p>
+              <p className="text-[10px] opacity-50 uppercase tracking-tighter">Live projection fallback active (60s limit)</p>
             </div>
         );
       case ViewMode.AI_Portal:
         return (
-            <ScrollArea className="h-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md">
-                {renderAIPortal()}
-            </ScrollArea>
+            <div className="h-full border border-primary/30 rounded-xl bg-black/30 backdrop-blur-md overflow-hidden">
+                <ScrollArea className="h-full">
+                    {renderAIPortal()}
+                </ScrollArea>
+            </div>
         );
       case ViewMode.Summary:
         return (
@@ -232,8 +249,8 @@ export function Browser() {
          return (
           <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 rounded-lg p-4">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
-            <h3 className="text-xl font-bold font-headline">Connection Error</h3>
-            <p className="text-center max-w-md">The website is blocking standard frame connections or the AI engine encountered a critical error. Use <b>AI Portal Mode</b> to attempt a secure projection.</p>
+            <h3 className="text-xl font-bold font-headline">Projection Failure</h3>
+            <p className="text-center max-w-md">The website is blocking portal connections or the engine encountered a critical error. Try <b>AI Portal Mode</b> again or use a different URL.</p>
             <div className="mt-2 text-xs font-mono p-2 bg-black/30 rounded w-full text-center truncate">{currentUrl}</div>
           </div>
         )
