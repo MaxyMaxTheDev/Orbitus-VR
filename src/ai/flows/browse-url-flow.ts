@@ -15,16 +15,16 @@ export type { SummarizeUrlInput, BrowseUrlOutput };
 
 /**
  * Aggressively converts all relative URLs in HTML to absolute URLs.
- * This ensures that CSS, JS, and Images load correctly when the HTML is rendered via srcDoc.
+ * Also injects a navigation interceptor script.
  */
 function absoluteify(html: string, baseUrl: string): string {
     const root = new URL(baseUrl);
-    // Regex to match src, href, action, etc. attributes that don't start with a protocol, hash, or data URI
-    return html.replace(
+    
+    // 1. Rewrite all asset/link paths to absolute
+    let processed = html.replace(
         /(href|src|action|srcset|poster)=["'](?!(?:[a-z]+:)?\/\/|#|data:)([^"']+)["']/gi,
         (match, attr, path) => {
             try {
-                // Ensure the path is joined correctly to the base URL
                 const absUrl = new URL(path, root.href).href;
                 return `${attr}="${absUrl}"`;
             } catch (e) {
@@ -32,6 +32,51 @@ function absoluteify(html: string, baseUrl: string): string {
             }
         }
     );
+
+    // 2. Inject the Virtual Viewport Script
+    // This intercepts clicks and form submissions to keep them within our portal logic
+    const interceptor = `
+        <script>
+            (function() {
+                const notify = (url) => {
+                    window.parent.postMessage({ type: 'PORTAL_NAVIGATE', url: url }, '*');
+                };
+
+                document.addEventListener('click', e => {
+                    const link = e.target.closest('a');
+                    if (link && link.href && !link.href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        notify(link.href);
+                    }
+                }, true);
+
+                document.addEventListener('submit', e => {
+                    e.preventDefault();
+                    const form = e.target;
+                    const url = new URL(form.action || window.location.href);
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams();
+                    for (const [key, value] of formData) params.append(key, value);
+                    
+                    const finalUrl = url.origin + url.pathname + (params.toString() ? '?' + params.toString() : '');
+                    notify(finalUrl);
+                }, true);
+
+                // Disable scripts that try to break out of frames
+                window.onbeforeunload = function() { return null; };
+                window.open = function(url) { notify(url); return null; };
+            })();
+        </script>
+    `;
+
+    // Inject at the start of head
+    if (processed.includes('<head>')) {
+        processed = processed.replace('<head>', `<head>${interceptor}`);
+    } else {
+        processed = interceptor + processed;
+    }
+
+    return processed;
 }
 
 export async function browseUrl(input: SummarizeUrlInput): Promise<BrowseUrlOutput> {
@@ -54,6 +99,8 @@ const browseUrlFlow = ai.defineFlow(
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
             },
             redirect: 'follow'
         });
@@ -63,7 +110,7 @@ const browseUrlFlow = ai.defineFlow(
         }
 
         rawHtml = await response.text();
-        finalUrl = response.url; // Capture redirected URL
+        finalUrl = response.url; 
     } catch (e: any) {
         return { 
             title: "Projection Error", 
@@ -73,10 +120,8 @@ const browseUrlFlow = ai.defineFlow(
         };
     }
 
-    // Rewrite all relative URLs to absolute URLs so assets load in the portal
     const processedHtml = absoluteify(rawHtml, finalUrl);
 
-    // Default to Live Projection Mode immediately
     return {
         title: "Live Projection",
         description: `Direct source transmission from ${finalUrl}`,

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Search, Globe2, Loader2, FileText, ServerCrash, Zap, ShieldCheck, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { summarizeUrl } from '@/ai/flows/summarize-url-flow';
 import { browseUrl } from '@/ai/flows/browse-url-flow';
 import type { SummarizeUrlInput, BrowseUrlOutput } from '@/ai/schemas';
@@ -13,13 +13,12 @@ import { SummarizeUrlInputSchema } from '@/ai/schemas';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 enum ViewMode {
   Idle,
-  Browsing, // Standard Iframe
-  AI_Portal, // Live Projection (Server-side fetch + Absoluteify)
+  Browsing,
+  AI_Portal,
   Loading,
   Summary,
   Error,
@@ -58,12 +57,9 @@ export function Browser() {
     }
   }
 
-  const handlePortal: SubmitHandler<SummarizeUrlInput> = async (data) => {
-    const userUrl = normalizeUrl(data.url);
-    if (!userUrl) {
-      setError('url', { type: 'manual', message: 'Please enter a valid URL.' });
-      return;
-    }
+  const establishPortal = useCallback(async (targetUrl: string) => {
+    const userUrl = normalizeUrl(targetUrl);
+    if (!userUrl) return;
     
     setValue('url', userUrl);
     setCurrentUrl(userUrl);
@@ -82,19 +78,23 @@ export function Browser() {
         });
         setViewMode(ViewMode.Error);
     }
+  }, [setValue, toast]);
+
+  const handlePortalForm: SubmitHandler<SummarizeUrlInput> = (data) => {
+    establishPortal(data.url);
   };
 
-  const handleStandardBrowsing = async () => {
-    const data = getValues();
-    const userUrl = normalizeUrl(data.url);
-    if (!userUrl) {
-        setError('url', { type: 'manual', message: 'Enter a URL first.' });
-        return;
-    }
-    setCurrentUrl(userUrl);
-    setViewMode(ViewMode.Browsing);
-  };
-  
+  // Intercept navigation messages from the portal script
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'PORTAL_NAVIGATE' && event.data?.url) {
+            establishPortal(event.data.url);
+        }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [establishPortal]);
+
   const handleSummarize = async () => {
     const data = getValues();
     const userUrl = normalizeUrl(data.url);
@@ -121,7 +121,6 @@ export function Browser() {
     }
   }
 
-  // Memoize the HTML content to prevent unnecessary iframe reloads
   const portalHtml = useMemo(() => {
     if (viewMode !== ViewMode.AI_Portal || typeof viewContent === 'string') return '';
     const data = viewContent as BrowseUrlOutput;
@@ -130,19 +129,9 @@ export function Browser() {
 
   const renderContent = () => {
     switch (viewMode) {
-      case ViewMode.Browsing:
-        return (
-            <iframe
-              src={currentUrl}
-              className="w-full h-full flex-1 bg-white"
-              sandbox="allow-forms allow-same-origin allow-popups allow-scripts allow-popups-to-escape-sandbox"
-              title="Browser"
-              onError={() => setViewMode(ViewMode.Error)}
-            />
-        );
       case ViewMode.Loading:
         return (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4 bg-black">
               <Loader2 className="w-16 h-16 animate-spin text-accent" />
               <p className="text-lg font-headline tracking-widest text-accent animate-pulse uppercase">Establishing Projection...</p>
               <p className="text-[10px] opacity-50 uppercase tracking-tighter text-center">Bypassing restrictions & absoluteifying assets</p>
@@ -150,15 +139,15 @@ export function Browser() {
         );
       case ViewMode.AI_Portal:
         return (
-            <div className="flex flex-col h-full w-full bg-white relative">
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none">
+            <div className="flex flex-col h-full w-full bg-white relative overflow-hidden">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2 pointer-events-none shadow-2xl">
                     <ShieldCheck className="w-3 h-3 text-green-400" />
                     <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Projection Active</span>
                 </div>
                 <iframe
                     srcDoc={portalHtml}
                     className="w-full h-full border-0 flex-1"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                     title="Live Site Projection"
                 />
             </div>
@@ -176,7 +165,7 @@ export function Browser() {
         );
       case ViewMode.Error:
          return (
-          <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 p-4 m-2 rounded-lg">
+          <div className="flex flex-col items-center justify-center h-full text-destructive-foreground gap-2 bg-destructive/20 p-4 rounded-lg m-2">
             <ServerCrash className="w-24 h-24" strokeWidth={1}/>
             <h3 className="text-xl font-bold font-headline">Projection Failure</h3>
             <p className="text-center max-w-md">The website is blocking portal connections or the server encountered a critical error.</p>
@@ -186,7 +175,7 @@ export function Browser() {
       case ViewMode.Idle:
       default:
         return (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2 bg-black">
             <Globe2 className="w-24 h-24 text-primary/10" strokeWidth={0.5}/>
             <p className="font-headline text-lg tracking-widest uppercase opacity-50">Web Browser</p>
             <p className="text-xs">Enter a URL to access the decentralized web.</p>
@@ -197,51 +186,48 @@ export function Browser() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full w-full bg-black">
-        <div className="p-4 border-b border-primary/30 bg-card/30 backdrop-blur-md flex-shrink-0">
-          <form onSubmit={handleSubmit(handlePortal)} className="flex items-center gap-2">
+      <div className="flex flex-col h-full w-full bg-black overflow-hidden">
+        <div className="p-2 border-b border-primary/20 bg-card/30 backdrop-blur-md flex-shrink-0 flex items-center gap-2">
+          
+          <div className="flex items-center gap-1 px-2">
+             <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full" disabled><ChevronLeft className="w-4 h-4"/></Button>
+             <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full" disabled><ChevronRight className="w-4 h-4"/></Button>
+             <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full" onClick={() => establishPortal(currentUrl)}><RefreshCw className="w-4 h-4"/></Button>
+          </div>
+
+          <form onSubmit={handleSubmit(handlePortalForm)} className="flex-1 flex items-center gap-2">
             <div className="relative flex-1 group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                 <Input
                 {...register('url')}
                 placeholder="search the nexus..."
                 autoComplete="off"
-                className="pl-10 bg-black/30 border-primary/50 focus:ring-accent h-10"
+                className="pl-10 bg-black/30 border-primary/30 focus:ring-accent h-9 rounded-full text-xs"
                 />
             </div>
             
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="submit" size="icon" className="bg-accent hover:bg-accent/80 text-accent-foreground" title="Go (Live Projection)">
+                <Button type="submit" size="icon" className="bg-accent hover:bg-accent/80 text-accent-foreground w-9 h-9 rounded-full">
                   <Zap className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent><p>Go: Establish Live Projection (Bypass Restrictions)</p></TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button type="button" onClick={handleStandardBrowsing} size="icon" variant="secondary" title="Standard Iframe Mode">
-                  <Globe2 className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent><p>Standard Mode (Direct Iframe)</p></TooltipContent>
-            </Tooltip>
-
             <div className="w-px h-6 bg-border mx-1" />
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button type="button" onClick={handleSummarize} size="icon" variant="secondary" title="Summarize with AI">
+                <Button type="button" onClick={handleSummarize} size="icon" variant="ghost" className="w-9 h-9 rounded-full text-muted-foreground hover:text-accent">
                   <FileText className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Summarize Page</p></TooltipContent>
+              <TooltipContent><p>Summarize Page with AI</p></TooltipContent>
             </Tooltip>
           </form>
-          {errors.url && <p className="text-destructive text-xs mt-1">{errors.url.message}</p>}
         </div>
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden relative">
           {renderContent()}
         </div>
       </div>
