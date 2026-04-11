@@ -33,6 +33,7 @@ type VM = {
     arch: 'x86_64' | 'i386';
     memory: string;
     fileName?: string;
+    isDefault?: boolean;
 };
 
 const DEFAULT_LINUX_ISO = "https://copy.sh/v86/?profile=linux26";
@@ -63,7 +64,8 @@ export function XenovaVM() {
                 name: 'Xenova Linux (Default)',
                 isoUrl: DEFAULT_LINUX_ISO,
                 arch: 'x86_64',
-                memory: '512MB'
+                memory: '512MB',
+                isDefault: true
             };
             setVms([defaultVm]);
             if (!isGuest) await set('xenova-vms', [defaultVm]);
@@ -74,17 +76,10 @@ export function XenovaVM() {
   }, [isGuest]);
 
   const handleCreateVM = async () => {
-      if (!newVmName.trim()) return;
+      if (!newVmName.trim() || !selectedFile) return;
 
-      let isoUrl = DEFAULT_LINUX_ISO;
-      let fileName = undefined;
-
-      if (selectedFile) {
-          // Create an object URL for the local file
-          // Note: These URLs are session-based and won't work after reload.
-          isoUrl = URL.createObjectURL(selectedFile);
-          fileName = selectedFile.name;
-      }
+      // Create an object URL for the local file
+      const isoUrl = URL.createObjectURL(selectedFile);
 
       const newVm: VM = {
           id: Date.now().toString(),
@@ -92,14 +87,16 @@ export function XenovaVM() {
           isoUrl: isoUrl,
           arch: 'x86_64',
           memory: '512MB',
-          fileName: fileName
+          fileName: selectedFile.name,
+          isDefault: false
       };
 
       const updatedVms = [...vms, newVm];
       setVms(updatedVms);
       
-      // Only persist if it's the cloud default, as Blobs can't be saved to IDB as strings
-      if (!isGuest && !selectedFile) {
+      // Note: Blob URLs don't persist well in IDB across reloads, 
+      // but we save the entry so the user sees their VM list.
+      if (!isGuest) {
           await set('xenova-vms', updatedVms);
       }
       
@@ -126,7 +123,47 @@ export function XenovaVM() {
       }, 2000);
   };
 
+  // Local Hypervisor Runner for custom ISOs
+  const getCustomVmSrcDoc = (vm: VM) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; color: #aaa; font-family: monospace; }
+            #screen_container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+            canvas { background: #000; max-width: 100%; max-height: 100%; image-rendering: pixelated; cursor: crosshair; }
+            #status { position: absolute; top: 10px; left: 10px; font-size: 10px; color: #444; pointer-events: none; z-index: 10; }
+        </style>
+        <script src="https://lib.v86.js.org/build/v86.js"></script>
+    </head>
+    <body>
+        <div id="status">XENOVA LOCAL HYPERVISOR v3.0 // ARCH: ${vm.arch} // MEM: ${vm.memory}</div>
+        <div id="screen_container">
+            <div id="v86_screen"></div>
+            <canvas id="v86_canvas"></canvas>
+        </div>
+        <script>
+            window.onload = function() {
+                var emulator = new V86Starter({
+                    wasm_path: "https://lib.v86.js.org/build/v86.wasm",
+                    memory_size: 512 * 1024 * 1024,
+                    vga_memory_size: 8 * 1024 * 1024,
+                    screen_container: document.getElementById("screen_container"),
+                    bios: { url: "https://lib.v86.js.org/bios/seabios.bin" },
+                    vga_bios: { url: "https://lib.v86.js.org/bios/vgabios.bin" },
+                    cdrom: { url: "${vm.isoUrl}" },
+                    autostart: true,
+                });
+            };
+        </script>
+    </body>
+    </html>
+  `;
+
   if (activeVm) {
+      const isDefault = activeVm.id === 'default-linux';
+
       return (
           <div className={cn(
               "bg-[#0c0c0c] flex flex-col relative overflow-hidden",
@@ -181,7 +218,8 @@ export function XenovaVM() {
                   </div>
                 ) : (
                   <iframe
-                    src={activeVm.isoUrl}
+                    src={isDefault ? activeVm.isoUrl : undefined}
+                    srcDoc={isDefault ? undefined : getCustomVmSrcDoc(activeVm)}
                     className="w-full h-full border-0"
                     title={`VM: ${activeVm.name}`}
                     sandbox="allow-scripts allow-same-origin allow-forms"
@@ -248,7 +286,7 @@ export function XenovaVM() {
                             )}
                             {!selectedFile && (
                                 <p className="mt-2 text-[10px] text-muted-foreground italic px-1">
-                                    Leave empty to use the default Xenova Linux cloud profile.
+                                    A local boot image is required for custom virtual machines.
                                 </p>
                             )}
                         </div>
@@ -256,7 +294,7 @@ export function XenovaVM() {
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCreateVM} className="bg-accent text-accent-foreground" disabled={!newVmName}>Provision</Button>
+                    <Button onClick={handleCreateVM} className="bg-accent text-accent-foreground" disabled={!newVmName || !selectedFile}>Provision</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -286,14 +324,16 @@ export function XenovaVM() {
                                             <Terminal className="w-6 h-6" />
                                         </div>
                                         <div className="flex gap-1">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                onClick={(e) => handleDeleteVM(vm.id, e)}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                            {!vm.isDefault && (
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    onClick={(e) => handleDeleteVM(vm.id, e)}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                     <CardTitle className="mt-4 text-xl tracking-tight">{vm.name}</CardTitle>
@@ -303,8 +343,8 @@ export function XenovaVM() {
                                 </CardHeader>
                                 <CardContent className="pt-4 flex flex-col gap-2">
                                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-2 truncate">
-                                        {vm.fileName ? <FileUp className="w-3 h-3 flex-shrink-0" /> : <Globe className="w-3 h-3 flex-shrink-0" />}
-                                        {vm.fileName || 'Cloud Image'}
+                                        {vm.isDefault ? <Globe className="w-3 h-3 flex-shrink-0" /> : <FileUp className="w-3 h-3 flex-shrink-0" />}
+                                        {vm.isDefault ? 'Cloud Profile' : (vm.fileName || 'Local Image')}
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <Button 
