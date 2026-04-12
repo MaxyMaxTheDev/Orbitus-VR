@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,12 +12,13 @@ import {
     ShieldQuestion, KeyRound, CheckCircle2 
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { get, set } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { sendRecoveryCode, verifyRecoveryCode } from '@/lib/recovery-actions';
 
 type SavedAccount = {
   email: string;
@@ -126,16 +126,16 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
 
     try {
-        await sendPasswordResetEmail(auth, identifier);
+        await sendRecoveryCode(identifier);
         setIsVerifyCodeMode(true);
         setIsForgotMode(false);
         toast({
-            title: "Verification Sent",
-            description: `Check ${identifier} for your recovery code.`,
+            title: "Verification Code Sent",
+            description: `A 6-digit code has been sent to ${identifier} via Twilio.`,
         });
     } catch (err: any) {
         console.error("Reset Error:", err);
-        setError(err.message || "Failed to initiate recovery.");
+        setError(err.message || "Failed to initiate recovery. Check SendGrid config.");
     } finally {
         setIsResetting(false);
     }
@@ -148,20 +148,19 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       setIsVerifying(true);
       setError(null);
 
-      // This is a placeholder for your Twilio code verification logic
-      setTimeout(() => {
+      try {
+          await verifyRecoveryCode(identifier, verificationCode);
+          toast({
+              title: "Identity Verified",
+              description: "Verification successful. You can now reset your password.",
+          });
+          setIsVerifyCodeMode(false);
+          // Transition to password reset UI would happen here
+      } catch (err: any) {
+          setError(err.message || "Verification failed.");
+      } finally {
           setIsVerifying(false);
-          if (verificationCode === '123456') { // Mock success for dev
-              toast({
-                  title: "Identity Verified",
-                  description: "You may now set a new password.",
-              });
-              setIsVerifyCodeMode(false);
-              // In real flow, you'd show reset password UI here
-          } else {
-              setError("The verification code is invalid or has expired.");
-          }
-      }, 1500);
+      }
   };
 
   const selectAccount = (acc: SavedAccount) => {
