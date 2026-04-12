@@ -7,13 +7,14 @@ import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogIn, User, Eye, EyeOff, UserCircle, UserPlus, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Loader2, LogIn, User, Eye, EyeOff, UserCircle, UserPlus, ChevronRight, ArrowLeft, MailCheck, ShieldQuestion } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { get, set } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 type SavedAccount = {
   email: string;
@@ -32,12 +33,15 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   const [showPassword, setShowPassword] = useState(false);
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<SavedAccount | null>(null);
   const [isManualEntry, setIsManualEntry] = useState(false);
+  const [isForgotMode, setIsForgotMode] = useState(false);
   
   const auth = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadAccounts = async () => {
@@ -92,7 +96,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
             message = 'Incorrect password.';
             break;
           case 'auth/invalid-email':
-            message = 'Please enter a valid email address or username.';
+            message = 'Please enter a valid email address.';
             break;
           default:
             message = `Login failed: ${err.code}`;
@@ -107,12 +111,38 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!identifier.trim()) {
+        setError("Please enter your email address first.");
+        return;
+    }
+
+    setIsResetting(true);
+    setError(null);
+
+    try {
+        await sendPasswordResetEmail(auth, identifier);
+        toast({
+            title: "Recovery Link Sent",
+            description: `Check ${identifier} for password reset instructions.`,
+        });
+        setIsForgotMode(false);
+    } catch (err: any) {
+        console.error("Reset Error:", err);
+        setError(err.message || "Failed to send reset email.");
+    } finally {
+        setIsResetting(false);
+    }
+  };
+
   const selectAccount = (acc: SavedAccount) => {
     setSelectedAccount(acc);
     setIdentifier(acc.email);
     setPassword('');
     setError(null);
     setIsManualEntry(false);
+    setIsForgotMode(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -120,6 +150,61 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   };
 
   const hasMultipleAccounts = savedAccounts.length > 1;
+
+  const renderForgotMode = () => (
+    <motion.div 
+        key="forgot-mode"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="w-full max-w-sm space-y-8"
+    >
+        <div className="text-center">
+            <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-accent/20">
+                <ShieldQuestion className="w-10 h-10 text-accent" />
+            </div>
+            <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Recovery</h1>
+            <p className="text-sm text-muted-foreground mt-1">Enter your email to reset your access token</p>
+        </div>
+
+        <form onSubmit={handleForgotPassword} className="space-y-6">
+            <div className="space-y-2">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Email Address</Label>
+                <Input
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    placeholder="identity@nexus.net"
+                    autoFocus
+                    className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl"
+                />
+            </div>
+
+            {error && (
+                <motion.p 
+                    initial={{ opacity: 0, x: -10 }} 
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-xs text-destructive font-semibold bg-destructive/10 p-3 rounded-lg border border-destructive/20"
+                >
+                    {error}
+                </motion.p>
+            )}
+
+            <div className="space-y-3">
+                <Button size="lg" className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isResetting}>
+                    {isResetting ? <Loader2 className="animate-spin" /> : <><MailCheck className="mr-2 w-5 h-5" /> SEND RESET LINK</>}
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    type="button"
+                    className="w-full text-xs text-muted-foreground"
+                    onClick={() => setIsForgotMode(false)}
+                >
+                    Back to Sign In
+                </Button>
+            </div>
+        </form>
+    </motion.div>
+  );
 
   return (
     <div className="absolute inset-0 z-50 bg-background flex items-center justify-center p-4 sm:p-8">
@@ -135,7 +220,9 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         <div className="flex-1 flex flex-col p-8 sm:p-12 items-center justify-center relative">
           
           <AnimatePresence mode="wait">
-            {!isManualEntry && selectedAccount ? (
+            {isForgotMode ? (
+                renderForgotMode()
+            ) : !isManualEntry && selectedAccount ? (
               <motion.div 
                 key="windows-style"
                 initial={{ opacity: 0, y: 20 }}
@@ -153,25 +240,37 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                 </div>
 
                 <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter Password"
-                      onKeyDown={onKeyDown}
-                      autoFocus
-                      className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl pr-12 text-center text-lg"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-muted-foreground"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
+                  <div className="space-y-2">
+                    <div className="relative">
+                        <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter Password"
+                        onKeyDown={onKeyDown}
+                        autoFocus
+                        className="bg-black/20 border-primary/20 focus:ring-accent h-12 rounded-xl pr-12 text-center text-lg"
+                        />
+                        <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-white/10 text-muted-foreground"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                    <div className="flex justify-end px-1">
+                        <Button 
+                            variant="link" 
+                            className="text-[10px] text-muted-foreground hover:text-accent p-0 h-auto"
+                            type="button"
+                            onClick={() => setIsForgotMode(true)}
+                        >
+                            Forgot password?
+                        </Button>
+                    </div>
                   </div>
 
                   {error && (
@@ -231,7 +330,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
                 <form onSubmit={handleSignIn} className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email/User)</Label>
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Identity (Email)</Label>
                     <Input
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
@@ -243,7 +342,17 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
+                    <div className="flex justify-between items-end">
+                        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Access Token (Password)</Label>
+                        <Button 
+                            variant="link" 
+                            className="text-[10px] text-muted-foreground hover:text-accent p-0 h-auto"
+                            type="button"
+                            onClick={() => setIsForgotMode(true)}
+                        >
+                            Forgot password?
+                        </Button>
+                    </div>
                     <div className="relative">
                       <Input
                         type={showPassword ? 'text' : 'password'}
@@ -315,7 +424,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     onClick={() => selectAccount(acc)}
                     className={cn(
                       "w-full flex items-center gap-3 p-3 rounded-2xl transition-all group hover:bg-white/5",
-                      identifier === acc.email && !isManualEntry ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
+                      identifier === acc.email && !isManualEntry && !isForgotMode ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
                     )}
                   >
                     <Avatar className="w-10 h-10 border border-border group-hover:border-primary/50 transition-colors">
@@ -329,7 +438,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     </div>
                     <ChevronRight className={cn(
                       "w-4 h-4 text-muted-foreground transition-transform",
-                      identifier === acc.email && !isManualEntry ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
+                      identifier === acc.email && !isManualEntry && !isForgotMode ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
                     )} />
                   </button>
                 ))}
