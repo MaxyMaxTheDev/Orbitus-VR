@@ -7,7 +7,11 @@ import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, LogIn, User, Eye, EyeOff, UserCircle, UserPlus, ChevronRight, ArrowLeft, MailCheck, ShieldQuestion } from 'lucide-react';
+import { 
+    Loader2, LogIn, User, Eye, EyeOff, UserCircle, 
+    UserPlus, ChevronRight, ArrowLeft, MailCheck, 
+    ShieldQuestion, KeyRound, CheckCircle2 
+} from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -34,11 +38,14 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<SavedAccount | null>(null);
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [isForgotMode, setIsForgotMode] = useState(false);
+  const [isVerifyCodeMode, setIsVerifyCodeMode] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   
   const auth = useAuth();
   const { toast } = useToast();
@@ -48,7 +55,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       const accounts = await get<SavedAccount[]>('saved-accounts');
       if (accounts && accounts.length > 0) {
         setSavedAccounts(accounts);
-        // Default to the most recent account (first in list)
         setSelectedAccount(accounts[0]);
         setIdentifier(accounts[0].email);
         setIsManualEntry(false);
@@ -61,7 +67,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
   const handleSignIn = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
     if (identifier.trim() === '' || password.trim() === '') return;
     
     setIsLoading(true);
@@ -78,7 +83,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       
       setContextUsername(displayName);
 
-      // Save account for next time if not guest
       if (identifier.toLowerCase() !== 'guest') {
         const newAccount: SavedAccount = { email: emailToUse, displayName };
         const updatedAccounts = [newAccount, ...savedAccounts.filter(a => a.email !== emailToUse)].slice(0, 5);
@@ -123,17 +127,41 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
     try {
         await sendPasswordResetEmail(auth, identifier);
-        toast({
-            title: "Recovery Link Sent",
-            description: `Check ${identifier} for password reset instructions.`,
-        });
+        setIsVerifyCodeMode(true);
         setIsForgotMode(false);
+        toast({
+            title: "Verification Sent",
+            description: `Check ${identifier} for your recovery code.`,
+        });
     } catch (err: any) {
         console.error("Reset Error:", err);
-        setError(err.message || "Failed to send reset email.");
+        setError(err.message || "Failed to initiate recovery.");
     } finally {
         setIsResetting(false);
     }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!verificationCode.trim()) return;
+
+      setIsVerifying(true);
+      setError(null);
+
+      // This is a placeholder for your Twilio code verification logic
+      setTimeout(() => {
+          setIsVerifying(false);
+          if (verificationCode === '123456') { // Mock success for dev
+              toast({
+                  title: "Identity Verified",
+                  description: "You may now set a new password.",
+              });
+              setIsVerifyCodeMode(false);
+              // In real flow, you'd show reset password UI here
+          } else {
+              setError("The verification code is invalid or has expired.");
+          }
+      }, 1500);
   };
 
   const selectAccount = (acc: SavedAccount) => {
@@ -143,13 +171,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
     setIsManualEntry(false);
     setIsForgotMode(false);
+    setIsVerifyCodeMode(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSignIn();
   };
-
-  const hasMultipleAccounts = savedAccounts.length > 1;
 
   const renderForgotMode = () => (
     <motion.div 
@@ -164,7 +191,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                 <ShieldQuestion className="w-10 h-10 text-accent" />
             </div>
             <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Recovery</h1>
-            <p className="text-sm text-muted-foreground mt-1">Enter your email to reset your access token</p>
+            <p className="text-sm text-muted-foreground mt-1">Confirm your email to receive a recovery code</p>
         </div>
 
         <form onSubmit={handleForgotPassword} className="space-y-6">
@@ -191,7 +218,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
             <div className="space-y-3">
                 <Button size="lg" className="w-full bg-accent hover:bg-accent/80 text-accent-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isResetting}>
-                    {isResetting ? <Loader2 className="animate-spin" /> : <><MailCheck className="mr-2 w-5 h-5" /> SEND RESET LINK</>}
+                    {isResetting ? <Loader2 className="animate-spin" /> : <><MailCheck className="mr-2 w-5 h-5" /> SEND RECOVERY CODE</>}
                 </Button>
                 <Button 
                     variant="ghost" 
@@ -206,6 +233,73 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     </motion.div>
   );
 
+  const renderVerifyCodeMode = () => (
+    <motion.div 
+        key="verify-code-mode"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="w-full max-w-sm space-y-8"
+    >
+        <div className="text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary/20">
+                <KeyRound className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Identity Verification</h1>
+            <p className="text-sm text-muted-foreground mt-1">Enter the 6-digit code sent to your email</p>
+        </div>
+
+        <form onSubmit={handleVerifyCode} className="space-y-6">
+            <div className="space-y-2">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Verification Token</Label>
+                <Input
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    autoFocus
+                    className="bg-black/20 border-primary/20 focus:ring-accent h-14 rounded-xl text-center text-3xl font-mono tracking-[0.5em]"
+                />
+            </div>
+
+            {error && (
+                <motion.p 
+                    initial={{ opacity: 0, x: -10 }} 
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-xs text-destructive font-semibold bg-destructive/10 p-3 rounded-lg border border-destructive/20"
+                >
+                    {error}
+                </motion.p>
+            )}
+
+            <div className="space-y-3">
+                <Button size="lg" className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isVerifying || verificationCode.length < 6}>
+                    {isVerifying ? <Loader2 className="animate-spin" /> : <><CheckCircle2 className="mr-2 w-5 h-5" /> VERIFY IDENTITY</>}
+                </Button>
+                <div className="flex justify-between items-center px-1">
+                    <Button 
+                        variant="link" 
+                        type="button"
+                        className="text-[10px] text-muted-foreground hover:text-accent p-0 h-auto"
+                        onClick={handleForgotPassword}
+                    >
+                        Resend Code
+                    </Button>
+                    <Button 
+                        variant="link" 
+                        type="button"
+                        className="text-[10px] text-muted-foreground hover:text-accent p-0 h-auto"
+                        onClick={() => setIsVerifyCodeMode(false)}
+                    >
+                        Back to Identity
+                    </Button>
+                </div>
+            </div>
+        </form>
+    </motion.div>
+  );
+
+  const hasMultipleAccounts = savedAccounts.length > 1;
+
   return (
     <div className="absolute inset-0 z-50 bg-background flex items-center justify-center p-4 sm:p-8">
       <motion.div 
@@ -216,11 +310,11 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           hasMultipleAccounts ? "w-full max-w-4xl min-h-[550px]" : "w-full max-w-md"
         )}
       >
-        {/* Main Login Area */}
         <div className="flex-1 flex flex-col p-8 sm:p-12 items-center justify-center relative">
-          
           <AnimatePresence mode="wait">
-            {isForgotMode ? (
+            {isVerifyCodeMode ? (
+                renderVerifyCodeMode()
+            ) : isForgotMode ? (
                 renderForgotMode()
             ) : !isManualEntry && selectedAccount ? (
               <motion.div 
@@ -410,7 +504,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
           </AnimatePresence>
         </div>
 
-        {/* User List Sidebar */}
         {hasMultipleAccounts && (
           <div className="w-full md:w-72 bg-black/30 border-l border-border/50 flex flex-col">
             <div className="p-6 border-b border-border/50 bg-black/20">
@@ -424,7 +517,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     onClick={() => selectAccount(acc)}
                     className={cn(
                       "w-full flex items-center gap-3 p-3 rounded-2xl transition-all group hover:bg-white/5",
-                      identifier === acc.email && !isManualEntry && !isForgotMode ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
+                      identifier === acc.email && !isManualEntry && !isForgotMode && !isVerifyCodeMode ? "bg-primary/20 border border-primary/30 shadow-lg" : "border border-transparent"
                     )}
                   >
                     <Avatar className="w-10 h-10 border border-border group-hover:border-primary/50 transition-colors">
@@ -438,7 +531,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     </div>
                     <ChevronRight className={cn(
                       "w-4 h-4 text-muted-foreground transition-transform",
-                      identifier === acc.email && !isManualEntry && !isForgotMode ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
+                      identifier === acc.email && !isManualEntry && !isForgotMode && !isVerifyCodeMode ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:opacity-50"
                     )} />
                   </button>
                 ))}
