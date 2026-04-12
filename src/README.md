@@ -8,7 +8,7 @@ To get started, take a look at `src/app/page.tsx`.
 
 ## Environment Setup
 
-This project uses AI features and Google Authentication. To enable these features, you need to provide API keys.
+This project uses AI features, Google Authentication, and SendGrid email recovery. To enable these features, you need to provide API keys.
 
 1.  Create a file named `.env` in the root of the project if it doesn't already exist.
 2.  Add the following lines to your `.env` file, replacing the placeholder values with your actual keys.
@@ -19,6 +19,16 @@ This project uses AI features and Google Authentication. To enable these feature
 
 ```
 GOOGLE_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+```
+
+### SendGrid (for Password Recovery)
+
+*   Obtain an API key from [SendGrid](https://app.sendgrid.com/settings/api_keys).
+*   Verify a sender identity in SendGrid.
+
+```
+SENDGRID_API_KEY="YOUR_SENDGRID_API_KEY_HERE"
+SENDGRID_FROM_EMAIL="noreply@yourdomain.com"
 ```
 
 ### Google Authentication (for Mail App)
