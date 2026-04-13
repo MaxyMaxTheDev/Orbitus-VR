@@ -6,47 +6,47 @@ import { getFirestore, doc, setDoc, getDoc, deleteDoc, Timestamp } from 'firebas
 import { firebaseConfig } from '@/firebase/config';
 
 /**
- * Configure Server Action timeout (Next.js specific)
- * Removed export to comply with "use server" constraints.
- */
-const maxDuration = 60;
-
-/**
  * Helper to initialize Firebase safely on the server.
  */
 function getDb() {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  return getFirestore(app);
+  try {
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    return getFirestore(app);
+  } catch (error) {
+    console.error('Firebase Server Initialization Failed');
+    throw error;
+  }
 }
 
 /**
  * Generates and sends a 6-digit recovery code via Twilio SendGrid.
- * Returns a structured object instead of throwing to avoid generic Next.js action errors.
+ * Returns a clean, serializable object to prevent Next.js "unexpected response" errors.
  */
 export async function sendRecoveryCode(email: string) {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-
-  if (!apiKey || !fromEmail) {
-    console.error('Recovery Configuration Error: Missing SENDGRID_API_KEY or SENDGRID_FROM_EMAIL in .env');
-    return { 
-      success: false, 
-      error: 'Recovery system is not fully configured on the server. Please check environment variables.' 
-    };
-  }
-
   try {
-    // 1. Setup SendGrid
+    const apiKey = process.env.SENDGRID_API_KEY;
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+
+    // 1. Validate environment configuration
+    if (!apiKey || !fromEmail) {
+      console.warn('Recovery Error: SENDGRID_API_KEY or SENDGRID_FROM_EMAIL is missing in .env');
+      return { 
+        success: false, 
+        error: 'The recovery system is not fully configured. Please contact support.' 
+      };
+    }
+
+    // 2. Setup Services
     sgMail.setApiKey(apiKey);
-    
-    // 2. Setup Firestore & Data
     const db = getDb();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiration = new Date();
     expiration.setMinutes(expiration.getMinutes() + 10);
 
     // 3. Store the code in Firestore
-    const docRef = doc(db, 'recovery_codes', email.toLowerCase().trim());
+    const targetEmail = email.toLowerCase().trim();
+    const docRef = doc(db, 'recovery_codes', targetEmail);
+    
     await setDoc(docRef, {
       code,
       expiresAt: Timestamp.fromDate(expiration),
@@ -55,14 +55,14 @@ export async function sendRecoveryCode(email: string) {
 
     // 4. Prepare the email
     const msg = {
-      to: email.toLowerCase().trim(),
+      to: targetEmail,
       from: fromEmail.trim(),
       subject: 'Your NovaVR Recovery Token',
       text: `Your identity verification token is: ${code}. It expires in 10 minutes.`,
       html: `
         <div style="font-family: sans-serif; padding: 20px; background: #0f172a; color: #f8fafc; border-radius: 10px;">
           <h2 style="color: #3b82f6;">NovaVR Identity Recovery</h2>
-          <p>A request was made to access your account. Use the token below to verify your identity:</p>
+          <p>Use the token below to verify your identity:</p>
           <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; padding: 20px; background: rgba(255,255,255,0.05); text-align: center; border-radius: 8px; margin: 20px 0;">
             ${code}
           </div>
@@ -76,20 +76,16 @@ export async function sendRecoveryCode(email: string) {
     
     return { success: true };
   } catch (error: any) {
-    console.error('Recovery Action Failure:', error);
+    // Return a simple string to ensure serializability
+    const errorMessage = error?.response?.body?.errors?.[0]?.message || error?.message || 'Internal server error';
+    console.error('sendRecoveryCode Failure:', errorMessage);
 
-    let errorMessage = 'An internal error occurred during the recovery process.';
-
-    if (error.response) {
-      // Handle SendGrid specific errors (e.g., unverified sender)
-      const body = error.response.body;
-      console.error('SendGrid API Error Details:', JSON.stringify(body, null, 2));
-      errorMessage = body?.errors?.[0]?.message || 'Email provider rejected the request. Ensure your "From" email is verified in SendGrid.';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    return { success: false, error: String(errorMessage) };
+    return { 
+      success: false, 
+      error: errorMessage.includes('403') 
+        ? 'Email delivery failed. Ensure your "From" email is verified in SendGrid.' 
+        : 'Failed to send recovery code. Please try again later.'
+    };
   }
 }
 
@@ -98,12 +94,15 @@ export async function sendRecoveryCode(email: string) {
  */
 export async function verifyRecoveryCode(email: string, code: string) {
   try {
+    if (!email || !code) return { success: false, error: 'Missing identity or token.' };
+
     const db = getDb();
-    const docRef = doc(db, 'recovery_codes', email.toLowerCase().trim());
+    const targetEmail = email.toLowerCase().trim();
+    const docRef = doc(db, 'recovery_codes', targetEmail);
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
-      return { success: false, error: 'No recovery request found for this email. Please request a new code.' };
+      return { success: false, error: 'No active recovery request found for this identity.' };
     }
 
     const data = docSnap.data();
@@ -111,19 +110,19 @@ export async function verifyRecoveryCode(email: string, code: string) {
 
     if (data.expiresAt.seconds < now.seconds) {
       await deleteDoc(docRef);
-      return { success: false, error: 'The verification code has expired. Please request a new one.' };
+      return { success: false, error: 'The verification token has expired.' };
     }
 
     if (data.code !== code.trim()) {
       return { success: false, error: 'Invalid verification token. Please check the code and try again.' };
     }
 
-    // Success: Delete the code so it can't be reused
+    // Success: Consume the code
     await deleteDoc(docRef);
 
     return { success: true };
   } catch (error: any) {
-    console.error('Verification Action Failure:', error);
-    return { success: false, error: String(error.message || 'Verification failed.') };
+    console.error('verifyRecoveryCode Failure:', error?.message || 'Unknown');
+    return { success: false, error: 'System verification error. Please try again.' };
   }
 }
