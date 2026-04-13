@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle } from 'lucide-react';
 import { NovaVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { downloadProjectZip } from '@/lib/export-action';
 import { useToast } from '@/hooks/use-toast';
@@ -106,6 +106,20 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
     }
   };
 
+  const handleGuestSignUp = async () => {
+    setIsSigningUp(true);
+    setSignupError(null);
+    try {
+      await signInWithEmailAndPassword(auth, 'guest@novavr.local', 'nova_guest');
+      setUsername('Guest');
+      handleNext();
+    } catch (error: any) {
+      setSignupError("Guest mode is currently unavailable. Please create an account.");
+    } finally {
+      setIsSigningUp(false);
+    }
+  };
+
   const variants = {
     enter: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
@@ -185,10 +199,28 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                         </div>
                     </div>
                  </div>
-                <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || email.trim() === '' || isSigningUp}>
-                    {isSigningUp ? <Loader2 className="animate-spin" /> : 'Create Account & Continue'}
-                </Button>
+                
+                <div className="space-y-3">
+                    <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || email.trim() === '' || isSigningUp}>
+                        {isSigningUp ? <Loader2 className="animate-spin" /> : 'Create Account & Continue'}
+                    </Button>
+                    
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-border" />
+                        </div>
+                        <div className="relative flex justify-center text-[10px] uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">Or</span>
+                        </div>
+                    </div>
+
+                    <Button variant="outline" size="lg" className="w-full border-primary/30 hover:bg-primary/10" onClick={handleGuestSignUp} disabled={isSigningUp}>
+                        <UserCircle className="mr-2 w-5 h-5" /> Use as Guest
+                    </Button>
+                </div>
+
                 {signupError && <p className="text-sm text-destructive">{signupError}</p>}
+                
                 <p className="text-sm text-muted-foreground">
                     Already have an account? <Button variant="link" className="p-0" onClick={onSwitchToLogin}>Sign in</Button>
                 </p>
