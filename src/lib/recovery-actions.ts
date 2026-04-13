@@ -1,10 +1,15 @@
-
 'use server';
 
 import sgMail from '@sendgrid/mail';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
+
+/**
+ * Configure Server Action timeout (Next.js specific)
+ * Removed export to comply with "use server" constraints.
+ */
+const maxDuration = 60;
 
 /**
  * Helper to initialize Firebase safely on the server.
@@ -23,36 +28,35 @@ export async function sendRecoveryCode(email: string) {
   const fromEmail = process.env.SENDGRID_FROM_EMAIL;
 
   if (!apiKey || !fromEmail) {
-    console.error('Recovery Configuration Error: Missing SENDGRID_API_KEY or SENDGRID_FROM_EMAIL');
+    console.error('Recovery Configuration Error: Missing SENDGRID_API_KEY or SENDGRID_FROM_EMAIL in .env');
     return { 
       success: false, 
-      error: 'Recovery system is not configured. Please check environment variables.' 
+      error: 'Recovery system is not fully configured on the server. Please check environment variables.' 
     };
   }
 
   try {
+    // 1. Setup SendGrid
     sgMail.setApiKey(apiKey);
-    const db = getDb();
-
-    // Generate 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Store in Firestore with expiration (10 minutes)
+    // 2. Setup Firestore & Data
+    const db = getDb();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiration = new Date();
     expiration.setMinutes(expiration.getMinutes() + 10);
 
-    // 1. Store the code in Firestore
-    const docRef = doc(db, 'recovery_codes', email.toLowerCase());
+    // 3. Store the code in Firestore
+    const docRef = doc(db, 'recovery_codes', email.toLowerCase().trim());
     await setDoc(docRef, {
       code,
       expiresAt: Timestamp.fromDate(expiration),
       createdAt: Timestamp.now(),
     });
 
-    // 2. Prepare the email
+    // 4. Prepare the email
     const msg = {
-      to: email,
-      from: fromEmail,
+      to: email.toLowerCase().trim(),
+      from: fromEmail.trim(),
       subject: 'Your NovaVR Recovery Token',
       text: `Your identity verification token is: ${code}. It expires in 10 minutes.`,
       html: `
@@ -67,7 +71,7 @@ export async function sendRecoveryCode(email: string) {
       `,
     };
 
-    // 3. Send via SendGrid
+    // 5. Send via SendGrid
     await sgMail.send(msg);
     
     return { success: true };
@@ -80,12 +84,12 @@ export async function sendRecoveryCode(email: string) {
       // Handle SendGrid specific errors (e.g., unverified sender)
       const body = error.response.body;
       console.error('SendGrid API Error Details:', JSON.stringify(body, null, 2));
-      errorMessage = body?.errors?.[0]?.message || 'Email provider rejected the request.';
+      errorMessage = body?.errors?.[0]?.message || 'Email provider rejected the request. Ensure your "From" email is verified in SendGrid.';
     } else if (error.message) {
       errorMessage = error.message;
     }
 
-    return { success: false, error: errorMessage };
+    return { success: false, error: String(errorMessage) };
   }
 }
 
@@ -95,11 +99,11 @@ export async function sendRecoveryCode(email: string) {
 export async function verifyRecoveryCode(email: string, code: string) {
   try {
     const db = getDb();
-    const docRef = doc(db, 'recovery_codes', email.toLowerCase());
+    const docRef = doc(db, 'recovery_codes', email.toLowerCase().trim());
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
-      return { success: false, error: 'No recovery request found for this email.' };
+      return { success: false, error: 'No recovery request found for this email. Please request a new code.' };
     }
 
     const data = docSnap.data();
@@ -107,11 +111,11 @@ export async function verifyRecoveryCode(email: string, code: string) {
 
     if (data.expiresAt.seconds < now.seconds) {
       await deleteDoc(docRef);
-      return { success: false, error: 'The verification code has expired.' };
+      return { success: false, error: 'The verification code has expired. Please request a new one.' };
     }
 
-    if (data.code !== code) {
-      return { success: false, error: 'Invalid verification token.' };
+    if (data.code !== code.trim()) {
+      return { success: false, error: 'Invalid verification token. Please check the code and try again.' };
     }
 
     // Success: Delete the code so it can't be reused
@@ -120,6 +124,6 @@ export async function verifyRecoveryCode(email: string, code: string) {
     return { success: true };
   } catch (error: any) {
     console.error('Verification Action Failure:', error);
-    return { success: false, error: error.message || 'Verification failed.' };
+    return { success: false, error: String(error.message || 'Verification failed.') };
   }
 }
