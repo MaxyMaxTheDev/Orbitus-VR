@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -124,12 +125,10 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
 
     try {
-      // 1. Try normal sign in
       await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
       setContextUsername('Guest');
       onLoginSuccess();
     } catch (err: any) {
-      // 2. If it fails because user doesn't exist, create it (Auto-provision)
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
@@ -158,16 +157,20 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
 
     try {
-        await sendRecoveryCode(identifier);
-        setIsVerifyCodeMode(true);
-        setIsForgotMode(false);
-        toast({
-            title: "Verification Code Sent",
-            description: `A 6-digit code has been sent to ${identifier}.`,
-        });
+        const result = await sendRecoveryCode(identifier);
+        if (result.success) {
+            setIsVerifyCodeMode(true);
+            setIsForgotMode(false);
+            toast({
+                title: "Verification Code Sent",
+                description: `A 6-digit code has been sent to ${identifier}.`,
+            });
+        } else {
+            setError(result.error || "Failed to initiate recovery.");
+        }
     } catch (err: any) {
-        console.error("Reset Error:", err);
-        setError(err.message || "Failed to initiate recovery. Check SendGrid config.");
+        console.error("Recovery Exception:", err);
+        setError("Network error occurred. Please try again.");
     } finally {
         setIsResetting(false);
     }
@@ -181,14 +184,18 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       setError(null);
 
       try {
-          await verifyRecoveryCode(identifier, verificationCode);
-          toast({
-              title: "Identity Verified",
-              description: "Verification successful. You can now reset your password.",
-          });
-          setIsVerifyCodeMode(false);
+          const result = await verifyRecoveryCode(identifier, verificationCode);
+          if (result.success) {
+              toast({
+                  title: "Identity Verified",
+                  description: "Verification successful. You can now reset your password.",
+              });
+              setIsVerifyCodeMode(false);
+          } else {
+              setError(result.error || "Verification failed.");
+          }
       } catch (err: any) {
-          setError(err.message || "Verification failed.");
+          setError("Network error occurred. Please try again.");
       } finally {
           setIsVerifying(false);
       }

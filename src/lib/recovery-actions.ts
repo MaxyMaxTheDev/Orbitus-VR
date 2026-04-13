@@ -6,38 +6,41 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, getDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
-// Initialize Firebase Client SDK for server-side use. 
-// Using the client SDK here avoids credential issues with firebase-admin in restricted environments.
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+/**
+ * Helper to initialize Firebase safely on the server.
+ */
+function getDb() {
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  return getFirestore(app);
+}
 
 /**
  * Generates and sends a 6-digit recovery code via Twilio SendGrid.
+ * Returns a structured object instead of throwing to avoid generic Next.js action errors.
  */
 export async function sendRecoveryCode(email: string) {
   const apiKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM_EMAIL;
 
-  if (!apiKey) {
-    console.error('Recovery Error: SENDGRID_API_KEY is not configured in .env');
-    throw new Error('Recovery system is currently misconfigured (API Key missing).');
+  if (!apiKey || !fromEmail) {
+    console.error('Recovery Configuration Error: Missing SENDGRID_API_KEY or SENDGRID_FROM_EMAIL');
+    return { 
+      success: false, 
+      error: 'Recovery system is not configured. Please check environment variables.' 
+    };
   }
-
-  if (!fromEmail) {
-    console.error('Recovery Error: SENDGRID_FROM_EMAIL is not configured in .env');
-    throw new Error('Recovery system is currently misconfigured (Sender Email missing).');
-  }
-
-  sgMail.setApiKey(apiKey);
-
-  // Generate 6-digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  
-  // Store in Firestore with expiration (10 minutes)
-  const expiration = new Date();
-  expiration.setMinutes(expiration.getMinutes() + 10);
 
   try {
+    sgMail.setApiKey(apiKey);
+    const db = getDb();
+
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store in Firestore with expiration (10 minutes)
+    const expiration = new Date();
+    expiration.setMinutes(expiration.getMinutes() + 10);
+
     // 1. Store the code in Firestore
     const docRef = doc(db, 'recovery_codes', email.toLowerCase());
     await setDoc(docRef, {
@@ -71,14 +74,18 @@ export async function sendRecoveryCode(email: string) {
   } catch (error: any) {
     console.error('Recovery Action Failure:', error);
 
-    // Handle SendGrid specific errors which often cause "unexpected response"
+    let errorMessage = 'An internal error occurred during the recovery process.';
+
     if (error.response) {
-      console.error('SendGrid Response Error Body:', JSON.stringify(error.response.body, null, 2));
-      const sgError = error.response.body?.errors?.[0]?.message || 'SendGrid failed to dispatch email.';
-      throw new Error(`Email provider error: ${sgError}`);
+      // Handle SendGrid specific errors (e.g., unverified sender)
+      const body = error.response.body;
+      console.error('SendGrid API Error Details:', JSON.stringify(body, null, 2));
+      errorMessage = body?.errors?.[0]?.message || 'Email provider rejected the request.';
+    } else if (error.message) {
+      errorMessage = error.message;
     }
 
-    throw new Error(error.message || 'An internal error occurred during the recovery process.');
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -87,24 +94,24 @@ export async function sendRecoveryCode(email: string) {
  */
 export async function verifyRecoveryCode(email: string, code: string) {
   try {
+    const db = getDb();
     const docRef = doc(db, 'recovery_codes', email.toLowerCase());
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
-      throw new Error('No recovery request found for this email.');
+      return { success: false, error: 'No recovery request found for this email.' };
     }
 
     const data = docSnap.data();
     const now = Timestamp.now();
 
     if (data.expiresAt.seconds < now.seconds) {
-      // Clean up expired code
       await deleteDoc(docRef);
-      throw new Error('The verification code has expired.');
+      return { success: false, error: 'The verification code has expired.' };
     }
 
     if (data.code !== code) {
-      throw new Error('Invalid verification token.');
+      return { success: false, error: 'Invalid verification token.' };
     }
 
     // Success: Delete the code so it can't be reused
@@ -113,6 +120,6 @@ export async function verifyRecoveryCode(email: string, code: string) {
     return { success: true };
   } catch (error: any) {
     console.error('Verification Action Failure:', error);
-    throw new Error(error.message || 'Verification failed.');
+    return { success: false, error: error.message || 'Verification failed.' };
   }
 }
