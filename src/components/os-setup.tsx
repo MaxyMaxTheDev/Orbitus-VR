@@ -110,11 +110,13 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
     setIsSigningUp(true);
     setSignupError(null);
     try {
+      // Use the shared guest account credentials
       await signInWithEmailAndPassword(auth, 'guest@novavr.local', 'nova_guest');
       setUsername('Guest');
       handleNext();
     } catch (error: any) {
-      setSignupError("Guest mode is currently unavailable. Please create an account.");
+      console.error("Guest Sign-Up Error:", error);
+      setSignupError("Guest mode is currently unavailable. Please create a permanent identity.");
     } finally {
       setIsSigningUp(false);
     }
@@ -250,7 +252,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
         );
       case 3: // UI Scale
         return (
-            <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-w-md space-y-8">
+            <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-md space-y-8">
               <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">UI Scale Calibration</h1>
                 <p className="text-sm text-muted-foreground">Adjust the slider for comfortable readability.</p>
