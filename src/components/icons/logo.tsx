@@ -12,8 +12,11 @@ export function XenovaVRLogo({ className }: { className?: string }) {
       strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Standardized 2D Hexagon Shell - React Icon Style */}
+      {/* Outer Hexagon Shell */}
       <path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" />
+      {/* Internal Hourglass Structure from original logo */}
+      <path d="M8 8h8L8 16h8" />
+      <path d="M8 8l8 8" />
     </svg>
   );
 }
