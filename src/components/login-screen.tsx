@@ -12,7 +12,7 @@ import {
     ShieldQuestion, KeyRound, CheckCircle2 
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { get, set } from '@/lib/idb';
 import { cn } from '@/lib/utils';
@@ -116,16 +116,31 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   };
 
   const handleGuestSignIn = async () => {
+    const guestEmail = 'guest@novavr.local';
+    const guestPassword = 'nova_guest';
     setIdentifier('guest');
-    setPassword('nova_guest');
+    setPassword(guestPassword);
     setIsLoading(true);
     setError(null);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, 'guest@novavr.local', 'nova_guest');
+      // 1. Try normal sign in
+      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
       setContextUsername('Guest');
       onLoginSuccess();
     } catch (err: any) {
+      // 2. If it fails because user doesn't exist, create it (Auto-provision)
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
+          await updateProfile(userCredential.user, { displayName: 'Guest' });
+          setContextUsername('Guest');
+          onLoginSuccess();
+          return;
+        } catch (createErr: any) {
+          console.error("Guest auto-provisioning failed:", createErr);
+        }
+      }
       setError("Guest login failed. Try manual entry.");
     } finally {
       setIsLoading(false);

@@ -109,12 +109,27 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const handleGuestSignUp = async () => {
     setIsSigningUp(true);
     setSignupError(null);
+    const guestEmail = 'guest@novavr.local';
+    const guestPassword = 'nova_guest';
+
     try {
-      // Use the shared guest account credentials
-      await signInWithEmailAndPassword(auth, 'guest@novavr.local', 'nova_guest');
+      // 1. Try to sign in
+      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
       setUsername('Guest');
       handleNext();
     } catch (error: any) {
+      // 2. If sign in fails because user doesn't exist, create it
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
+          await updateProfile(userCredential.user, { displayName: 'Guest' });
+          setUsername('Guest');
+          handleNext();
+          return;
+        } catch (createError: any) {
+          console.error("Guest auto-provisioning failed:", createError);
+        }
+      }
       console.error("Guest Sign-Up Error:", error);
       setSignupError("Guest mode is currently unavailable. Please create a permanent identity.");
     } finally {
@@ -165,22 +180,36 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                  <div className="space-y-4 text-left">
                     <div>
                         <Label htmlFor="username-reg">Username</Label>
-                        <Input id="username-reg" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a public username" />
+                        <input 
+                          id="username-reg" 
+                          type="text" 
+                          value={username} 
+                          onChange={(e) => setUsername(e.target.value)} 
+                          placeholder="Choose a public username" 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm"
+                        />
                     </div>
                     <div>
                         <Label htmlFor="email-reg">Email</Label>
-                        <Input id="email-reg" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
+                        <input 
+                          id="email-reg" 
+                          type="email" 
+                          value={email} 
+                          onChange={(e) => setEmail(e.target.value)} 
+                          placeholder="Enter your email" 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm"
+                        />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password-reg">Password</Label>
                         <div className="relative">
-                          <Input 
+                          <input 
                             id="password-reg" 
                             type={showPassword ? 'text' : 'password'} 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
                             placeholder="Create a secure password (min. 6 characters)" 
-                            className="pr-10"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm pr-10"
                           />
                           <Button
                             type="button"
