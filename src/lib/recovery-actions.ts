@@ -13,20 +13,19 @@ export async function sendRecoveryCode(email: string) {
 
     // 1. Validate environment configuration
     if (!apiKey || !fromEmail) {
-      console.error('[Recovery] Configuration missing in .env');
       return { 
         success: false, 
-        error: 'Recovery system is not configured. Missing API keys.' 
+        error: 'Recovery system is not configured. Please ensure SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are set in your .env file.' 
       };
     }
 
     // 2. Setup SendGrid
-    sgMail.setApiKey(apiKey);
+    sgMail.setApiKey(apiKey.trim());
 
     // 3. Generate Code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const targetEmail = (email || '').toLowerCase().trim();
-    if (!targetEmail) return { success: false, error: 'Invalid email address provided.' };
+    if (!targetEmail) return { success: false, error: 'Please provide a valid email address.' };
 
     // 4. Prepare and Send Email
     const msg = {
@@ -48,25 +47,29 @@ export async function sendRecoveryCode(email: string) {
 
     await sgMail.send(msg);
     
-    // Return success and the code to the client for local verification
     return { 
         success: true, 
         code 
     };
 
   } catch (error: any) {
-    let errorMessage = 'Internal recovery system failure.';
+    let errorMessage = 'An error occurred while sending the recovery code.';
     
+    // Extract specific error message from SendGrid response
     if (error?.response?.body?.errors?.[0]?.message) {
       errorMessage = error.response.body.errors[0].message;
     } else if (error?.message) {
       errorMessage = error.message;
     }
 
-    console.error('[Recovery] Action Failed:', errorMessage);
+    console.error('[Recovery] SendGrid Error:', errorMessage);
 
-    if (errorMessage.includes('403') || errorMessage.includes('Unauthorized')) {
-      errorMessage = 'Email system authentication failed. Check SendGrid verification.';
+    // Map common SendGrid errors to user-friendly messages
+    const lowerError = errorMessage.toLowerCase();
+    if (lowerError.includes('authorization grant') || lowerError.includes('unauthorized') || lowerError.includes('invalid api key')) {
+      errorMessage = 'The SendGrid API Key is invalid, expired, or revoked. Check your .env file.';
+    } else if (lowerError.includes('from address does not match')) {
+      errorMessage = 'The sender email address is not verified in SendGrid. Please check your SENDGRID_FROM_EMAIL.';
     }
 
     return { 
