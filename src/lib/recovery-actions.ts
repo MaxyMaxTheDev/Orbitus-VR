@@ -15,11 +15,20 @@ const db = getFirestore(app);
  * Generates and sends a 6-digit recovery code via Twilio SendGrid.
  */
 export async function sendRecoveryCode(email: string) {
-  if (!process.env.SENDGRID_API_KEY) {
-    throw new Error('SENDGRID_API_KEY is not configured.');
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+
+  if (!apiKey) {
+    console.error('Recovery Error: SENDGRID_API_KEY is not configured in .env');
+    throw new Error('Recovery system is currently misconfigured (API Key missing).');
   }
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  if (!fromEmail) {
+    console.error('Recovery Error: SENDGRID_FROM_EMAIL is not configured in .env');
+    throw new Error('Recovery system is currently misconfigured (Sender Email missing).');
+  }
+
+  sgMail.setApiKey(apiKey);
 
   // Generate 6-digit code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -29,6 +38,7 @@ export async function sendRecoveryCode(email: string) {
   expiration.setMinutes(expiration.getMinutes() + 10);
 
   try {
+    // 1. Store the code in Firestore
     const docRef = doc(db, 'recovery_codes', email.toLowerCase());
     await setDoc(docRef, {
       code,
@@ -36,10 +46,10 @@ export async function sendRecoveryCode(email: string) {
       createdAt: Timestamp.now(),
     });
 
-    // Send Email
+    // 2. Prepare the email
     const msg = {
       to: email,
-      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@novavr.local',
+      from: fromEmail,
       subject: 'Your NovaVR Recovery Token',
       text: `Your identity verification token is: ${code}. It expires in 10 minutes.`,
       html: `
@@ -54,11 +64,21 @@ export async function sendRecoveryCode(email: string) {
       `,
     };
 
+    // 3. Send via SendGrid
     await sgMail.send(msg);
+    
     return { success: true };
   } catch (error: any) {
-    console.error('SendGrid/Firestore Error:', error);
-    throw new Error(error.message || 'Failed to send recovery email. Ensure your Firestore rules allow access to the "recovery_codes" collection.');
+    console.error('Recovery Action Failure:', error);
+
+    // Handle SendGrid specific errors which often cause "unexpected response"
+    if (error.response) {
+      console.error('SendGrid Response Error Body:', JSON.stringify(error.response.body, null, 2));
+      const sgError = error.response.body?.errors?.[0]?.message || 'SendGrid failed to dispatch email.';
+      throw new Error(`Email provider error: ${sgError}`);
+    }
+
+    throw new Error(error.message || 'An internal error occurred during the recovery process.');
   }
 }
 
@@ -78,6 +98,8 @@ export async function verifyRecoveryCode(email: string, code: string) {
     const now = Timestamp.now();
 
     if (data.expiresAt.seconds < now.seconds) {
+      // Clean up expired code
+      await deleteDoc(docRef);
       throw new Error('The verification code has expired.');
     }
 
@@ -90,7 +112,7 @@ export async function verifyRecoveryCode(email: string, code: string) {
 
     return { success: true };
   } catch (error: any) {
-    console.error('Verification Error:', error);
+    console.error('Verification Action Failure:', error);
     throw new Error(error.message || 'Verification failed.');
   }
 }
