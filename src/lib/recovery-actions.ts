@@ -6,8 +6,6 @@ import { initializeApp, getApps, cert } from 'firebase-admin/app';
 
 // Initialize Firebase Admin for server-side operations
 if (!getApps().length) {
-  // Note: For local development, ensure GOOGLE_APPLICATION_CREDENTIALS is set
-  // or provide service account JSON.
   initializeApp();
 }
 
@@ -39,12 +37,12 @@ export async function sendRecoveryCode(email: string) {
   // Send Email
   const msg = {
     to: email,
-    from: process.env.SENDGRID_FROM_EMAIL || 'noreply@xenovavr.local',
-    subject: 'Your XenovaVR Recovery Token',
+    from: process.env.SENDGRID_FROM_EMAIL || 'noreply@novavr.local',
+    subject: 'Your NovaVR Recovery Token',
     text: `Your identity verification token is: ${code}. It expires in 10 minutes.`,
     html: `
       <div style="font-family: sans-serif; padding: 20px; background: #0f172a; color: #f8fafc; border-radius: 10px;">
-        <h2 style="color: #3b82f6;">XenovaVR Identity Recovery</h2>
+        <h2 style="color: #3b82f6;">NovaVR Identity Recovery</h2>
         <p>A request was made to access your account. Use the token below to verify your identity:</p>
         <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; padding: 20px; background: rgba(255,255,255,0.05); text-align: center; border-radius: 8px; margin: 20px 0;">
           ${code}

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
-  title: 'XenovaVR',
+  title: 'NovaVR',
   description: 'A customizable virtual home environment',
 };
 

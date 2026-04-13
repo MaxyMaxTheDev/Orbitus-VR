@@ -28,7 +28,7 @@ const profileCodePrompt = ai.definePrompt({
     name: 'profileCodePrompt',
     input: { schema: ProfileCodeInputSchema },
     output: { schema: ProfileCodeOutputSchema },
-    prompt: `You are a futuristic AI code analysis engine for the XenovaVR operating system.
+    prompt: `You are a futuristic AI code analysis engine for the NovaVR operating system.
 Your task is to analyze the user-provided code snippet and generate a set of fictional, sci-fi performance metrics.
 Be creative and use futuristic-sounding terminology. Do not explain the code, only provide the fictional analysis based on the output schema.
 

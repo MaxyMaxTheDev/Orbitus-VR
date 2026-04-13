@@ -60,7 +60,7 @@ export function MailApp() {
             </div>
             <div className="space-y-2">
                 <h2 className="text-2xl font-bold">Connect Your Email</h2>
-                <p className="text-gray-500 max-w-sm mx-auto">Access your real messages directly from XenovaVR. Connect your Google account to get started.</p>
+                <p className="text-gray-500 max-w-sm mx-auto">Access your real messages directly from NovaVR. Connect your Google account to get started.</p>
             </div>
             <Button size="lg" onClick={() => signIn('google')} className="bg-blue-600 hover:bg-blue-700 text-white px-8">
                 <LogIn className="mr-2" /> Sign in with Google

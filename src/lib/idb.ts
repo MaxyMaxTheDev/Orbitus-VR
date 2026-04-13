@@ -1,18 +1,18 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
-const DB_NAME = 'xenovavr-db';
+const DB_NAME = 'novavr-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'settings';
 
-interface XenovaVRDBSchema extends DBSchema {
+interface NovaVRDBSchema extends DBSchema {
   [STORE_NAME]: {
     key: string;
     value: any;
   };
 }
 
-function getDb(): Promise<IDBPDatabase<XenovaVRDBSchema>> {
-  return openDB<XenovaVRDBSchema>(DB_NAME, DB_VERSION, {
+function getDb(): Promise<IDBPDatabase<NovaVRDBSchema>> {
+  return openDB<NovaVRDBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db) {
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);

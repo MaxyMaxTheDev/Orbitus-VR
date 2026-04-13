@@ -74,7 +74,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
     let emailToUse = identifier;
     if (identifier.toLowerCase() === 'guest') {
-      emailToUse = 'guest@xenovavr.local';
+      emailToUse = 'guest@novavr.local';
     }
 
     try {
@@ -117,13 +117,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
   const handleGuestSignIn = async () => {
     setIdentifier('guest');
-    setPassword('xenova_guest');
+    setPassword('nova_guest');
     setIsLoading(true);
     setError(null);
 
     try {
-      // Use hardcoded guest credentials for the actual API call
-      const userCredential = await signInWithEmailAndPassword(auth, 'guest@xenovavr.local', 'xenova_guest');
+      const userCredential = await signInWithEmailAndPassword(auth, 'guest@novavr.local', 'nova_guest');
       setContextUsername('Guest');
       onLoginSuccess();
     } catch (err: any) {
@@ -554,7 +553,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               </div>
             </ScrollArea>
             <div className="p-6 bg-black/20 text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">XenovaVR OS &bull; Secure Auth</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">NovaVR OS &bull; Secure Auth</p>
             </div>
           </div>
         )}

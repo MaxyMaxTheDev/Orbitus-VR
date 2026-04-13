@@ -29,9 +29,9 @@ const tipFlow = ai.defineFlow(
     const prompt = ai.definePrompt({
         name: 'tipPrompt',
         output: { schema: TipOutputSchema },
-        prompt: `You are a helpful assistant for a futuristic virtual world called XenovaVR. 
+        prompt: `You are a helpful assistant for a futuristic virtual world called NovaVR. 
         Generate a single, short, and useful tip for the user. 
-        The tip should be about a feature in the XenovaVR environment, like an app or a setting.
+        The tip should be about a feature in the NovaVR environment, like an app or a setting.
         For example: "You can customize your dashboard widgets in the Settings app." or "Try generating a 3D model with your voice in SculptVR."`
     });
 

@@ -31,7 +31,7 @@ const newsFeedFlow = ai.defineFlow(
     const prompt = ai.definePrompt({
         name: 'newsFeedPrompt',
         output: { schema: NewsFeedOutputSchema },
-        prompt: `You are a news feed generator for a futuristic virtual world called XenovaVR.
+        prompt: `You are a news feed generator for a futuristic virtual world called NovaVR.
 Generate a list of 5-7 intriguing, sci-fi news articles.
 For each article, you must provide:
 - A compelling, futuristic news headline ('title').

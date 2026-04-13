@@ -15,7 +15,7 @@ import type { UserApp } from '@/components/apps/xenova-dev';
 import { useSettings } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
 import { get, set } from '@/lib/idb';
-import { XenovaVRLogo } from './icons/logo';
+import { NovaVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
@@ -52,7 +52,7 @@ function DesktopContent() {
 
     useEffect(() => {
         const checkSystemState = async () => {
-            const setupFlag = await get<boolean>('xenova-vr-setup-complete');
+            const setupFlag = await get<boolean>('nova-vr-setup-complete');
             setTimeout(() => {
                 if (setupFlag) {
                     setSystemState('lock');
@@ -68,12 +68,12 @@ function DesktopContent() {
     }, [systemState]);
 
     const handleSetupComplete = async () => {
-        await set('xenova-vr-setup-complete', true);
+        await set('nova-vr-setup-complete', true);
         setSystemState('desktop');
     };
 
     const handleLoginSuccess = async () => {
-        await set('xenova-vr-setup-complete', true);
+        await set('nova-vr-setup-complete', true);
         setSystemState('desktop');
     };
     
@@ -122,7 +122,7 @@ function DesktopContent() {
                     transition={{ duration: 1, ease: "easeInOut" }}
                     className="flex flex-col items-center gap-6 w-full max-w-xs"
                 >
-                    <XenovaVRLogo className="w-24 h-24 text-primary" />
+                    <NovaVRLogo className="w-24 h-24 text-primary" />
                     <Progress value={progress} className="w-full h-2" />
                 </motion.div>
             </div>
@@ -141,7 +141,7 @@ function DesktopContent() {
         return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setSystemState('setup')} />;
     }
     
-    const fullscreenApps = ["Browser", "Minecraft", "Geometry Dash", "Flappy Bird", "2048", "Hextris", "PAC-MAN", "XenovaVM"];
+    const fullscreenApps = ["Browser", "Minecraft", "Geometry Dash", "Flappy Bird", "2048", "Hextris", "PAC-MAN", "NovaVM"];
     const isFullscreenApp = selectedApp && fullscreenApps.includes(selectedApp.name);
 
     const renderAppContent = () => {

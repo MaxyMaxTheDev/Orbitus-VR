@@ -57,27 +57,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const storedBanners = await get<boolean>('xenova-vr-show-banners');
+        const storedBanners = await get<boolean>('nova-vr-show-banners');
         if (storedBanners !== undefined) {
           setShowAppBanners(storedBanners);
         }
 
-        const storedUsername = await get<string>('xenova-vr-username');
+        const storedUsername = await get<string>('nova-vr-username');
         if (storedUsername) {
           setUsername(storedUsername);
         }
         
-        const storedPosition = await get<NotificationPosition>('xenova-vr-notification-position');
+        const storedPosition = await get<NotificationPosition>('nova-vr-notification-position');
         if (storedPosition) {
           setNotificationPosition(storedPosition);
         }
         
-        const storedUiScale = await get<number>('xenova-vr-ui-scale');
+        const storedUiScale = await get<number>('nova-vr-ui-scale');
         if (storedUiScale) {
           setUiScale(storedUiScale);
         }
 
-        const storedWidgets = await get<WidgetName[]>('xenova-vr-dashboard-widgets');
+        const storedWidgets = await get<WidgetName[]>('nova-vr-dashboard-widgets');
         if (storedWidgets) {
           setDashboardWidgets(storedWidgets);
         }
@@ -92,32 +92,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Handler to update state and IndexedDB for banner settings
   const handleSetShowAppBanners = (show: boolean) => {
     setShowAppBanners(show);
-    persist('xenova-vr-show-banners', show);
+    persist('nova-vr-show-banners', show);
   };
 
   // Handler to update state and IndexedDB for username
   const handleSetUsername = (name: string) => {
     setUsername(name);
-    // We ALWAYS save username unless it's explicitly the 'Guest' session trigger
-    // but typically Guest is set via login, so we follow the skip logic.
-    persist('xenova-vr-username', name);
+    persist('nova-vr-username', name);
   };
   
   // Handler to update state and IndexedDB for notification position
   const handleSetNotificationPosition = (position: NotificationPosition) => {
     setNotificationPosition(position);
-    persist('xenova-vr-notification-position', position);
+    persist('nova-vr-notification-position', position);
   };
 
   // Handler to update state and IndexedDB for UI Scale
   const handleSetUiScale = (scale: number) => {
     setUiScale(scale);
-    persist('xenova-vr-ui-scale', scale);
+    persist('nova-vr-ui-scale', scale);
   };
 
   const handleSetDashboardWidgets = (widgets: WidgetName[]) => {
     setDashboardWidgets(widgets);
-    persist('xenova-vr-dashboard-widgets', widgets);
+    persist('nova-vr-dashboard-widgets', widgets);
   };
 
   const handleSetIsEditingDashboard = (isEditing: boolean) => {

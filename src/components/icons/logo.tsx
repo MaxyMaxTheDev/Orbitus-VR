@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function XenovaVRLogo({ className }: { className?: string }) {
+export function NovaVRLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -14,7 +14,7 @@ export function XenovaVRLogo({ className }: { className?: string }) {
     >
       {/* Outer Hexagon Shell */}
       <path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" />
-      {/* Internal Hourglass Structure from original logo */}
+      {/* Internal Hourglass Structure */}
       <path d="M8 8h8L8 16h8" />
       <path d="M8 8l8 8" />
     </svg>
