@@ -115,6 +115,24 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     }
   };
 
+  const handleGuestSignIn = async () => {
+    setIdentifier('guest');
+    setPassword('xenova_guest');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Use hardcoded guest credentials for the actual API call
+      const userCredential = await signInWithEmailAndPassword(auth, 'guest@xenovavr.local', 'xenova_guest');
+      setContextUsername('Guest');
+      onLoginSuccess();
+    } catch (err: any) {
+      setError("Guest login failed. Try manual entry.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier.trim()) {
@@ -131,7 +149,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
         setIsForgotMode(false);
         toast({
             title: "Verification Code Sent",
-            description: `A 6-digit code has been sent to ${identifier} via Twilio.`,
+            description: `A 6-digit code has been sent to ${identifier}.`,
         });
     } catch (err: any) {
         console.error("Reset Error:", err);
@@ -155,7 +173,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               description: "Verification successful. You can now reset your password.",
           });
           setIsVerifyCodeMode(false);
-          // Transition to password reset UI would happen here
       } catch (err: any) {
           setError(err.message || "Verification failed.");
       } finally {
@@ -486,7 +503,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                       <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={onSwitchToSignUp} type="button">
                         <UserPlus className="mr-2 w-4 h-4" /> NEW
                       </Button>
-                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={() => { setIdentifier('guest'); setPassword('xenova_guest'); }} type="button">
+                      <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10 rounded-xl h-10" onClick={handleGuestSignIn} type="button">
                         <UserCircle className="mr-2 w-4 h-4" /> GUEST
                       </Button>
                     </div>
