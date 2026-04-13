@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -15,11 +14,11 @@ import {
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useAuth } from '@/firebase';
-import { get, set } from '@/lib/idb';
+import { get, set, del } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { sendRecoveryCode, verifyRecoveryCode } from '@/lib/recovery-actions';
+import { sendRecoveryCode } from '@/lib/recovery-actions';
 
 type SavedAccount = {
   email: string;
@@ -29,6 +28,12 @@ type SavedAccount = {
 type LoginScreenProps = {
   onLoginSuccess: () => void;
   onSwitchToSignUp: () => void;
+};
+
+type StoredRecovery = {
+    code: string;
+    email: string;
+    expiresAt: number;
 };
 
 export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenProps) {
@@ -158,7 +163,15 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
     try {
         const result = await sendRecoveryCode(identifier);
-        if (result.success) {
+        if (result.success && result.code) {
+            // Save recovery state to IndexedDB for local verification
+            const expiration = Date.now() + 10 * 60 * 1000; // 10 minutes
+            await set('recovery-temp-token', {
+                code: result.code,
+                email: identifier,
+                expiresAt: expiration
+            });
+
             setIsVerifyCodeMode(true);
             setIsForgotMode(false);
             toast({
@@ -184,18 +197,35 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
       setError(null);
 
       try {
-          const result = await verifyRecoveryCode(identifier, verificationCode);
-          if (result.success) {
-              toast({
-                  title: "Identity Verified",
-                  description: "Verification successful. You can now reset your password.",
-              });
-              setIsVerifyCodeMode(false);
-          } else {
-              setError(result.error || "Verification failed.");
+          const stored = await get<StoredRecovery>('recovery-temp-token');
+          const now = Date.now();
+
+          if (!stored) {
+              setError("No active recovery request found.");
+              return;
           }
+
+          if (stored.expiresAt < now) {
+              await del('recovery-temp-token');
+              setError("Verification token has expired.");
+              return;
+          }
+
+          if (stored.code !== verificationCode) {
+              setError("Invalid verification token.");
+              return;
+          }
+
+          // Success
+          await del('recovery-temp-token');
+          toast({
+              title: "Identity Verified",
+              description: "Verification successful. You can now reset your password.",
+          });
+          setIsVerifyCodeMode(false);
+          
       } catch (err: any) {
-          setError("Network error occurred. Please try again.");
+          setError("Local storage error occurred. Please try again.");
       } finally {
           setIsVerifying(false);
       }
