@@ -31,11 +31,11 @@ export async function sendRecoveryCode(email: string) {
     const msg = {
       to: targetEmail,
       from: fromEmail.trim(),
-      subject: 'NovaVR Identity Verification',
+      subject: 'OrbitusVR Identity Verification',
       text: `Your verification code is: ${code}. It expires in 10 minutes.`,
       html: `
         <div style="font-family: sans-serif; padding: 40px; background: #0f172a; color: #f8fafc; border-radius: 16px;">
-          <h2 style="color: #3b82f6; margin-bottom: 24px;">NovaVR Security</h2>
+          <h2 style="color: #3b82f6; margin-bottom: 24px;">OrbitusVR Security</h2>
           <p>Please use the verification token below to confirm your identity:</p>
           <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; padding: 30px; background: rgba(255,255,255,0.05); text-align: center; border-radius: 12px; margin: 30px 0; border: 1px solid rgba(255,255,255,0.1);">
             ${code}

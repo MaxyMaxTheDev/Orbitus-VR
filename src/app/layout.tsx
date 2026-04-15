@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
-  title: 'NovaVR',
+  title: 'OrbitusVR',
   description: 'A customizable virtual home environment',
 };
 

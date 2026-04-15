@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle } from 'lucide-react';
-import { NovaVRLogo } from './icons/logo';
+import { OrbitusVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -45,7 +45,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
       const base64 = await downloadProjectZip();
       const link = document.createElement('a');
       link.href = `data:application/zip;base64,${base64}`;
-      link.download = 'NovaVR_Source_Backup.zip';
+      link.download = 'OrbitusVR_Source_Backup.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -109,8 +109,8 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const handleGuestSignUp = async () => {
     setIsSigningUp(true);
     setSignupError(null);
-    const guestEmail = 'guest@novavr.local';
-    const guestPassword = 'nova_guest';
+    const guestEmail = 'guest@orbitus.local';
+    const guestPassword = 'orbitus_guest';
 
     try {
       // 1. Try to sign in
@@ -148,8 +148,8 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
       case 0: // Welcome
         return (
           <motion.div key={0} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
-            <NovaVRLogo className="w-24 h-24 mx-auto text-primary" />
-            <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to NovaVR</h1>
+            <OrbitusVRLogo className="w-24 h-24 mx-auto text-primary" />
+            <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to OrbitusVR</h1>
             <p className="text-muted-foreground text-lg">Your new virtual reality desktop. Let's get you set up.</p>
             
             <div className="flex flex-col gap-3 max-w-xs mx-auto mt-4">
@@ -336,7 +336,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
             <h1 className="text-4xl font-bold font-headline">Setup Complete!</h1>
             <p className="text-muted-foreground text-lg">Welcome, <span className="text-accent font-bold">{username}</span>. Your virtual desktop is ready.</p>
             <Button size="lg" onClick={handleFinish} className="bg-green-600 hover:bg-green-700">
-              Enter NovaVR
+              Enter OrbitusVR
             </Button>
           </motion.div>
         );

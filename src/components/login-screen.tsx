@@ -80,7 +80,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
 
     let emailToUse = identifier;
     if (identifier.toLowerCase() === 'guest') {
-      emailToUse = 'guest@novavr.local';
+      emailToUse = 'guest@orbitus.local';
     }
 
     try {
@@ -122,8 +122,8 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   };
 
   const handleGuestSignIn = async () => {
-    const guestEmail = 'guest@novavr.local';
-    const guestPassword = 'nova_guest';
+    const guestEmail = 'guest@orbitus.local';
+    const guestPassword = 'orbitus_guest';
     setIdentifier('guest');
     setPassword(guestPassword);
     setIsLoading(true);
@@ -605,7 +605,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               </div>
             </ScrollArea>
             <div className="p-6 bg-black/20 text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">NovaVR OS &bull; Secure Auth</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">OrbitusVR OS &bull; Secure Auth</p>
             </div>
           </div>
         )}

@@ -30,14 +30,14 @@ import { SystemMonitor } from '@/components/apps/system-monitor';
 import { CodeProfiler } from '@/components/apps/code-profiler';
 import { NewsFeedApp } from '@/components/apps/news-feed';
 import { FileExplorer } from '@/components/apps/file-explorer';
-import { NovaDev } from '@/components/apps/nova-dev';
+import { OrbitusDev } from '@/components/apps/orbitus-dev';
 import { UserAppRunner } from '@/components/apps/user-app-runner';
 import { GeometryDashApp } from '@/components/apps/geometry-dash';
 import { FlappyBirdApp } from '@/components/apps/flappy-bird';
 import { Game2048App } from '@/components/apps/game-2048';
 import { HextrisApp } from '@/components/apps/hextris';
 import { PacmanApp } from '@/components/apps/pacman';
-import { NovaVM } from '@/components/apps/nova-vm';
+import { OrbitusVM } from '@/components/apps/orbitus-vm';
 
 export type App = {
     name: string;
@@ -69,9 +69,9 @@ export const allApps: App[] = [
     { name: "Music Player", icon: Music, component: MusicPlayer, description: "An audio player for listening to a curated playlist of futuristic music." },
     { name: "System Monitor", icon: Cpu, component: SystemMonitor, description: "Monitors the real-time performance of the virtual OS, including CPU, GPU, and memory." },
     { name: "Settings", icon: Settings, component: SettingsApp, description: "A panel for configuring application and environment settings." },
-    { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for NovaVR." },
-    { name: "NovaDEV", icon: BrainCircuit, component: NovaDev, description: "Create your own apps for NovaVR using AI or by writing code.", isInstallable: true },
-    { name: "NovaVM", icon: Monitor, component: NovaVM, description: "An immersive x86 virtual machine running Linux directly in your browser.", isInstallable: true },
+    { name: "App Store", icon: Store, component: AppStore, description: "Download and manage new applications for OrbitusVR." },
+    { name: "OrbitusDEV", icon: BrainCircuit, component: OrbitusDev, description: "Create your own apps for OrbitusVR using AI or by writing code.", isInstallable: true },
+    { name: "OrbitusVM", icon: Monitor, component: OrbitusVM, description: "An immersive x86 virtual machine running Linux directly in your browser.", isInstallable: true },
     { name: "Minecraft", icon: Blocks, component: MinecraftApp, description: "The classic block-building adventure game. Install via the App Store.", isInstallable: true },
     { name: "Geometry Dash", icon: Gamepad, component: GeometryDashApp, description: "Jump and fly your way through danger in this rhythm-based action platformer!", isInstallable: true },
     { name: "Flappy Bird", icon: Bird, component: FlappyBirdApp, description: "The legendary bird-flapping challenge. Avoid the pipes and aim for a high score!", isInstallable: true },

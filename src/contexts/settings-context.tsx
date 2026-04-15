@@ -57,27 +57,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const storedBanners = await get<boolean>('nova-vr-show-banners');
+        const storedBanners = await get<boolean>('orbitus-vr-show-banners');
         if (storedBanners !== undefined) {
           setShowAppBanners(storedBanners);
         }
 
-        const storedUsername = await get<string>('nova-vr-username');
+        const storedUsername = await get<string>('orbitus-vr-username');
         if (storedUsername) {
           setUsername(storedUsername);
         }
         
-        const storedPosition = await get<NotificationPosition>('nova-vr-notification-position');
+        const storedPosition = await get<NotificationPosition>('orbitus-vr-notification-position');
         if (storedPosition) {
           setNotificationPosition(storedPosition);
         }
         
-        const storedUiScale = await get<number>('nova-vr-ui-scale');
+        const storedUiScale = await get<number>('orbitus-vr-ui-scale');
         if (storedUiScale) {
           setUiScale(storedUiScale);
         }
 
-        const storedWidgets = await get<WidgetName[]>('nova-vr-dashboard-widgets');
+        const storedWidgets = await get<WidgetName[]>('orbitus-vr-dashboard-widgets');
         if (storedWidgets) {
           setDashboardWidgets(storedWidgets);
         }
@@ -92,30 +92,30 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Handler to update state and IndexedDB for banner settings
   const handleSetShowAppBanners = (show: boolean) => {
     setShowAppBanners(show);
-    persist('nova-vr-show-banners', show);
+    persist('orbitus-vr-show-banners', show);
   };
 
   // Handler to update state and IndexedDB for username
   const handleSetUsername = (name: string) => {
     setUsername(name);
-    persist('nova-vr-username', name);
+    persist('orbitus-vr-username', name);
   };
   
   // Handler to update state and IndexedDB for notification position
   const handleSetNotificationPosition = (position: NotificationPosition) => {
     setNotificationPosition(position);
-    persist('nova-vr-notification-position', position);
+    persist('orbitus-vr-notification-position', position);
   };
 
   // Handler to update state and IndexedDB for UI Scale
   const handleSetUiScale = (scale: number) => {
     setUiScale(scale);
-    persist('nova-vr-ui-scale', scale);
+    persist('orbitus-vr-ui-scale', scale);
   };
 
   const handleSetDashboardWidgets = (widgets: WidgetName[]) => {
     setDashboardWidgets(widgets);
-    persist('nova-vr-dashboard-widgets', widgets);
+    persist('orbitus-vr-dashboard-widgets', widgets);
   };
 
   const handleSetIsEditingDashboard = (isEditing: boolean) => {

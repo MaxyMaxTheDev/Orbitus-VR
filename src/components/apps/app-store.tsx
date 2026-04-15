@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -28,8 +27,8 @@ type FeaturedApp = {
 
 const featuredApps: FeaturedApp[] = [
     {
-        id: 'xenovavm',
-        name: 'XenovaVM',
+        id: 'orbitusvm',
+        name: 'OrbitusVM',
         description: 'Run a real Linux virtual machine inside your browser. A powerful, x86-based virtualization tool for developers and explorers.',
         icon: Monitor,
     },
@@ -70,9 +69,9 @@ const featuredApps: FeaturedApp[] = [
         icon: Hash,
     },
     {
-        id: 'xenovadev',
-        name: 'XenovaDEV',
-        description: 'Create your own apps for XenovaVR using AI or by writing code, and publish them to the App Store for everyone to use.',
+        id: 'orbitusdev',
+        name: 'OrbitusDEV',
+        description: 'Create your own apps for OrbitusVR using AI or by writing code, and publish them to the App Store for everyone to use.',
         icon: BrainCircuit,
     }
 ];

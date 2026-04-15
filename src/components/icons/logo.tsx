@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function NovaVRLogo({ className }: { className?: string }) {
+export function OrbitusVRLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}
