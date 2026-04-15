@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle } from 'lucide-react';
+import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle, KeyRound, CheckCircle2, Info, MailCheck } from 'lucide-react';
 import { OrbitusVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { downloadProjectZip } from '@/lib/export-action';
 import { useToast } from '@/hooks/use-toast';
+import { sendRecoveryCode } from '@/lib/recovery-actions';
+import { get, set, del } from '@/lib/idb';
 
 type SetupProps = {
   onComplete: () => void;
@@ -29,7 +31,10 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  
   const auth = useAuth();
   const { toast } = useToast();
 
@@ -66,44 +71,77 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
     }
   };
 
-  const handleSignUp = async () => {
+  const handleInitiateSignUp = async () => {
     if (username.trim() === '' || password.trim() === '' || email.trim() === '') return;
+    
     setIsSigningUp(true);
     setSignupError(null);
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: username });
-      
-      setUsername(username);
-      
-      handleNext();
-    } catch (error: any) {
-      let message = "An unknown error occurred. Please try again.";
-       if (error.code) {
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            message = 'This email address is already in use by another account.';
-            break;
-          case 'auth/invalid-email':
-            message = 'The email address you entered is not valid.';
-            break;
-          case 'auth/weak-password':
-            message = 'The password is too weak. Please use at least 6 characters.';
-            break;
-          case 'auth/operation-not-allowed':
-            message = 'Email/Password sign-up is not enabled. Please enable it in your Firebase project console.';
-            break;
-          default:
-            message = `An unexpected error occurred: ${error.code}. Please check your Firebase configuration.`;
-            break;
+        const result = await sendRecoveryCode(email);
+        if (result.success && result.code) {
+            const expiration = Date.now() + 10 * 60 * 1000; 
+            await set('signup-verification-token', {
+                code: result.code,
+                email: email,
+                expiresAt: expiration
+            });
+
+            setStep(1.5); // Move to verification step
+            toast({
+                title: "Identity Verification Required",
+                description: `A 6-digit code has been sent to ${email}.`,
+            });
+        } else {
+            setSignupError(result.error || "Failed to initiate verification.");
         }
-      } else if (error.message) {
-        message = error.message;
-      }
-      setSignupError(message);
+    } catch (err: any) {
+        setSignupError("Network error occurred. Please try again.");
     } finally {
-      setIsSigningUp(false);
+        setIsSigningUp(false);
     }
+  };
+
+  const handleVerifyAndCreate = async (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
+      if (!verificationCode.trim()) return;
+
+      setIsVerifying(true);
+      setSignupError(null);
+
+      try {
+          const stored = await get<{code: string, email: string, expiresAt: number}>('signup-verification-token');
+          const now = Date.now();
+
+          if (!stored || stored.expiresAt < now) {
+              setSignupError("Verification session expired. Please try again.");
+              await del('signup-verification-token');
+              setStep(1);
+              return;
+          }
+
+          if (stored.code !== verificationCode) {
+              setSignupError("Invalid verification token.");
+              return;
+          }
+
+          // Verification success -> Create account
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(userCredential.user, { displayName: username });
+          
+          await del('signup-verification-token');
+          setUsername(username);
+          handleNext(); // Move to next step (step 2)
+
+      } catch (error: any) {
+          let message = "An unknown error occurred during account creation.";
+          if (error.code === 'auth/email-already-in-use') {
+              message = 'This email address is already in use.';
+          }
+          setSignupError(message);
+      } finally {
+          setIsVerifying(false);
+      }
   };
 
   const handleGuestSignUp = async () => {
@@ -113,24 +151,21 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
     const guestPassword = 'orbitus_guest';
 
     try {
-      // 1. Try to sign in
       await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
       setUsername('Guest');
-      handleNext();
+      setStep(2); // Jump straight to preferences
     } catch (error: any) {
-      // 2. If sign in fails because user doesn't exist, create it
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
           await updateProfile(userCredential.user, { displayName: 'Guest' });
           setUsername('Guest');
-          handleNext();
+          setStep(2);
           return;
         } catch (createError: any) {
           console.error("Guest auto-provisioning failed:", createError);
         }
       }
-      console.error("Guest Sign-Up Error:", error);
       setSignupError("Guest mode is currently unavailable. Please create a permanent identity.");
     } finally {
       setIsSigningUp(false);
@@ -180,36 +215,35 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                  <div className="space-y-4 text-left">
                     <div>
                         <Label htmlFor="username-reg">Username</Label>
-                        <input 
+                        <Input 
                           id="username-reg" 
-                          type="text" 
                           value={username} 
                           onChange={(e) => setUsername(e.target.value)} 
                           placeholder="Choose a public username" 
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm"
+                          className="bg-black/20 border-primary/20 focus:ring-accent"
                         />
                     </div>
                     <div>
                         <Label htmlFor="email-reg">Email</Label>
-                        <input 
+                        <Input 
                           id="email-reg" 
                           type="email" 
                           value={email} 
                           onChange={(e) => setEmail(e.target.value)} 
                           placeholder="Enter your email" 
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm"
+                          className="bg-black/20 border-primary/20 focus:ring-accent"
                         />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="password-reg">Password</Label>
                         <div className="relative">
-                          <input 
+                          <Input 
                             id="password-reg" 
                             type={showPassword ? 'text' : 'password'} 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
-                            placeholder="Create a secure password (min. 6 characters)" 
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 md:text-sm pr-10"
+                            placeholder="Create a secure password" 
+                            className="bg-black/20 border-primary/20 focus:ring-accent pr-10"
                           />
                           <Button
                             type="button"
@@ -218,21 +252,14 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
                             onClick={() => setShowPassword((prev) => !prev)}
                           >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" aria-hidden="true" />
-                            ) : (
-                              <Eye className="h-4 w-4" aria-hidden="true" />
-                            )}
-                            <span className="sr-only">
-                              {showPassword ? 'Hide password' : 'Show password'}
-                            </span>
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
                         </div>
                     </div>
                  </div>
                 
                 <div className="space-y-3">
-                    <Button size="lg" className="w-full" onClick={handleSignUp} disabled={username.trim() === '' || password.trim() === '' || email.trim() === '' || isSigningUp}>
+                    <Button size="lg" className="w-full" onClick={handleInitiateSignUp} disabled={!username || !email || !password || isSigningUp}>
                         {isSigningUp ? <Loader2 className="animate-spin" /> : 'Create Account & Continue'}
                     </Button>
                     
@@ -257,13 +284,57 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                 </p>
             </motion.div>
         );
+      case 1.5: // New Verification Step
+        return (
+            <motion.div key="verify-email" initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
+                <div className="text-center space-y-2">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary/20">
+                        <KeyRound className="w-10 h-10 text-primary" />
+                    </div>
+                    <h1 className="text-2xl font-bold font-headline tracking-wider uppercase">Verify Identity</h1>
+                    <p className="text-sm text-muted-foreground">Enter the 6-digit code sent to <span className="text-accent font-mono">{email}</span></p>
+                </div>
+
+                <form onSubmit={handleVerifyAndCreate} className="space-y-6">
+                    <div className="space-y-2 text-left">
+                        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Verification Token</Label>
+                        <Input
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                            placeholder="000000"
+                            autoFocus
+                            className="bg-black/20 border-primary/20 focus:ring-accent h-14 rounded-xl text-center text-3xl font-mono tracking-[0.5em]"
+                        />
+                    </div>
+
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-start gap-3 text-left">
+                        <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            Don't see any emails from OrbitusVR in your inbox? Check your <strong>Spam</strong> or <strong>Junk Email</strong> folders.
+                        </p>
+                    </div>
+
+                    {signupError && <p className="text-xs text-destructive text-left font-semibold">{signupError}</p>}
+
+                    <div className="space-y-3">
+                        <Button size="lg" className="w-full bg-primary hover:bg-primary/80 text-primary-foreground font-bold tracking-widest h-12 rounded-xl shadow-lg" disabled={isVerifying || verificationCode.length < 6}>
+                            {isVerifying ? <Loader2 className="animate-spin" /> : <><CheckCircle2 className="mr-2 w-5 h-5" /> VERIFY & FINISH</>}
+                        </Button>
+                        <div className="flex justify-between items-center px-1">
+                            <Button variant="link" type="button" className="text-[10px] text-muted-foreground p-0 h-auto" onClick={handleInitiateSignUp}>Resend Code</Button>
+                            <Button variant="link" type="button" className="text-[10px] text-muted-foreground p-0 h-auto" onClick={() => setStep(1)}>Change Details</Button>
+                        </div>
+                    </div>
+                </form>
+            </motion.div>
+        );
       case 2: // Preferences
         return (
           <motion.div key={3} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
             <h1 className="text-3xl font-bold font-headline">Personalize Your Experience</h1>
             <p className="text-muted-foreground">Choose how you want your app library to look.</p>
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-border">
-              <Label htmlFor="show-banners" className="text-lg font-medium">
+              <Label htmlFor="show-banners" className="text-lg font-medium text-left">
                 AI-Generated App Banners
               </Label>
               <Switch
@@ -274,7 +345,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
               />
             </div>
             <p className="text-xs text-muted-foreground">You can change this and other settings later in the Settings app.</p>
-            <Button size="lg" onClick={handleNext}>
+            <Button size="lg" onClick={handleNext} className="w-full">
               Next <ArrowRight className="ml-2" />
             </Button>
           </motion.div>
@@ -335,7 +406,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
             </div>
             <h1 className="text-4xl font-bold font-headline">Setup Complete!</h1>
             <p className="text-muted-foreground text-lg">Welcome, <span className="text-accent font-bold">{username}</span>. Your virtual desktop is ready.</p>
-            <Button size="lg" onClick={handleFinish} className="bg-green-600 hover:bg-green-700">
+            <Button size="lg" onClick={handleFinish} className="bg-green-600 hover:bg-green-700 w-full">
               Enter OrbitusVR
             </Button>
           </motion.div>

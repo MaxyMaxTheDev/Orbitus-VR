@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { 
     Loader2, LogIn, User, Eye, EyeOff, UserCircle, 
     UserPlus, ChevronRight, ArrowLeft, MailCheck, 
-    ShieldQuestion, KeyRound, CheckCircle2 
+    ShieldQuestion, KeyRound, CheckCircle2, Info
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -164,8 +164,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     try {
         const result = await sendRecoveryCode(identifier);
         if (result.success && result.code) {
-            // Save recovery state to IndexedDB for local verification
-            const expiration = Date.now() + 10 * 60 * 1000; // 10 minutes
+            const expiration = Date.now() + 10 * 60 * 1000; 
             await set('recovery-temp-token', {
                 code: result.code,
                 email: identifier,
@@ -216,7 +215,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
               return;
           }
 
-          // Success
           await del('recovery-temp-token');
           toast({
               title: "Identity Verified",
@@ -326,6 +324,13 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                     autoFocus
                     className="bg-black/20 border-primary/20 focus:ring-accent h-14 rounded-xl text-center text-3xl font-mono tracking-[0.5em]"
                 />
+            </div>
+
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-start gap-3">
+                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Don't see any emails from OrbitusVR in your inbox? Check your <strong>Spam</strong> or <strong>Junk Email</strong> folders.
+                </p>
             </div>
 
             {error && (
@@ -465,7 +470,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="w-full max-w-sm space-y-8"
+                className="w-full max-sm space-y-8"
               >
                 {savedAccounts.length > 0 && (
                   <Button 
