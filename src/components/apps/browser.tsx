@@ -144,11 +144,10 @@ export function Browser() {
                     <ShieldCheck className="w-3 h-3 text-green-400" />
                     <span className="text-[10px] font-mono text-white/60 tracking-widest uppercase">Live Virtual Projection Active</span>
                 </div>
-                <iframe
-                    srcDoc={portalHtml}
-                    className="w-full h-full border-0 flex-1"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                <div
+                    className="w-full h-full flex-1 overflow-auto"
                     title="Live Site Projection"
+                    dangerouslySetInnerHTML={{ __html: portalHtml }}
                 />
             </div>
         );
