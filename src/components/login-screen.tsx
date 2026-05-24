@@ -329,7 +329,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-start gap-3">
                 <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Don't see any emails from OrbitusVR in your inbox? Check your <strong>Spam</strong> or <strong>Junk Email</strong> folders.
+                    Don't see any emails from OrbitusVR in your inbox? Check your <strong>Spam</strong> or <strong>Junk Email</strong> folders. remember after 10 minutes the code will expire and go bye bye!
                 </p>
             </div>
 
