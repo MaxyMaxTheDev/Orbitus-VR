@@ -32,7 +32,7 @@ export async function sendRecoveryCode(email: string) {
       to: targetEmail,
       from: fromEmail.trim(),
       subject: 'OrbitusVR Identity Verification',
-      text: `Your verification code is: ${code}. It expires in 10 minutes.`,
+      text: `Your verification code is: ${code}. remember after 10 minutes the code will expire and go bye bye!`,
       html: `
         <div style="font-family: sans-serif; padding: 40px; background: #0f172a; color: #f8fafc; border-radius: 16px;">
           <h2 style="color: #3b82f6; margin-bottom: 24px;">OrbitusVR Security</h2>
@@ -40,7 +40,7 @@ export async function sendRecoveryCode(email: string) {
           <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; padding: 30px; background: rgba(255,255,255,0.05); text-align: center; border-radius: 12px; margin: 30px 0; border: 1px solid rgba(255,255,255,0.1);">
             ${code}
           </div>
-          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">This code is valid for 10 minutes. If you did not request this verification, please ignore this message.</p>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">remember after 10 minutes the code will expire and go bye bye!<br/>If you did not request this verification, please ignore this message.</p>
         </div>
       `,
     };
