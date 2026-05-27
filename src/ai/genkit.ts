@@ -1,13 +1,15 @@
+import {openAICompatible} from '@genkit-ai/compat-oai';
 import {genkit, z} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 
 export const ai = genkit({
   plugins: [
-    googleAI({
-      apiKey: process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY,
+    openAICompatible({
+      name: 'groq',
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
     }),
   ],
-  model: 'googleai/gemini-2.0-flash',
+  model: 'groq/llama-3.3-70b-versatile',
 });
 
 export { z };
