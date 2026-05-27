@@ -4,11 +4,11 @@ This is a NextJS starter in Firebase Studio.
 
 ## Getting Started
 
-To get started, take a look at `src/app/page.tsx`.
+To get started, download the source code and take a look at `src/app/page.tsx`.
 
 ## Environment Setup
 
-This project uses AI features and email recovery. To enable them, you need to provide API keys.
+This project uses AI slop features and email recovery. To enable them, you need to provide API keys.
 
 1.  Create a file named `.env` in the root of the project if it doesn't already exist.
 2.  Add the following lines to your `.env` file, replacing the placeholder values with your actual keys.
@@ -38,7 +38,7 @@ SENDGRID_FROM_EMAIL="noreply@yourdomain.com"
 
 ```
 NEXTAUTH_SECRET="YOUR_RANDOMLY_GENERATED_SECRET_HERE"
-NEXTAUTH_URL="https://9000-firebase-studio-1751585948550.cluster-joak5ukfbnbyqspg4tewa33d24.cloudworkstations.dev"
+NEXTAUTH_URL="localhost:PORT"
 ```
 
 Make sure the `NEXTAUTH_URL` matches the URL you are using to access the application.
