@@ -11,9 +11,9 @@ import type { TipOutput } from '../schemas';
 export type { TipOutput };
 
 export async function getTip(): Promise<TipOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
-      tip: 'Enable AI features by setting the GOOGLE_API_KEY in your .env file to get daily tips.',
+      tip: 'Enable AI features by setting the GROQ_API_KEY in your .env file to get daily tips.',
     };
   }
   return tipFlow({});

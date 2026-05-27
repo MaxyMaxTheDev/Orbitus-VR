@@ -15,9 +15,9 @@ import { z } from 'zod';
 export type { SummarizeUrlInput, SummarizeUrlOutput };
 
 export async function summarizeUrl(input: SummarizeUrlInput): Promise<SummarizeUrlOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
-      summary: "AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.",
+      summary: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
     };
   }
   return summarizeUrlFlow(input);

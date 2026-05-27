@@ -11,9 +11,9 @@ import type { QuoteOutput } from '../schemas';
 export type { QuoteOutput };
 
 export async function getQuote(): Promise<QuoteOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
-      quote: 'AI features are disabled. Please set the GOOGLE_API_KEY in your .env file.',
+      quote: 'AI features are disabled. Please set the GROQ_API_KEY in your .env file.',
       author: 'System',
     };
   }
