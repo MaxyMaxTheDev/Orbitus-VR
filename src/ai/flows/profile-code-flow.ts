@@ -13,12 +13,12 @@ import type { ProfileCodeInput, ProfileCodeOutput } from '../schemas';
 export type { ProfileCodeInput, ProfileCodeOutput };
 
 export async function profileCode(input: ProfileCodeInput): Promise<ProfileCodeOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
       quantumComplexity: "N/A",
       temporalStability: "N/A",
       aethericConsumption: "N/A",
-      summary: "AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.",
+      summary: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
     };
   }
   return profileCodeFlow(input);

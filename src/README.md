@@ -13,12 +13,12 @@ This project uses AI features, Google Authentication, and SendGrid email recover
 1.  Create a file named `.env` in the root of the project if it doesn't already exist.
 2.  Add the following lines to your `.env` file, replacing the placeholder values with your actual keys.
 
-### Google AI (for Gemini)
+### Groq AI
 
-*   Obtain an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+*   Obtain an API key from [Groq Console](https://console.groq.com/keys).
 
 ```
-GOOGLE_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+GROQ_API_KEY="YOUR_GROQ_API_KEY_HERE"
 ```
 
 ### SendGrid (for Password Recovery)

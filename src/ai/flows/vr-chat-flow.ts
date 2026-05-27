@@ -13,12 +13,12 @@ import type { VRChatInput, VRChatOutput } from '../schemas';
 export type { VRChatInput, VRChatOutput };
 
 export async function vrChat(input: VRChatInput): Promise<VRChatOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
       responses: [
         {
           author: 'System',
-          text: 'AI features are disabled. Please set the GOOGLE_API_KEY in your .env file to enable them.',
+          text: 'AI features are disabled. Please set the GROQ_API_KEY in your .env file to enable them.',
         },
       ],
     };

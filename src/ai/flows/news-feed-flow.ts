@@ -11,10 +11,10 @@ import type { NewsFeedOutput, NewsItem } from '../schemas';
 export type { NewsFeedOutput, NewsItem };
 
 export async function getNewsFeed(): Promise<NewsFeedOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
       articles: [
-        { title: 'AI features disabled.', source: 'System', timestamp: 'Now', content: 'AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file to enable this app.' },
+        { title: 'AI features disabled.', source: 'System', timestamp: 'Now', content: 'AI features are disabled. Please provide a GROQ_API_KEY in your .env file to enable this app.' },
       ],
     };
   }

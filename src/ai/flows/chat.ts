@@ -13,9 +13,9 @@ import type { ChatInput, ChatOutput } from '../schemas';
 export type { ChatInput, ChatOutput };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
-  if (!process.env.GOOGLE_API_KEY && !process.env.GEMINI_API_KEY) {
+  if (!process.env.GROQ_API_KEY) {
     return {
-      message: "AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.",
+      message: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
     };
   }
   return chatFlow(input);

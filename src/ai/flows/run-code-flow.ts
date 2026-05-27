@@ -13,8 +13,8 @@ import type { RunCodeInput, RunCodeOutput } from '../schemas';
 export type { RunCodeInput, RunCodeOutput };
 
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
-  if (!process.env.GOOGLE_API_KEY) {
-    throw new Error('AI features are disabled. Please provide a GOOGLE_API_KEY in your .env file.');
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('AI features are disabled. Please provide a GROQ_API_KEY in your .env file.');
   }
   return runCodeFlow(input);
 }
@@ -45,7 +45,7 @@ The user's description is: "${input.prompt}"`;
 
     try {
       const { media } = await ai.generate({
-        model: 'googleai/gemini-2.0-flash-preview-image-generation',
+        model: 'groq/llama-3.3-70b-versatile',
         prompt: generationPrompt,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],
