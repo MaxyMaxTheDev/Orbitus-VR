@@ -4,7 +4,7 @@ This is a NextJS starter in Firebase Studio.
 
 ## Getting Started
 
-To get started, download the source code and take a look at `src/app/page.tsx`.
+To get started, download the source code by going back to the main repo page (github.com/MaxyMaxTheDev/studio), clicking the dropdown button on the Code button and click ZIP and extracting the zip to a new empty folder and run this command: cd /path/to/your_extracted_folder. You can also just use Git like this: git clone https://github.com/MaxyMaxTheDev/studio.git. Or you can fork this repo. When you are done, take a look at `src/app/page.tsx`.
 
 ## Environment Setup
 
