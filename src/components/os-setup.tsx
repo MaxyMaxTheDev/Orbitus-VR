@@ -166,7 +166,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
           console.error("Guest auto-provisioning failed:", createError);
         }
       }
-      setSignupError("Guest mode is currently unavailable. Please create a permanent identity.");
+      setSignupError("Guest mode is currently unavailable lol. Please create a permanent identity.");
     } finally {
       setIsSigningUp(false);
     }
@@ -185,7 +185,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
           <motion.div key={0} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
             <OrbitusVRLogo className="w-24 h-24 mx-auto text-primary" />
             <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to OrbitusVR</h1>
-            <p className="text-muted-foreground text-lg">Your new virtual reality desktop. Let's get you set up.</p>
+            <p className="text-muted-foreground text-lg">made by MaxyMax</p>
             
             <div className="flex flex-col gap-3 max-w-xs mx-auto mt-4">
                 <Button size="lg" onClick={handleNext} className="w-full">
@@ -199,10 +199,10 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                     className="w-full border-primary/50 text-primary hover:bg-primary/10"
                 >
                 {isDownloading ? <Loader2 className="animate-spin mr-2" /> : <Download className="mr-2" />}
-                Download Project (.zip)
+                download source code
                 </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground italic">Quickly backup your entire workspace before continuing.</p>
+            <p className="text-[10px] text-muted-foreground italic">ok fine download the source code matter of fact its open source on github.com/MaxyMaxTheDev/Orbitus-VR</p>
           </motion.div>
         );
       case 1: // Account creation
