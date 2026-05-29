@@ -57,7 +57,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
       
       toast({
         title: "Backup Started",
-        description: "Your project files are being downloaded as a .zip file.",
+        description: "Your project files are NOT being downloaded as a .zip file.",
       });
     } catch (error) {
       console.error(error);
@@ -136,7 +136,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
       } catch (error: any) {
           let message = "An unknown error occurred during account creation.";
           if (error.code === 'auth/email-already-in-use') {
-              message = 'This email address is already in use.';
+              message = 'This email address is already in use. Now dont get angry.';
           }
           setSignupError(message);
       } finally {
@@ -273,7 +273,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
                     </div>
 
                     <Button variant="outline" size="lg" className="w-full border-primary/30 hover:bg-primary/10" onClick={handleGuestSignUp} disabled={isSigningUp}>
-                        <UserCircle className="mr-2 w-5 h-5" /> Use as Guest
+                        <UserCircle className="mr-2 w-5 h-5" /> click to 'use as guest'
                     </Button>
                 </div>
 
@@ -335,7 +335,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
             <p className="text-muted-foreground">Choose how you want your app library to look.</p>
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-border">
               <Label htmlFor="show-banners" className="text-lg font-medium text-left">
-                AI-Generated App Banners
+                AI Slop-Generated App Banners
               </Label>
               <Switch
                 id="show-banners"
