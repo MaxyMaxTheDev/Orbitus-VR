@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import { z } from 'genkit';
 import { QuoteOutputSchema } from '../schemas';
 import type { QuoteOutput } from '../schemas';
@@ -11,9 +12,9 @@ import type { QuoteOutput } from '../schemas';
 export type { QuoteOutput };
 
 export async function getQuote(): Promise<QuoteOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGenAiApiKey()) {
     return {
-      quote: 'AI features are disabled. Please set the GROQ_API_KEY in your .env file.',
+      quote: missingGenAiApiKeyMessage,
       author: 'System',
     };
   }
