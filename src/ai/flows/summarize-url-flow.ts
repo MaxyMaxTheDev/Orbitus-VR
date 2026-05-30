@@ -5,6 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   SummarizeUrlInputSchema,
   SummarizeUrlOutputSchema,
@@ -15,9 +16,9 @@ import { z } from 'zod';
 export type { SummarizeUrlInput, SummarizeUrlOutput };
 
 export async function summarizeUrl(input: SummarizeUrlInput): Promise<SummarizeUrlOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return {
-      summary: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
+      summary: missingGeminiApiKeyMessage,
     };
   }
   return summarizeUrlFlow(input);

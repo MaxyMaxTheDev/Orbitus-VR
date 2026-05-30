@@ -4,6 +4,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ImageGenerationInputSchema,
   ImageGenerationOutputSchema,
@@ -13,8 +15,8 @@ import type { ImageGenerationInput, ImageGenerationOutput } from '../schemas';
 export type { ImageGenerationInput, ImageGenerationOutput };
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationOutput> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('AI features are disabled. Please provide a GROQ_API_KEY in your .env file.');
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   }
   return imageGenerationFlow(input);
 }
@@ -28,7 +30,7 @@ const imageGenerationFlow = ai.defineFlow(
   async (input) => {
     try {
       const { media } = await ai.generate({
-        model: 'groq/llama-3.3-70b-versatile',
+        model: googleAI.model('gemini-2.5-flash-image'),
         prompt: `A high-resolution 3D render of the following object, suitable for a virtual reality sculpting app: ${input.prompt}`,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],

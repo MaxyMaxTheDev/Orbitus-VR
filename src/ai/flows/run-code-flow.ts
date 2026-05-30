@@ -4,6 +4,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   RunCodeInputSchema,
   RunCodeOutputSchema,
@@ -13,8 +15,8 @@ import type { RunCodeInput, RunCodeOutput } from '../schemas';
 export type { RunCodeInput, RunCodeOutput };
 
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('AI features are disabled. Please provide a GROQ_API_KEY in your .env file.');
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   }
   return runCodeFlow(input);
 }
@@ -45,7 +47,7 @@ The user's description is: "${input.prompt}"`;
 
     try {
       const { media } = await ai.generate({
-        model: 'groq/llama-3.3-70b-versatile',
+        model: googleAI.model('gemini-2.5-flash-image'),
         prompt: generationPrompt,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],
