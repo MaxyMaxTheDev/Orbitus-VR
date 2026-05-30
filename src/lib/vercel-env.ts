@@ -25,3 +25,9 @@ export function hasGeminiApiKey(): boolean {
 
 export const missingGeminiApiKeyMessage =
   'AI features are disabled. Set GEMINI_API_KEY in your Vercel project Environment Variables.';
+export function hasGenAiApiKey(): boolean {
+  return Boolean(getVercelEnv('GOOGLE_GENAI_API_KEY'));
+}
+
+export const missingGenAiApiKeyMessage =
+  'AI features are disabled. Set GOOGLE_GENAI_API_KEY in your Vercel project Environment Variables.';

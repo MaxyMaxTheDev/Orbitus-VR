@@ -7,6 +7,7 @@ export const ai = genkit({
   plugins: [
     googleAI({
       apiKey: getVercelEnv('GEMINI_API_KEY'),
+      apiKey: getVercelEnv('GOOGLE_GENAI_API_KEY'),
     }),
   ],
   model: googleAI.model('gemini-2.5-flash'),

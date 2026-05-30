@@ -6,6 +6,7 @@
 import { ai } from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   RunCodeInputSchema,
   RunCodeOutputSchema,
@@ -17,6 +18,8 @@ export type { RunCodeInput, RunCodeOutput };
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
   if (!hasGeminiApiKey()) {
     throw new Error(missingGeminiApiKeyMessage);
+  if (!hasGenAiApiKey()) {
+    throw new Error(missingGenAiApiKeyMessage);
   }
   return runCodeFlow(input);
 }

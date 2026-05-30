@@ -5,6 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import { z } from 'genkit';
 import { QuoteOutputSchema } from '../schemas';
 import type { QuoteOutput } from '../schemas';
@@ -15,6 +16,9 @@ export async function getQuote(): Promise<QuoteOutput> {
   if (!hasGeminiApiKey()) {
     return {
       quote: missingGeminiApiKeyMessage,
+  if (!hasGenAiApiKey()) {
+    return {
+      quote: missingGenAiApiKeyMessage,
       author: 'System',
     };
   }

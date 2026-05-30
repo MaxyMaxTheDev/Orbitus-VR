@@ -7,6 +7,7 @@
 import { ai } from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   GenerateAppBannerInputSchema,
   GenerateAppBannerOutputSchema,
@@ -19,6 +20,8 @@ export type { GenerateAppBannerInput, GenerateAppBannerOutput };
 export async function generateAppBanner(input: GenerateAppBannerInput): Promise<GenerateAppBannerOutput> {
   if (!hasGeminiApiKey()) {
     throw new Error(missingGeminiApiKeyMessage);
+  if (!hasGenAiApiKey()) {
+    throw new Error(missingGenAiApiKeyMessage);
   }
   return generateAppBannerFlow(input);
 }
