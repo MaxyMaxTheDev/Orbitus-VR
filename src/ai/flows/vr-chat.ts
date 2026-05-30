@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   VRChatInputSchema,
   VRChatOutputSchema,
@@ -13,12 +14,12 @@ import type { VRChatInput, VRChatOutput } from '../schemas';
 export type { VRChatInput, VRChatOutput };
 
 export async function vrChat(input: VRChatInput): Promise<VRChatOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGenAiApiKey()) {
     return {
       responses: [
         {
           author: 'System',
-          text: 'AI features are disabled. Please set the GROQ_API_KEY in your .env file to enable them.',
+          text: missingGenAiApiKeyMessage,
         },
       ],
     };

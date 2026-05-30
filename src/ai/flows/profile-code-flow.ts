@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ProfileCodeInputSchema,
   ProfileCodeOutputSchema,
@@ -13,12 +14,12 @@ import type { ProfileCodeInput, ProfileCodeOutput } from '../schemas';
 export type { ProfileCodeInput, ProfileCodeOutput };
 
 export async function profileCode(input: ProfileCodeInput): Promise<ProfileCodeOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGenAiApiKey()) {
     return {
       quantumComplexity: "N/A",
       temporalStability: "N/A",
       aethericConsumption: "N/A",
-      summary: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
+      summary: missingGenAiApiKeyMessage,
     };
   }
   return profileCodeFlow(input);

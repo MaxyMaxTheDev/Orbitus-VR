@@ -65,7 +65,7 @@ export function MailApp() {
             <Button size="lg" onClick={() => signIn('google')} className="bg-blue-600 hover:bg-blue-700 text-white px-8">
                 <LogIn className="mr-2" /> Sign in with Google
             </Button>
-            <p className="text-xs text-gray-400 italic">Integration required: Please provide your Google Client ID in the .env file.</p>
+            <p className="text-xs text-gray-400 italic">Integration required: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel Environment Variables.</p>
         </div>
     );
   }

@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import { z } from 'genkit';
 import { TipOutputSchema } from '../schemas';
 import type { TipOutput } from '../schemas';
@@ -11,9 +12,9 @@ import type { TipOutput } from '../schemas';
 export type { TipOutput };
 
 export async function getTip(): Promise<TipOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGenAiApiKey()) {
     return {
-      tip: 'Enable AI features by setting the GROQ_API_KEY in your .env file to get daily tips.',
+      tip: missingGenAiApiKeyMessage,
     };
   }
   return tipFlow({});

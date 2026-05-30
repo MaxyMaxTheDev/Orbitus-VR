@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ExplainCodeInputSchema,
   ExplainCodeOutputSchema,
@@ -13,9 +14,9 @@ import type { ExplainCodeInput, ExplainCodeOutput } from '../schemas';
 export type { ExplainCodeInput, ExplainCodeOutput };
 
 export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGenAiApiKey()) {
     return {
-      explanation: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
+      explanation: missingGenAiApiKeyMessage,
     };
   }
   return explainCodeFlow(input);

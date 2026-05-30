@@ -1,21 +1,15 @@
-import {openAICompatible} from '@genkit-ai/compat-oai';
+import {googleAI} from '@genkit-ai/google-genai';
 import {genkit, z} from 'genkit';
 
-export const ai = genkit({
-  plugins: [
-    openAICompatible({
-      name: 'groq',
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: 'https://api.groq.com/openai/v1',
-import {groq} from '@genkit-ai/groq';
+import {getVercelEnv} from '@/lib/vercel-env';
 
 export const ai = genkit({
   plugins: [
-    groq({
-      apiKey: process.env.GROQ_API_KEY,
+    googleAI({
+      apiKey: getVercelEnv('GOOGLE_GENAI_API_KEY'),
     }),
   ],
-  model: 'groq/llama-3.3-70b-versatile',
+  model: googleAI.model('gemini-2.5-flash'),
 });
 
 export { z };
