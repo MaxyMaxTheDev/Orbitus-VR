@@ -4,6 +4,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   RunCodeInputSchema,
@@ -14,6 +16,8 @@ import type { RunCodeInput, RunCodeOutput } from '../schemas';
 export type { RunCodeInput, RunCodeOutput };
 
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   if (!hasGenAiApiKey()) {
     throw new Error(missingGenAiApiKeyMessage);
   }
@@ -46,6 +50,7 @@ The user's description is: "${input.prompt}"`;
 
     try {
       const { media } = await ai.generate({
+        model: googleAI.model('gemini-2.5-flash-image'),
         prompt: generationPrompt,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],

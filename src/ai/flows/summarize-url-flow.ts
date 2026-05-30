@@ -5,6 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   SummarizeUrlInputSchema,
@@ -16,6 +17,9 @@ import { z } from 'zod';
 export type { SummarizeUrlInput, SummarizeUrlOutput };
 
 export async function summarizeUrl(input: SummarizeUrlInput): Promise<SummarizeUrlOutput> {
+  if (!hasGeminiApiKey()) {
+    return {
+      summary: missingGeminiApiKeyMessage,
   if (!hasGenAiApiKey()) {
     return {
       summary: missingGenAiApiKeyMessage,

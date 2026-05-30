@@ -4,6 +4,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ImageGenerationInputSchema,
@@ -14,6 +16,8 @@ import type { ImageGenerationInput, ImageGenerationOutput } from '../schemas';
 export type { ImageGenerationInput, ImageGenerationOutput };
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationOutput> {
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   if (!hasGenAiApiKey()) {
     throw new Error(missingGenAiApiKeyMessage);
   }
@@ -29,6 +33,7 @@ const imageGenerationFlow = ai.defineFlow(
   async (input) => {
     try {
       const { media } = await ai.generate({
+        model: googleAI.model('gemini-2.5-flash-image'),
         prompt: `A high-resolution 3D render of the following object, suitable for a virtual reality sculpting app: ${input.prompt}`,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],

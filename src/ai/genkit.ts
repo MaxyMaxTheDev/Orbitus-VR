@@ -6,6 +6,7 @@ import {getVercelEnv} from '@/lib/vercel-env';
 export const ai = genkit({
   plugins: [
     googleAI({
+      apiKey: getVercelEnv('GEMINI_API_KEY'),
       apiKey: getVercelEnv('GOOGLE_GENAI_API_KEY'),
     }),
   ],

@@ -5,6 +5,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   GenerateAppBannerInputSchema,
@@ -16,6 +18,8 @@ export type { GenerateAppBannerInput, GenerateAppBannerOutput };
 
 
 export async function generateAppBanner(input: GenerateAppBannerInput): Promise<GenerateAppBannerOutput> {
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   if (!hasGenAiApiKey()) {
     throw new Error(missingGenAiApiKeyMessage);
   }
@@ -31,6 +35,7 @@ const generateAppBannerFlow = ai.defineFlow(
   async (input) => {
     try {
       const { media } = await ai.generate({
+        model: googleAI.model('gemini-2.5-flash-image'),
         prompt: `Create a visually appealing, high-tech banner image (16:9 aspect ratio) for an application.
 App Name: "${input.appName}"
 App Description: "${input.description}"

@@ -4,6 +4,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ChatInputSchema,
@@ -14,6 +15,9 @@ import type { ChatInput, ChatOutput } from '../schemas';
 export type { ChatInput, ChatOutput };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
+  if (!hasGeminiApiKey()) {
+    return {
+      message: missingGeminiApiKeyMessage,
   if (!hasGenAiApiKey()) {
     return {
       message: missingGenAiApiKeyMessage,

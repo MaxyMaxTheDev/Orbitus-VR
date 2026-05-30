@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ProfileCodeInputSchema,
@@ -14,11 +15,13 @@ import type { ProfileCodeInput, ProfileCodeOutput } from '../schemas';
 export type { ProfileCodeInput, ProfileCodeOutput };
 
 export async function profileCode(input: ProfileCodeInput): Promise<ProfileCodeOutput> {
+  if (!hasGeminiApiKey()) {
   if (!hasGenAiApiKey()) {
     return {
       quantumComplexity: "N/A",
       temporalStability: "N/A",
       aethericConsumption: "N/A",
+      summary: missingGeminiApiKeyMessage,
       summary: missingGenAiApiKeyMessage,
     };
   }
