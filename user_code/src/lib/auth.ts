@@ -2,20 +2,16 @@
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
-import {getVercelEnv} from '../../../src/lib/vercel-env';
-
-const googleClientId = getVercelEnv('GOOGLE_CLIENT_ID');
-const googleClientSecret = getVercelEnv('GOOGLE_CLIENT_SECRET');
-const nextAuthSecret = getVercelEnv('NEXTAUTH_SECRET');
+import {requireVercelEnv} from '../../../src/lib/vercel-env';
 
 export const authOptions: NextAuthOptions = {
   providers: googleClientId && googleClientSecret ? [
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId: requireVercelEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: requireVercelEnv('GOOGLE_CLIENT_SECRET'),
     }),
-  ] : [],
-  secret: nextAuthSecret,
+  ],
+  secret: requireVercelEnv('NEXTAUTH_SECRET'),
   callbacks: {
     async jwt({ token, account }) {
       // Persist the OAuth access_token to the token right after signin

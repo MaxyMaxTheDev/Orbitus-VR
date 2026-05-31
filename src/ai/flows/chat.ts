@@ -14,9 +14,9 @@ import type { ChatInput, ChatOutput } from '../schemas';
 export type { ChatInput, ChatOutput };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
-  if (!hasGeminiApiKey()) {
+  if (!hasGenAiApiKey()) {
     return {
-      message: missingGeminiApiKeyMessage,
+      message: missingGenAiApiKeyMessage,
     };
   }
   return chatFlow(input);

@@ -1,25 +1,21 @@
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
-import {getVercelEnv} from './vercel-env';
-
-const googleClientId = getVercelEnv('GOOGLE_CLIENT_ID');
-const googleClientSecret = getVercelEnv('GOOGLE_CLIENT_SECRET');
-const nextAuthSecret = getVercelEnv('NEXTAUTH_SECRET');
+import {requireVercelEnv} from './vercel-env';
 
 export const authOptions: NextAuthOptions = {
   providers: googleClientId && googleClientSecret ? [
     GoogleProvider({
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId: requireVercelEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: requireVercelEnv('GOOGLE_CLIENT_SECRET'),
       authorization: {
         params: {
           scope: 'openid email profile https://www.googleapis.com/auth/gmail.readonly'
         }
       }
     }),
-  ] : [],
-  secret: nextAuthSecret,
+  ],
+  secret: requireVercelEnv('NEXTAUTH_SECRET'),
   callbacks: {
     async jwt({ token, account }) {
       if (account) {

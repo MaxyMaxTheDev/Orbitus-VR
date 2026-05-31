@@ -3,8 +3,8 @@
  * @fileOverview An AI flow to simulate running user-generated code or app prompts.
  */
 
-import { ai, geminiImageModel } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import { ai } from '@/ai/genkit';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   RunCodeInputSchema,
   RunCodeOutputSchema,
@@ -14,8 +14,8 @@ import type { RunCodeInput, RunCodeOutput } from '../schemas';
 export type { RunCodeInput, RunCodeOutput };
 
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
-  if (!hasGeminiApiKey()) {
-    throw new Error(missingGeminiApiKeyMessage);
+  if (!hasGenAiApiKey()) {
+    throw new Error(missingGenAiApiKeyMessage);
   }
   return runCodeFlow(input);
 }
@@ -46,7 +46,6 @@ The user's description is: "${input.prompt}"`;
 
     try {
       const { media } = await ai.generate({
-        model: geminiImageModel,
         prompt: generationPrompt,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],

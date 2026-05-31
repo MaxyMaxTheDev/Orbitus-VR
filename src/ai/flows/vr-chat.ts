@@ -4,7 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   VRChatInputSchema,
   VRChatOutputSchema,
@@ -14,12 +14,12 @@ import type { VRChatInput, VRChatOutput } from '../schemas';
 export type { VRChatInput, VRChatOutput };
 
 export async function vrChat(input: VRChatInput): Promise<VRChatOutput> {
-  if (!hasGeminiApiKey()) {
+  if (!hasGenAiApiKey()) {
     return {
       responses: [
         {
           author: 'System',
-          text: missingGeminiApiKeyMessage,
+          text: missingGenAiApiKeyMessage,
         },
       ],
     };

@@ -4,7 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   VRChatInputSchema,
   VRChatOutputSchema,
@@ -14,12 +14,12 @@ import type { VRChatInput, VRChatOutput } from '../schemas';
 export type { VRChatInput, VRChatOutput };
 
 export async function vrChat(input: VRChatInput): Promise<VRChatOutput> {
-  if (!hasGeminiApiKey()) {
+  if (!hasGenAiApiKey()) {
     return {
       responses: [
         {
           author: 'System',
-          text: missingGeminiApiKeyMessage,
+          text: missingGenAiApiKeyMessage,
         },
       ],
     };
@@ -59,8 +59,8 @@ You: ${input.userMessage}
     const output = response.output;
 
     if (!output) {
-      console.error("Failed to parse VRChat response: No output from AI.");
-      return { responses: [{ author: 'System', text: 'An AI participant had a connection error.' }] };
+      console.error("Failed to parse VRChat response: No output from AI slop.");
+      return { responses: [{ author: 'System', text: 'An AI slop participant had a connection error because AI is bad.' }] };
     }
     
     return output;

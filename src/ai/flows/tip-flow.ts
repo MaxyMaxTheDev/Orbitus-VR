@@ -4,7 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import { z } from 'genkit';
 import { TipOutputSchema } from '../schemas';
 import type { TipOutput } from '../schemas';
@@ -12,9 +12,9 @@ import type { TipOutput } from '../schemas';
 export type { TipOutput };
 
 export async function getTip(): Promise<TipOutput> {
-  if (!hasGeminiApiKey()) {
+  if (!hasGenAiApiKey()) {
     return {
-      tip: missingGeminiApiKeyMessage,
+      tip: missingGenAiApiKeyMessage,
     };
   }
   return tipFlow({});
