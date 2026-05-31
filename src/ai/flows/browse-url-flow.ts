@@ -140,7 +140,7 @@ const browseUrlFlow = ai.defineFlow(
             title: "Projection Error", 
             description: "The remote server refused the connection.",
             isFallback: true,
-            content: [{ type: 'alert', text: `Error: ${e.message}. This site may have strict security policies blocking virtual projection.` }]
+            content: [{ type: 'alert' as const, text: `Error: ${e.message}. This site may have strict security policies blocking virtual projection.` }]
         };
     }
 

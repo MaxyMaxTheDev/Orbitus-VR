@@ -2,20 +2,22 @@
 
 import sgMail from '@sendgrid/mail';
 
+import {getVercelEnv} from './vercel-env';
+
 /**
  * Generates and sends a 6-digit recovery code via SendGrid.
  * Returns the code to the client to be stored in IndexedDB, avoiding Firestore.
  */
 export async function sendRecoveryCode(email: string) {
   try {
-    const apiKey = process.env.SENDGRID_API_KEY;
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+    const apiKey = getVercelEnv('SENDGRID_API_KEY');
+    const fromEmail = getVercelEnv('SENDGRID_FROM_EMAIL');
 
     // 1. Validate environment configuration
     if (!apiKey || !fromEmail) {
       return { 
         success: false, 
-        error: 'Recovery system is not configured. Please ensure SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are set in your .env file.' 
+        error: 'Recovery system is not configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in your Vercel project Environment Variables.' 
       };
     }
 
@@ -67,7 +69,7 @@ export async function sendRecoveryCode(email: string) {
     // Map common SendGrid errors to user-friendly messages
     const lowerError = errorMessage.toLowerCase();
     if (lowerError.includes('authorization grant') || lowerError.includes('unauthorized') || lowerError.includes('invalid api key')) {
-      errorMessage = 'The SendGrid API Key is invalid, expired, or revoked. Check your .env file.';
+      errorMessage = 'The SendGrid API Key is invalid, expired, or revoked. Check SENDGRID_API_KEY in Vercel Environment Variables.';
     } else if (lowerError.includes('from address does not match')) {
       errorMessage = 'The sender email address is not verified in SendGrid. Please check your SENDGRID_FROM_EMAIL.';
     }

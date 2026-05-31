@@ -5,6 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   SummarizeUrlInputSchema,
   SummarizeUrlOutputSchema,
@@ -15,9 +16,9 @@ import { z } from 'zod';
 export type { SummarizeUrlInput, SummarizeUrlOutput };
 
 export async function summarizeUrl(input: SummarizeUrlInput): Promise<SummarizeUrlOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return {
-      summary: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
+      summary: missingGeminiApiKeyMessage,
     };
   }
   return summarizeUrlFlow(input);
@@ -44,8 +45,8 @@ const summarizeUrlFlow = ai.defineFlow(
     }
 
     // A very basic way to clean up HTML and get some text.
-    const textContent = content.replace(/<style[^>]*>.*<\/style>/gs, '')
-                                .replace(/<script[^>]*>.*<\/script>/gs, '')
+    const textContent = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
                                 .replace(/<[^>]+>/g, ' ')
                                 .replace(/\s\s+/g, ' ')
                                 .trim();

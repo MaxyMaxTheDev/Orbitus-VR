@@ -3,7 +3,7 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { firebaseConfig } from './config';
+import { assertFirebaseConfig, firebaseConfig } from './config';
 
 // Providers and hooks
 export { FirebaseClientProvider } from './client-provider';
@@ -29,6 +29,8 @@ export function initializeFirebase(): FirebaseInstances {
   if (firebaseInstances) {
     return firebaseInstances;
   }
+
+  assertFirebaseConfig();
 
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   const auth = getAuth(app);

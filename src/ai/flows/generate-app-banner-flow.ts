@@ -4,7 +4,8 @@
  * @fileOverview An AI flow to generate app banner images.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, geminiImageModel } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   GenerateAppBannerInputSchema,
   GenerateAppBannerOutputSchema,
@@ -15,8 +16,8 @@ export type { GenerateAppBannerInput, GenerateAppBannerOutput };
 
 
 export async function generateAppBanner(input: GenerateAppBannerInput): Promise<GenerateAppBannerOutput> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('AI features are disabled. Please provide a GROQ_API_KEY in your .env file.');
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   }
   return generateAppBannerFlow(input);
 }
@@ -30,7 +31,7 @@ const generateAppBannerFlow = ai.defineFlow(
   async (input) => {
     try {
       const { media } = await ai.generate({
-        model: 'groq/llama-3.3-70b-versatile',
+        model: geminiImageModel,
         prompt: `Create a visually appealing, high-tech banner image (16:9 aspect ratio) for an application.
 App Name: "${input.appName}"
 App Description: "${input.description}"

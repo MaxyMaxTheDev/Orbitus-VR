@@ -3,7 +3,8 @@
  * @fileOverview An AI flow to simulate running user-generated code or app prompts.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai, geminiImageModel } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   RunCodeInputSchema,
   RunCodeOutputSchema,
@@ -13,8 +14,8 @@ import type { RunCodeInput, RunCodeOutput } from '../schemas';
 export type { RunCodeInput, RunCodeOutput };
 
 export async function runCode(input: RunCodeInput): Promise<RunCodeOutput> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('AI features are disabled. Please provide a GROQ_API_KEY in your .env file.');
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   }
   return runCodeFlow(input);
 }
@@ -45,7 +46,7 @@ The user's description is: "${input.prompt}"`;
 
     try {
       const { media } = await ai.generate({
-        model: 'groq/llama-3.3-70b-versatile',
+        model: geminiImageModel,
         prompt: generationPrompt,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],
