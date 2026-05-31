@@ -3,6 +3,8 @@
  * @fileOverview An AI flow to generate images from a text prompt.
  */
 
+import { ai, geminiImageModel } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import { ai } from '@/ai/genkit';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
@@ -14,6 +16,8 @@ import type { ImageGenerationInput, ImageGenerationOutput } from '../schemas';
 export type { ImageGenerationInput, ImageGenerationOutput };
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationOutput> {
+  if (!hasGeminiApiKey()) {
+    throw new Error(missingGeminiApiKeyMessage);
   if (!hasGenAiApiKey()) {
     throw new Error(missingGenAiApiKeyMessage);
   }
@@ -29,6 +33,7 @@ const imageGenerationFlow = ai.defineFlow(
   async (input) => {
     try {
       const { media } = await ai.generate({
+        model: geminiImageModel,
         prompt: `A high-resolution 3D render of the following object, suitable for a virtual reality sculpting app: ${input.prompt}`,
         config: {
           responseModalities: ['TEXT', 'IMAGE'],

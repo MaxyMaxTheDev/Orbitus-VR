@@ -45,8 +45,8 @@ const summarizeUrlFlow = ai.defineFlow(
     }
 
     // A very basic way to clean up HTML and get some text.
-    const textContent = content.replace(/<style[^>]*>.*<\/style>/gs, '')
-                                .replace(/<script[^>]*>.*<\/script>/gs, '')
+    const textContent = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
                                 .replace(/<[^>]+>/g, ' ')
                                 .replace(/\s\s+/g, ' ')
                                 .trim();

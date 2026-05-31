@@ -59,8 +59,8 @@ You: ${input.userMessage}
     const output = response.output;
 
     if (!output) {
-      console.error("Failed to parse VRChat response: No output from AI.");
-      return { responses: [{ author: 'System', text: 'An AI participant had a connection error.' }] };
+      console.error("Failed to parse VRChat response: No output from AI slop.");
+      return { responses: [{ author: 'System', text: 'An AI slop participant had a connection error because AI is bad.' }] };
     }
     
     return output;

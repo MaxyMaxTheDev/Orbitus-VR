@@ -8,14 +8,14 @@ To get started, download the source code by going back to the main repo page (gi
 
 ## Vercel Environment Variables
 
-This project reads API keys and deployment-specific secrets from Vercel Environment Variables. Add these values in your Vercel project settings before deploying. For local development, you can run `vercel env pull .env.local` to download the same values into your machine.
+This project has AI slop features and more APIs. so, this reads API keys and deployment-specific secrets from Vercel Environment Variables. Add these values in your Vercel project settings before deploying. For local development, you can run `vercel env pull .env.local` to download the same values into your machine.
 
 ### Google GenAI
 
 Obtain an API key from [Google AI Studio](https://aistudio.google.com/apikey), then add:
 
 ```env
-GOOGLE_GENAI_API_KEY="YOUR_GOOGLE_GENAI_API_KEY_HERE"
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
 ```
 
 ### SendGrid (for Password Recovery)

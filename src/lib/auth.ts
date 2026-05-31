@@ -4,7 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import {requireVercelEnv} from './vercel-env';
 
 export const authOptions: NextAuthOptions = {
-  providers: [
+  providers: googleClientId && googleClientSecret ? [
     GoogleProvider({
       clientId: requireVercelEnv('GOOGLE_CLIENT_ID'),
       clientSecret: requireVercelEnv('GOOGLE_CLIENT_SECRET'),

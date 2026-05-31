@@ -4,6 +4,7 @@
  */
 
 import { ai } from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ExplainCodeInputSchema,
@@ -14,6 +15,9 @@ import type { ExplainCodeInput, ExplainCodeOutput } from '../schemas';
 export type { ExplainCodeInput, ExplainCodeOutput };
 
 export async function explainCode(input: ExplainCodeInput): Promise<ExplainCodeOutput> {
+  if (!hasGeminiApiKey()) {
+    return {
+      explanation: missingGeminiApiKeyMessage,
   if (!hasGenAiApiKey()) {
     return {
       explanation: missingGenAiApiKeyMessage,
