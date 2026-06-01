@@ -12,8 +12,8 @@ import {
     ShieldQuestion, KeyRound, CheckCircle2, Info
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/contexts/auth-context';
+import { ensureGuestUser, signInLocalUser } from '@/lib/users';
 import { get, set, del } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
@@ -53,7 +53,7 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   const [isVerifyCodeMode, setIsVerifyCodeMode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   
-  const auth = useAuth();
+  const { setCurrentUser } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,51 +78,30 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setIsLoading(true);
     setError(null);
 
-    let emailToUse = identifier;
-    if (identifier.toLowerCase() === 'guest') {
-      emailToUse = 'guest@orbitus.local';
-    }
-
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
-      const displayName = userCredential.user.displayName || (identifier.toLowerCase() === 'guest' ? 'Guest' : identifier.split('@')[0]);
+      const user = identifier.toLowerCase() === 'guest'
+        ? await ensureGuestUser()
+        : await signInLocalUser(identifier, password);
+      const displayName = user.username;
       
+      setCurrentUser(user);
       setContextUsername(displayName);
 
       if (identifier.toLowerCase() !== 'guest') {
-        const newAccount: SavedAccount = { email: emailToUse, displayName };
-        const updatedAccounts = [newAccount, ...savedAccounts.filter(a => a.email !== emailToUse)].slice(0, 5);
+        const newAccount: SavedAccount = { email: user.email, displayName };
+        const updatedAccounts = [newAccount, ...savedAccounts.filter(a => a.email !== user.email)].slice(0, 5);
         await set('saved-accounts', updatedAccounts);
       }
 
       onLoginSuccess();
     } catch (err: any) {
-      let message = 'An unknown error occurred.';
-      if (err.code) {
-        switch (err.code) {
-          case 'auth/user-not-found':
-          case 'auth/wrong-password':
-          case 'auth/invalid-credential':
-            message = 'Incorrect password.';
-            break;
-          case 'auth/invalid-email':
-            message = 'Please enter a valid email address.';
-            break;
-          default:
-            message = `Login failed: ${err.code}`;
-            break;
-        }
-      } else if (err.message) {
-        message = err.message;
-      }
-      setError(message);
+      setError(err.message || 'Login failed.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGuestSignIn = async () => {
-    const guestEmail = 'guest@orbitus.local';
     const guestPassword = 'orbitus_guest';
     setIdentifier('guest');
     setPassword(guestPassword);
@@ -130,22 +109,12 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
 
     try {
-      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
+      const user = await ensureGuestUser();
+      setCurrentUser(user);
       setContextUsername('Guest');
       onLoginSuccess();
     } catch (err: any) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
-          await updateProfile(userCredential.user, { displayName: 'Guest' });
-          setContextUsername('Guest');
-          onLoginSuccess();
-          return;
-        } catch (createErr: any) {
-          console.error("Guest auto-provisioning failed:", createErr);
-        }
-      }
-      setError("Guest login failed. Try manual entry.");
+      setError(err.message || "Guest login failed. Try manual entry.");
     } finally {
       setIsLoading(false);
     }

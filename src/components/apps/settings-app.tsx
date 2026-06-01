@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '../ui/slider';
-import { useAuth } from '@/firebase';
-import { updateProfile } from 'firebase/auth';
+import { useAuth } from '@/contexts/auth-context';
+import { updateLocalUsername } from '@/lib/users';
 import { useToast } from '@/hooks/use-toast';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 
@@ -50,7 +50,7 @@ export function SettingsApp() {
 
   const [newUsername, setNewUsername] = useState(currentUsername);
   const [isSaving, setIsSaving] = useState(false);
-  const auth = useAuth();
+  const { currentUser, setCurrentUser } = useAuth();
   const { toast } = useToast();
   const { openApp } = useDesktopActions();
 
@@ -58,7 +58,7 @@ export function SettingsApp() {
     if (!newUsername.trim() || newUsername.trim() === currentUsername) {
       return;
     }
-    if (!auth.currentUser) {
+    if (!currentUser) {
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
@@ -68,8 +68,9 @@ export function SettingsApp() {
     }
     setIsSaving(true);
     try {
-      await updateProfile(auth.currentUser, { displayName: newUsername.trim() });
-      setContextUsername(newUsername.trim());
+      const updatedUser = await updateLocalUsername(currentUser.id, newUsername.trim());
+      setCurrentUser(updatedUser);
+      setContextUsername(updatedUser.username);
       toast({
         title: 'Success',
         description: `Your username has been updated to ${newUsername.trim()}.`,

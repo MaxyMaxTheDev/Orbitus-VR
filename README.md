@@ -1,44 +1,42 @@
-# Firebase Studio
+# OrbitusVR
 
-This is a NextJS starter in Firebase Studio.
+This is a NextJS virtual reality desktop environment.
 
 ## Getting Started
 
 To get started, download the source code by going back to the main repo page (github.com/MaxyMaxTheDev/studio), clicking the dropdown button on the Code button and click ZIP and extracting the zip to a new empty folder and run this command: cd /path/to/your_extracted_folder. You can also just use Git like this: git clone https://github.com/MaxyMaxTheDev/studio.git. Or you can fork this repo. When you are done, take a look at `src/app/page.tsx`.
 
-## Environment Setup
 
-This project uses AI slop features and email recovery. To enable them, you need to provide API keys.
+## Local Accounts
 
-1.  Create a file named `.env` in the root of the project if it doesn't already exist.
-2.  Add the following lines to your `.env` file, replacing the placeholder values with your actual keys.
+OrbitusVR stores app login and signup identities in the browser under the `users.json` data key, seeded by `src/data/users.json`. This replaces Firebase Authentication for the desktop login flow.
 
-### Groq AI
+## Vercel Environment Variables
 
-*   Obtain an API key from [Groq Console](https://console.groq.com/keys).
+This project reads API keys and deployment-specific secrets from Vercel Environment Variables. Add these values in your Vercel project settings before deploying. For local development, you can run `vercel env pull .env.local` to download the same values into your machine.
 
-```
-GROQ_API_KEY="YOUR_GROQ_API_KEY_HERE"
+### Gemini AI
+
+Obtain an API key from [Google AI Studio](https://aistudio.google.com/apikey), then add:
+
+```env
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
 ```
 
 ### SendGrid (for Password Recovery)
 
-*   Obtain an API key from [SendGrid](https://app.sendgrid.com/settings/api_keys).
-*   Verify a sender identity in SendGrid to use as the "from" email.
+Obtain an API key from [SendGrid](https://app.sendgrid.com/settings/api_keys) and verify a sender identity in SendGrid, then add:
 
-```
+```env
 SENDGRID_API_KEY="YOUR_SENDGRID_API_KEY_HERE"
 SENDGRID_FROM_EMAIL="noreply@yourdomain.com"
 ```
 
-### NextAuth.js Configuration
 
-*   A `NEXTAUTH_SECRET` is used to sign session cookies. You can generate a random string for this. A quick way is to run `openssl rand -base64 32` in your terminal.
-*   You also need to provide the canonical URL of your deployment.
+### AccuWeather (for Weather)
 
+Obtain an API key from [AccuWeather](https://developer.accuweather.com/), then add:
+
+```env
+ACCUWEATHER_API_KEY="YOUR_ACCUWEATHER_API_KEY_HERE"
 ```
-NEXTAUTH_SECRET="YOUR_RANDOMLY_GENERATED_SECRET_HERE"
-NEXTAUTH_URL="localhost:PORT"
-```
-
-Make sure the `NEXTAUTH_URL` matches the URL you are using to access the application.

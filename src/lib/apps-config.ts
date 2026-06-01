@@ -4,7 +4,7 @@ import {
     View, Users, BoxSelect, Gamepad2, Briefcase, Palette,
     Code, Bot, Calculator, Notebook, Blocks, Store, Bell,
     Cpu, Gauge, Newspaper, FolderOpen, BrainCircuit,
-    Gamepad, Bird, Hash, Hexagon, Layers, Ghost, Monitor
+    Gamepad, Bird, Hash, Hexagon, Layers, Ghost, Monitor, CloudSun
 } from "lucide-react";
 
 import { AIAssistant } from '@/components/apps/ai-assistant';
@@ -38,6 +38,7 @@ import { Game2048App } from '@/components/apps/game-2048';
 import { HextrisApp } from '@/components/apps/hextris';
 import { PacmanApp } from '@/components/apps/pacman';
 import { OrbitusVM } from '@/components/apps/orbitus-vm';
+import { WeatherApp } from '@/components/apps/weather';
 
 export type App = {
     name: string;
@@ -60,6 +61,7 @@ export const allApps: App[] = [
     { name: "DevKit", icon: Code, component: DevKit, description: "A developer tool that uses AI to explain code snippets." },
     { name: "Code Profiler", icon: Gauge, component: CodeProfiler, description: "Analyze code snippets with futuristic, AI-powered performance metrics." },
     { name: "News Feed", icon: Newspaper, component: NewsFeedApp, description: "A live feed of real-world headlines from global news channels." },
+    { name: "Weather", icon: CloudSun, component: WeatherApp, description: "Current conditions and city weather powered by AccuWeather." },
     { name: "File Explorer", icon: FolderOpen, component: FileExplorer, description: "Browse the virtual operating system's file structure." },
     { name: "Calculator", icon: Calculator, component: CalculatorApp, description: "A futuristic calculator for all your computational needs." },
     { name: "Notepad", icon: Notebook, component: NotepadApp, description: "A simple, persistent notepad for jotting down thoughts and ideas." },

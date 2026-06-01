@@ -2,18 +2,18 @@
 
 import { SettingsProvider } from '@/contexts/settings-context';
 import { MusicPlayerProvider } from '@/contexts/music-player-context';
-import { FirebaseClientProvider } from '@/firebase';
+import { AuthProvider } from '@/contexts/auth-context';
 import { SessionProvider } from 'next-auth/react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
         <SettingsProvider>
-            <MusicPlayerProvider>
-                <FirebaseClientProvider>
+            <AuthProvider>
+                <MusicPlayerProvider>
                     {children}
-                </FirebaseClientProvider>
-            </MusicPlayerProvider>
+                </MusicPlayerProvider>
+            </AuthProvider>
         </SettingsProvider>
     </SessionProvider>
   );

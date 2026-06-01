@@ -4,6 +4,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ChatInputSchema,
   ChatOutputSchema,
@@ -13,9 +14,9 @@ import type { ChatInput, ChatOutput } from '../schemas';
 export type { ChatInput, ChatOutput };
 
 export async function chat(input: ChatInput): Promise<ChatOutput> {
-  if (!process.env.GROQ_API_KEY) {
+  if (!hasGeminiApiKey()) {
     return {
-      message: "AI features are disabled. Please provide a GROQ_API_KEY in your .env file.",
+      message: missingGeminiApiKeyMessage,
     };
   }
   return chatFlow(input);

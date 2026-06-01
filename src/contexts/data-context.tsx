@@ -44,12 +44,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [userData, setUserDataState] = useState<UserDataType>(defaultUserData);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  // Load user data from Firestore when auth state changes
+  // Load user data from local storage when auth state changes
   useEffect(() => {
     async function loadData() {
       if (currentUser) {
         setIsDataLoading(true);
-        const data = await getUserData(currentUser.uid);
+        const data = await getUserData(currentUser.id);
         if (data) {
           setUserDataState(data);
         }
@@ -63,12 +63,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
     loadData();
   }, [currentUser]);
 
-  // Centralized function to update state and persist to Firestore
+  // Centralized function to update state and persist to local storage
   const handleSetUserData = useCallback(
     (data: UserDataType) => {
       setUserDataState(data);
       if (currentUser) {
-        setUserData(currentUser.uid, data).catch((e) =>
+        setUserData(currentUser.id, data).catch((e) =>
           console.error('Failed to save user data:', e)
         );
       }

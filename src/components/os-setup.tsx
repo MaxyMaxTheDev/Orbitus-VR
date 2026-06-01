@@ -10,8 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle, KeyRound, CheckCircle2, Info, MailCheck } from 'lucide-react';
 import { OrbitusVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { useAuth } from '@/contexts/auth-context';
+import { ensureGuestUser, signUpLocalUser } from '@/lib/users';
 import { downloadProjectZip } from '@/lib/export-action';
 import { useToast } from '@/hooks/use-toast';
 import { sendRecoveryCode } from '@/lib/recovery-actions';
@@ -35,7 +35,7 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   
-  const auth = useAuth();
+  const { setCurrentUser } = useAuth();
   const { toast } = useToast();
 
   const handleNext = () => setStep(s => s + 1);
@@ -125,20 +125,16 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
               return;
           }
 
-          // Verification success -> Create account
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          await updateProfile(userCredential.user, { displayName: username });
+          // Verification success -> Create account in users.json
+          const user = await signUpLocalUser(username, email, password);
+          setCurrentUser(user);
           
           await del('signup-verification-token');
-          setUsername(username);
+          setUsername(user.username);
           handleNext(); // Move to next step (step 2)
 
       } catch (error: any) {
-          let message = "An unknown error occurred during account creation.";
-          if (error.code === 'auth/email-already-in-use') {
-              message = 'This email address is already in use.';
-          }
-          setSignupError(message);
+          setSignupError(error.message || "An unknown error occurred during account creation.");
       } finally {
           setIsVerifying(false);
       }
@@ -147,26 +143,13 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const handleGuestSignUp = async () => {
     setIsSigningUp(true);
     setSignupError(null);
-    const guestEmail = 'guest@orbitus.local';
-    const guestPassword = 'orbitus_guest';
-
     try {
-      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
+      const user = await ensureGuestUser();
+      setCurrentUser(user);
       setUsername('Guest');
       setStep(2); // Jump straight to preferences
     } catch (error: any) {
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
-          await updateProfile(userCredential.user, { displayName: 'Guest' });
-          setUsername('Guest');
-          setStep(2);
-          return;
-        } catch (createError: any) {
-          console.error("Guest auto-provisioning failed:", createError);
-        }
-      }
-      setSignupError("Guest mode is currently unavailable. Please create a permanent identity.");
+      setSignupError(error.message || "Guest mode is currently unavailable. Please create a permanent identity.");
     } finally {
       setIsSigningUp(false);
     }
