@@ -4,7 +4,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
+import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ChatInputSchema,
   ChatOutputSchema,
