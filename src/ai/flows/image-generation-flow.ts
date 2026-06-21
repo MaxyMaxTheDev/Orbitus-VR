@@ -4,8 +4,6 @@
  */
 
 import { ai, geminiImageModel } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
-import { ai } from '@/ai/genkit';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import {
   ImageGenerationInputSchema,
@@ -16,8 +14,6 @@ import type { ImageGenerationInput, ImageGenerationOutput } from '../schemas';
 export type { ImageGenerationInput, ImageGenerationOutput };
 
 export async function generateImage(input: ImageGenerationInput): Promise<ImageGenerationOutput> {
-  if (!hasGeminiApiKey()) {
-    throw new Error(missingGeminiApiKeyMessage);
   if (!hasGenAiApiKey()) {
     throw new Error(missingGenAiApiKeyMessage);
   }

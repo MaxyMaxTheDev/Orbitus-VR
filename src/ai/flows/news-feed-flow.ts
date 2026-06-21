@@ -4,7 +4,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import {hasGeminiApiKey, missingGeminiApiKeyMessage} from '@/lib/vercel-env';
 import {hasGenAiApiKey, missingGenAiApiKeyMessage} from '@/lib/vercel-env';
 import { z } from 'genkit';
 import { NewsFeedOutputSchema, NewsItemSchema } from '../schemas';
@@ -13,10 +12,6 @@ import type { NewsFeedOutput, NewsItem } from '../schemas';
 export type { NewsFeedOutput, NewsItem };
 
 export async function getNewsFeed(): Promise<NewsFeedOutput> {
-  if (!hasGeminiApiKey()) {
-    return {
-      articles: [
-        { title: 'AI features disabled.', source: 'System', timestamp: 'Now', content: missingGeminiApiKeyMessage },
   if (!hasGenAiApiKey()) {
     return {
       articles: [

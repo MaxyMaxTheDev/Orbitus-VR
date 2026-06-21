@@ -3,6 +3,8 @@ import {genkit, z} from 'genkit';
 
 import {getVercelEnv} from '@/lib/vercel-env';
 
+export const geminiImageModel = googleAI.model('gemini-2.5-flash-image');
+
 export const ai = genkit({
   plugins: [
     googleAI({
