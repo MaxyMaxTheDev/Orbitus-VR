@@ -10,8 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowRight, Check, User, Loader2, Maximize, AppWindow, Download, Eye, EyeOff, UserCircle, KeyRound, CheckCircle2, Info, MailCheck } from 'lucide-react';
 import { OrbitusVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from '@/lib/local-auth';
 import { downloadProjectZip } from '@/lib/export-action';
 import { useToast } from '@/hooks/use-toast';
 import { sendRecoveryCode } from '@/lib/recovery-actions';
@@ -35,7 +34,6 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   
-  const auth = useAuth();
   const { toast } = useToast();
 
   const handleNext = () => setStep(s => s + 1);
@@ -126,8 +124,8 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
           }
 
           // Verification success -> Create account
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          await updateProfile(userCredential.user, { displayName: username });
+          await createUserWithEmailAndPassword(email, password);
+          await updateProfile({ displayName: username });
           
           await del('signup-verification-token');
           setUsername(username);
@@ -151,14 +149,14 @@ export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
     const guestPassword = 'orbitus_guest';
 
     try {
-      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
+      await signInWithEmailAndPassword(guestEmail, guestPassword);
       setUsername('Guest');
       setStep(2); // Jump straight to preferences
     } catch (error: any) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         try {
-          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
-          await updateProfile(userCredential.user, { displayName: 'Guest' });
+          await createUserWithEmailAndPassword(guestEmail, guestPassword);
+          await updateProfile({ displayName: 'Guest' });
           setUsername('Guest');
           setStep(2);
           return;

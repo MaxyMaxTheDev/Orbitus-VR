@@ -12,8 +12,7 @@ import {
     ShieldQuestion, KeyRound, CheckCircle2, Info
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from './ui/avatar';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { useAuth } from '@/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from '@/lib/local-auth';
 import { get, set, del } from '@/lib/idb';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
@@ -53,7 +52,6 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
   const [isVerifyCodeMode, setIsVerifyCodeMode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   
-  const auth = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -84,8 +82,8 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     }
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
-      const displayName = userCredential.user.displayName || (identifier.toLowerCase() === 'guest' ? 'Guest' : identifier.split('@')[0]);
+      const result = await signInWithEmailAndPassword(emailToUse, password);
+      const displayName = result.user.displayName || (identifier.toLowerCase() === 'guest' ? 'Guest' : identifier.split('@')[0]);
       
       setContextUsername(displayName);
 
@@ -130,14 +128,14 @@ export function LoginScreen({ onLoginSuccess, onSwitchToSignUp }: LoginScreenPro
     setError(null);
 
     try {
-      await signInWithEmailAndPassword(auth, guestEmail, guestPassword);
+      await signInWithEmailAndPassword(guestEmail, guestPassword);
       setContextUsername('Guest');
       onLoginSuccess();
     } catch (err: any) {
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
         try {
-          const userCredential = await createUserWithEmailAndPassword(auth, guestEmail, guestPassword);
-          await updateProfile(userCredential.user, { displayName: 'Guest' });
+          await createUserWithEmailAndPassword(guestEmail, guestPassword);
+          await updateProfile({ displayName: 'Guest' });
           setContextUsername('Guest');
           onLoginSuccess();
           return;

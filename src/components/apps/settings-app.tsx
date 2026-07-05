@@ -30,8 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '../ui/slider';
-import { useAuth } from '@/firebase';
-import { updateProfile } from 'firebase/auth';
+import { updateProfile } from '@/lib/local-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 
@@ -50,7 +49,6 @@ export function SettingsApp() {
 
   const [newUsername, setNewUsername] = useState(currentUsername);
   const [isSaving, setIsSaving] = useState(false);
-  const auth = useAuth();
   const { toast } = useToast();
   const { openApp } = useDesktopActions();
 
@@ -58,17 +56,9 @@ export function SettingsApp() {
     if (!newUsername.trim() || newUsername.trim() === currentUsername) {
       return;
     }
-    if (!auth.currentUser) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to change your username.',
-      });
-      return;
-    }
     setIsSaving(true);
     try {
-      await updateProfile(auth.currentUser, { displayName: newUsername.trim() });
+      await updateProfile({ displayName: newUsername.trim() });
       setContextUsername(newUsername.trim());
       toast({
         title: 'Success',

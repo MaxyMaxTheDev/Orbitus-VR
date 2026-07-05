@@ -2,7 +2,6 @@
 
 import { SettingsProvider } from '@/contexts/settings-context';
 import { MusicPlayerProvider } from '@/contexts/music-player-context';
-import { FirebaseClientProvider } from '@/firebase';
 import { SessionProvider } from 'next-auth/react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -10,9 +9,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
         <SettingsProvider>
             <MusicPlayerProvider>
-                <FirebaseClientProvider>
-                    {children}
-                </FirebaseClientProvider>
+                {children}
             </MusicPlayerProvider>
         </SettingsProvider>
     </SessionProvider>
