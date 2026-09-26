@@ -21,7 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { ImportModelDialog } from '@/components/settings-panel';
 import { useSettings, type NotificationPosition, type WidgetName } from '@/contexts/settings-context';
 import { clearAll } from '@/lib/idb';
-import { Trash2, Maximize, Save, Loader2, LayoutDashboard } from 'lucide-react';
+import { Trash2, Maximize, Save, Loader2, LayoutDashboard, Download } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -33,6 +33,7 @@ import { Slider } from '../ui/slider';
 import { updateProfile } from '@/lib/local-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
+import { useUpdate } from '@/contexts/update-context';
 
 export function SettingsApp() {
   const {
@@ -51,6 +52,7 @@ export function SettingsApp() {
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { openApp } = useDesktopActions();
+  const { updateAvailable, startUpdate } = useUpdate();
 
   const handleUsernameSave = async () => {
     if (!newUsername.trim() || newUsername.trim() === currentUsername) {
@@ -94,6 +96,29 @@ export function SettingsApp() {
   return (
     <div className="h-full w-full p-4 sm:p-6 overflow-y-auto">
       <div className="max-w-2xl mx-auto space-y-8">
+        {updateAvailable && (
+          <Card className="border-accent/60 bg-accent/5">
+            <CardHeader>
+              <CardTitle className="text-accent text-xl flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Update Available
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between gap-4 p-4 rounded-lg bg-black/20">
+                <p className="text-sm text-muted-foreground">
+                  A new version of OrbitusVR has been deployed. Updating will
+                  restart the system.
+                </p>
+                <Button onClick={startUpdate} className="shrink-0">
+                  <Download className="mr-2" />
+                  Update
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="bg-transparent border-primary/30">
           <CardHeader>
             <CardTitle className="text-accent text-xl">Profile</CardTitle>

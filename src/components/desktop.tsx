@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X, BrainCircuit } from 'lucide-react';
+import { X, BrainCircuit, RefreshCw } from 'lucide-react';
 
 import { allApps, App, UserAppRunner } from '@/lib/apps-config';
 import type { UserApp } from '@/components/apps/xenova-dev';
@@ -18,6 +18,17 @@ import { OrbitusVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
 import { DesktopActionsProvider } from '@/contexts/desktop-actions-context';
+import { UpdateProvider } from '@/contexts/update-context';
+import {
+  completeUpdate,
+  getPendingBuildId,
+  getUpdateDuration,
+  getUpdateStartedAt,
+  isUpdateInProgress,
+  markUpdateAttemptStarted,
+  resetUpdateAttempt,
+  UPDATE_VERIFY_TIMEOUT_MS,
+} from '@/lib/update-state';
 import { FullscreenAppWrapper } from './fullscreen-app-wrapper';
 import { SystemBar } from './system-bar';
 import { SystemOverlay } from './system-overlay';
@@ -25,6 +36,7 @@ import { LoginScreen } from './login-screen';
 import { LockScreen } from './lock-screen';
 
 type SystemState = 'loading' | 'setup' | 'lock' | 'login' | 'desktop';
+type BootPhase = 'checking' | 'normal' | 'updating' | 'failed';
 
 function DesktopContent() {
     const [systemState, setSystemState] = useState<SystemState>('loading');
@@ -34,9 +46,31 @@ function DesktopContent() {
     const { uiScale } = useSettings();
     const [systemAction, setSystemAction] = useState<'shutdown' | 'restart' | null>(null);
     const [progress, setProgress] = useState(0);
+    const [bootPhase, setBootPhase] = useState<BootPhase>('checking');
+    const [isVerifying, setIsVerifying] = useState(false);
+
+    const enterShell = useCallback(async () => {
+        const setupFlag = await get<boolean>('orbitus-vr-setup-complete');
+        setSystemState(setupFlag ? 'lock' : 'setup');
+    }, []);
+
+    // Resolve whether this boot is a normal boot, the start of an update, or an
+    // update that was interrupted by a refresh.
+    useEffect(() => {
+        if (!isUpdateInProgress()) {
+            setBootPhase('normal');
+            return;
+        }
+        if (getUpdateStartedAt() !== null) {
+            setBootPhase('failed');
+            return;
+        }
+        markUpdateAttemptStarted();
+        setBootPhase('updating');
+    }, []);
 
     useEffect(() => {
-        if (systemState !== 'loading') return;
+        if (bootPhase !== 'normal') return;
         const interval = setInterval(() => {
             setProgress(prev => {
                 if (prev >= 100) {
@@ -47,24 +81,90 @@ function DesktopContent() {
             });
         }, 50);
         return () => clearInterval(interval);
-    }, [systemState]);
+    }, [bootPhase]);
 
     useEffect(() => {
-        const checkSystemState = async () => {
-            const setupFlag = await get<boolean>('orbitus-vr-setup-complete');
-            setTimeout(() => {
-                if (setupFlag) {
-                    setSystemState('lock');
-                } else {
-                    setSystemState('setup');
-                }
-            }, 1500);
+        if (bootPhase !== 'normal') return;
+        const timeout = setTimeout(() => {
+            enterShell();
+        }, 1500);
+        return () => clearTimeout(timeout);
+    }, [bootPhase, enterShell]);
+
+    useEffect(() => {
+        if (bootPhase !== 'updating') return;
+
+        const startedAt = getUpdateStartedAt() ?? Date.now();
+        const duration = getUpdateDuration();
+
+        const tick = () => {
+            const elapsed = Date.now() - startedAt;
+            if (elapsed >= duration) {
+                setProgress(100);
+                setIsVerifying(true);
+                return;
+            }
+            setProgress((elapsed / duration) * 100);
         };
-        
-        if (systemState === 'loading') {
-            checkSystemState();
+
+        tick();
+        const interval = setInterval(tick, 250);
+        return () => clearInterval(interval);
+    }, [bootPhase]);
+
+    // The timed window is a minimum, not a guarantee: keep waiting until the
+    // target build is actually the one being served, so we never drop the user
+    // into the desktop still running the old deployment.
+    useEffect(() => {
+        if (bootPhase !== 'updating' || !isVerifying) return;
+
+        const targetBuildId = getPendingBuildId();
+        // Nothing to verify against (non-Vercel host); the timed window suffices.
+        if (!targetBuildId) {
+            completeUpdate();
+            enterShell();
+            return;
         }
-    }, [systemState]);
+
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            completeUpdate();
+            enterShell();
+        };
+        const fail = () => {
+            if (settled) return;
+            settled = true;
+            setBootPhase('failed');
+        };
+
+        const verify = async () => {
+            try {
+                const response = await fetch('/api/deployment', { cache: 'no-store' });
+                if (!response.ok) return;
+                const data: { buildId?: string | null } = await response.json();
+                if (data.buildId?.trim() === targetBuildId) {
+                    finish();
+                }
+            } catch {
+                // Transient network failure; the next tick retries.
+            }
+        };
+
+        verify();
+        const interval = setInterval(verify, 5000);
+        const timeout = setTimeout(fail, UPDATE_VERIFY_TIMEOUT_MS);
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+    }, [bootPhase, isVerifying, enterShell]);
+
+    const handleRetryUpdate = () => {
+        resetUpdateAttempt();
+        window.location.reload();
+    };
 
     const handleSetupComplete = async () => {
         await set('orbitus-vr-setup-complete', true);
@@ -113,6 +213,32 @@ function DesktopContent() {
     };
 
     if (systemState === 'loading') {
+        if (bootPhase === 'failed') {
+            return (
+                <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: "easeInOut" }}
+                        className="flex flex-col items-center gap-6 w-full max-w-xs text-center"
+                    >
+                        <OrbitusVRLogo className="w-24 h-24 text-primary" />
+                        <p className="text-xl font-headline tracking-wider text-destructive">
+                            Update failed.
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            The update did not finish. It may have been interrupted, or the
+                            new version is not available yet.
+                        </p>
+                        <Button size="lg" className="w-full" onClick={handleRetryUpdate}>
+                            <RefreshCw className="mr-2" />
+                            Retry
+                        </Button>
+                    </motion.div>
+                </div>
+            );
+        }
+
         return (
             <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
                 <motion.div
@@ -123,6 +249,15 @@ function DesktopContent() {
                 >
                     <OrbitusVRLogo className="w-24 h-24 text-primary" />
                     <Progress value={progress} className="w-full h-2" />
+                    {bootPhase === 'updating' && (
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-sm font-headline tracking-[0.3em] text-muted-foreground"
+                        >
+                            {isVerifying ? 'Finishing update...' : 'Updating...'}
+                        </motion.p>
+                    )}
                 </motion.div>
             </div>
         );
@@ -194,58 +329,60 @@ function DesktopContent() {
 
     return (
         <DesktopActionsProvider openApp={openApp}>
-            <AnimatePresence>
-                {systemAction && <SystemOverlay action={systemAction} />}
-            </AnimatePresence>
+            <UpdateProvider>
+                <AnimatePresence>
+                    {systemAction && <SystemOverlay action={systemAction} />}
+                </AnimatePresence>
             
-            <SystemBar onSignOut={handleSignOut} onRestart={handleRestart} onShutdown={handleShutdown} />
+                <SystemBar onSignOut={handleSignOut} onRestart={handleRestart} onShutdown={handleShutdown} />
 
-             <AnimatePresence>
-                {isFullscreenApp && selectedApp && (
-                     <FullscreenAppWrapper app={selectedApp} onClose={closeApp}>
-                        <selectedApp.component />
-                    </FullscreenAppWrapper>
-                )}
-             </AnimatePresence>
+                 <AnimatePresence>
+                    {isFullscreenApp && selectedApp && (
+                         <FullscreenAppWrapper app={selectedApp} onClose={closeApp}>
+                            <selectedApp.component />
+                        </FullscreenAppWrapper>
+                    )}
+                 </AnimatePresence>
 
-             <div className="h-full w-full flex flex-col items-stretch p-2 pb-0" >
-                <Toaster />
-                <div 
-                    className="flex-1 w-full relative"
-                >
-                    <div className="absolute inset-0" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
+                 <div className="h-full w-full flex flex-col items-stretch p-2 pb-0" >
+                    <Toaster />
+                    <div 
+                        className="flex-1 w-full relative"
+                    >
+                        <div className="absolute inset-0" style={{ transform: `scale(${uiScale / 100})`, transformOrigin: 'center center', transition: 'transform 0.3s ease-out' }}>
+                             <AnimatePresence>
+                                {(selectedApp && !isFullscreenApp) || selectedCommunityApp ? <AppWindow /> : <Dashboard />}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                    <AnimatePresence>
+                        {isLibraryOpen && (
+                            <AppLauncher
+                                onSelectApp={openApp}
+                                onClose={() => setLibraryOpen(false)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
                          <AnimatePresence>
-                            {(selectedApp && !isFullscreenApp) || selectedCommunityApp ? <AppWindow /> : <Dashboard />}
+                            {(!isLibraryOpen && !isFullscreenApp) && (
+                                <motion.div
+                                    className="w-full flex justify-center"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 20 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Dock
+                                        onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
+                                        onOpenApp={openApp}
+                                    />
+                                </motion.div>
+                            )}
                         </AnimatePresence>
                     </div>
                 </div>
-                <AnimatePresence>
-                    {isLibraryOpen && (
-                        <AppLauncher
-                            onSelectApp={openApp}
-                            onClose={() => setLibraryOpen(false)}
-                        />
-                    )}
-                </AnimatePresence>
-                <div className="flex-shrink-0 relative z-30 h-24 flex items-center justify-center">
-                     <AnimatePresence>
-                        {(!isLibraryOpen && !isFullscreenApp) && (
-                            <motion.div
-                                className="w-full flex justify-center"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 20 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <Dock
-                                    onToggleLibrary={() => setLibraryOpen(!isLibraryOpen)}
-                                    onOpenApp={openApp}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
+            </UpdateProvider>
         </DesktopActionsProvider>
     );
 }
