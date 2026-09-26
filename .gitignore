@@ -40,6 +40,12 @@ next-env.d.ts
 .genkit/*
 .env*
 
+# local user data
+# Held plaintext passwords in data/users.json. Identity now lives in the
+# Google session and per-user data lives in the browser, so nothing here
+# should ever be committed.
+/data/
+
 # firebase
 firebase-debug.log
 firestore-debug.log

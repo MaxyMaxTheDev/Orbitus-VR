@@ -1,36 +1,61 @@
 'use server';
 
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
 import {getVercelEnv} from './vercel-env';
 
+type ResendError = { name: string; message: string };
+
 /**
- * Generates and sends a 6-digit recovery code via SendGrid.
+ * Translates a Resend API error into something actionable. Resend returns a
+ * typed `name` on every failure, which is far more reliable than matching on
+ * the human-readable message.
+ */
+function describeResendError(error: ResendError): string {
+  switch (error.name) {
+    case 'missing_api_key':
+    case 'restricted_api_key':
+    case 'invalid_api_key':
+      return 'The Resend API Key is invalid, expired, or revoked. Check RESEND_API_KEY in Vercel Environment Variables.';
+    case 'invalid_from_address':
+      return 'The sender email address is not verified in Resend. Please check RESEND_FROM_EMAIL.';
+    case 'daily_quota_exceeded':
+    case 'monthly_quota_exceeded':
+      return 'The email service has reached its sending limit for this period. Please try again later.';
+    case 'rate_limit_exceeded':
+      return 'Too many verification emails were requested. Please wait a moment and try again.';
+    default:
+      return error.message || 'An error occurred while sending the recovery code.';
+  }
+}
+
+/**
+ * Generates and sends a 6-digit recovery code via Resend.
  * Returns the code to the client to be stored in IndexedDB, avoiding Firestore.
  */
 export async function sendRecoveryCode(email: string) {
   try {
-    const apiKey = getVercelEnv('SENDGRID_API_KEY');
-    const fromEmail = getVercelEnv('SENDGRID_FROM_EMAIL');
+    const apiKey = getVercelEnv('RESEND_API_KEY');
+    const fromEmail = getVercelEnv('RESEND_FROM_EMAIL');
 
     // 1. Validate environment configuration
     if (!apiKey || !fromEmail) {
-      return { 
-        success: false, 
-        error: 'Recovery system is not configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in your Vercel project Environment Variables.' 
+      return {
+        success: false,
+        error: 'Recovery system is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL in your Vercel project Environment Variables.'
       };
     }
 
-    // 2. Setup SendGrid
-    sgMail.setApiKey(apiKey.trim());
+    // 2. Setup Resend
+    const resend = new Resend(apiKey.trim());
 
     // 3. Generate Code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const targetEmail = (email || '').toLowerCase().trim();
     if (!targetEmail) return { success: false, error: 'Please provide a valid email address.' };
 
-    // 4. Prepare and Send Email
-    const msg = {
+    // 4. Send Email. Resend reports API failures in `error` rather than throwing.
+    const { error } = await resend.emails.send({
       to: targetEmail,
       from: fromEmail.trim(),
       subject: 'OrbitusVR Identity Verification',
@@ -45,38 +70,24 @@ export async function sendRecoveryCode(email: string) {
           <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">remember after 10 minutes the code will expire and go bye bye!<br/>If you did not request this verification, please ignore this message.</p>
         </div>
       `,
-    };
+    });
 
-    await sgMail.send(msg);
-    
-    return { 
-        success: true, 
-        code 
+    if (error) {
+      console.error('[Recovery] Resend Error:', error.name, error.message);
+      return { success: false, error: describeResendError(error) };
+    }
+
+    return {
+      success: true,
+      code
     };
 
   } catch (error: any) {
-    let errorMessage = 'An error occurred while sending the recovery code.';
-    
-    // Extract specific error message from SendGrid response
-    if (error?.response?.body?.errors?.[0]?.message) {
-      errorMessage = error.response.body.errors[0].message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-
-    console.error('[Recovery] SendGrid Error:', errorMessage);
-
-    // Map common SendGrid errors to user-friendly messages
-    const lowerError = errorMessage.toLowerCase();
-    if (lowerError.includes('authorization grant') || lowerError.includes('unauthorized') || lowerError.includes('invalid api key')) {
-      errorMessage = 'The SendGrid API Key is invalid, expired, or revoked. Check SENDGRID_API_KEY in Vercel Environment Variables.';
-    } else if (lowerError.includes('from address does not match')) {
-      errorMessage = 'The sender email address is not verified in SendGrid. Please check your SENDGRID_FROM_EMAIL.';
-    }
-
-    return { 
-      success: false, 
-      error: errorMessage 
+    const errorMessage = error?.message || 'An error occurred while sending the recovery code.';
+    console.error('[Recovery] Resend Error:', errorMessage);
+    return {
+      success: false,
+      error: errorMessage
     };
   }
 }

@@ -4,12 +4,15 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './ui/button';
-import { ArrowUp, LogIn } from 'lucide-react';
+import { Input } from './ui/input';
+import { ArrowUp, LogIn, KeyRound } from 'lucide-react';
 import { getTip, TipOutput } from '@/ai/flows/tip-flow';
 import { get, set } from '@/lib/idb';
+import { verifyPasscode } from '@/lib/passcode';
 import Image from 'next/image';
 
 type LockScreenProps = {
+    accountKey: string;
     onUnlock: () => void;
 };
 
@@ -63,7 +66,36 @@ function TipOfTheDay() {
     );
 }
 
-export function LockScreen({ onUnlock }: LockScreenProps) {
+export function LockScreen({ accountKey, onUnlock }: LockScreenProps) {
+    const [isUnlocking, setIsUnlocking] = useState(false);
+    const [passcode, setPasscode] = useState('');
+    const [error, setError] = useState<string | null>(null);
+
+    const attemptUnlock = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (passcode.length === 0 || isUnlocking) return;
+
+        setIsUnlocking(true);
+        setError(null);
+        try {
+            const valid = await verifyPasscode(passcode, accountKey);
+            if (valid) {
+                onUnlock();
+                return;
+            }
+            setError('Incorrect passcode.');
+            setPasscode('');
+        } catch {
+            setError('Could not read the passcode from this device.');
+        } finally {
+            setIsUnlocking(false);
+        }
+    };
+
+    const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') attemptUnlock();
+    };
+
     return (
         <motion.div
             className="absolute inset-0 z-50 flex flex-col items-center justify-between p-8"
@@ -94,29 +126,55 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                 dragConstraints={{ top: -100, bottom: 0 }}
                 dragElastic={{ top: 0.8, bottom: 0 }}
                 onDragEnd={(_, info) => {
-                    if (info.offset.y < -50) {
-                        onUnlock();
+                    if (info.offset.y < -50 && passcode.length > 0) {
+                        attemptUnlock();
                     }
                 }}
-                className="relative z-20 flex flex-col items-center gap-4"
+                className="relative z-20 flex flex-col items-center gap-4 w-full max-w-xs"
             >
+                <form onSubmit={attemptUnlock} className="w-full space-y-3">
+                    <div className="relative">
+                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
+                        <Input
+                            type="password"
+                            inputMode="numeric"
+                            value={passcode}
+                            onChange={(e) => {
+                                setPasscode(e.target.value);
+                                setError(null);
+                            }}
+                            onKeyDown={onKeyDown}
+                            placeholder="Passcode"
+                            aria-label="Passcode"
+                            className="pl-12 h-14 rounded-2xl bg-black/30 border-white/20 text-white placeholder:text-white/50 backdrop-blur-lg focus:ring-accent"
+                        />
+                    </div>
+
+                    {error && (
+                        <p className="text-xs text-center text-red-300 font-semibold bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 backdrop-blur-lg">
+                            {error}
+                        </p>
+                    )}
+
+                    <Button
+                        size="lg"
+                        type="submit"
+                        disabled={isUnlocking || passcode.length === 0}
+                        className="w-full h-14 rounded-2xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-lg"
+                    >
+                        <LogIn className="mr-2" />
+                        Unlock
+                    </Button>
+                </form>
+
                 <motion.div 
                     className="flex flex-col items-center gap-1 text-white/80 [text-shadow:_0_1px_4px_rgb(0_0_0_/_50%)]"
                     animate={{ y: [0, -5, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                 >
                     <ArrowUp />
-                    <p className="font-semibold">Swipe up to unlock</p>
+                    <p className="font-semibold">Enter your passcode</p>
                 </motion.div>
-                <Button
-                    size="lg"
-                    variant="secondary"
-                    onClick={onUnlock}
-                    className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-lg"
-                >
-                    <LogIn className="mr-2" />
-                    Sign In
-                </Button>
             </motion.div>
         </motion.div>
     );

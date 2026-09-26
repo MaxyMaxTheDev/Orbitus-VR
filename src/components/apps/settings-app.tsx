@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '../ui/slider';
-import { updateProfile } from '@/lib/local-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 import { useUpdate } from '@/contexts/update-context';
@@ -49,34 +48,22 @@ export function SettingsApp() {
   } = useSettings();
 
   const [newUsername, setNewUsername] = useState(currentUsername);
-  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { openApp } = useDesktopActions();
   const { updateAvailable, startUpdate } = useUpdate();
 
-  const handleUsernameSave = async () => {
-    if (!newUsername.trim() || newUsername.trim() === currentUsername) {
+  const handleUsernameSave = () => {
+    const nextUsername = newUsername.trim();
+    if (!nextUsername || nextUsername === currentUsername) {
       return;
     }
-    setIsSaving(true);
-    try {
-      await updateProfile({ displayName: newUsername.trim() });
-      setContextUsername(newUsername.trim());
-      toast({
-        title: 'Success',
-        description: `Your username has been updated to ${newUsername.trim()}.`,
-      });
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Update Failed',
-        description: 'There was a problem updating your username.',
-      });
-      setNewUsername(currentUsername); // Revert on failure
-    } finally {
-      setIsSaving(false);
-    }
+    // Identity lives at Google, so the display name is just a local setting
+    // now: there is no profile record on a server to write it back to.
+    setContextUsername(nextUsername);
+    toast({
+      title: 'Success',
+      description: `Your username has been updated to ${nextUsername} on this device.`,
+    });
   };
 
   const handlePowerwash = async () => {
@@ -134,13 +121,12 @@ export function SettingsApp() {
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                   className="bg-black/30 border-primary/50"
-                  disabled={isSaving}
                 />
                 <Button
                   onClick={handleUsernameSave}
-                  disabled={isSaving || !newUsername.trim() || newUsername.trim() === currentUsername}
+                  disabled={!newUsername.trim() || newUsername.trim() === currentUsername}
                 >
-                  {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                  <Save className="mr-2" />
                   Save
                 </Button>
               </div>

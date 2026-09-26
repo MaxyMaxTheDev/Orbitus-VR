@@ -13,7 +13,7 @@ import { allApps, App, UserAppRunner } from '@/lib/apps-config';
 import type { UserApp } from '@/components/apps/xenova-dev';
 import { useSettings } from '@/contexts/settings-context';
 import { OsSetup } from './os-setup';
-import { get, set } from '@/lib/idb';
+import { get, set, del } from '@/lib/idb';
 import { OrbitusVRLogo } from './icons/logo';
 import { Progress } from './ui/progress';
 import { Toaster } from './ui/toaster';
@@ -32,10 +32,16 @@ import {
 import { FullscreenAppWrapper } from './fullscreen-app-wrapper';
 import { SystemBar } from './system-bar';
 import { SystemOverlay } from './system-overlay';
-import { LoginScreen } from './login-screen';
+import { GoogleAuthScreen } from './google-auth-screen';
+import { PasscodeSetup } from './passcode-setup';
 import { LockScreen } from './lock-screen';
+import { useAuth } from '@/contexts/auth-context';
+import { hasPasscode } from '@/lib/passcode';
+import { signOut } from 'next-auth/react';
 
-type SystemState = 'loading' | 'setup' | 'lock' | 'login' | 'desktop';
+const PASSCODE_DECLINED_KEY = 'orbitus-passcode-declined';
+
+type SystemState = 'loading' | 'setup' | 'login' | 'wizard' | 'passcode' | 'lock' | 'desktop';
 type BootPhase = 'checking' | 'normal' | 'updating' | 'failed';
 
 function DesktopContent() {
@@ -48,11 +54,45 @@ function DesktopContent() {
     const [progress, setProgress] = useState(0);
     const [bootPhase, setBootPhase] = useState<BootPhase>('checking');
     const [isVerifying, setIsVerifying] = useState(false);
+    const { currentUser, isLoading: isAuthLoading } = useAuth();
+    const { username, setUsername } = useSettings();
+
+    // Google owns identity, so the signed-in account is the only user there is.
+    const accountKey = currentUser?.uid ?? null;
 
     const enterShell = useCallback(async () => {
         const setupFlag = await get<boolean>('orbitus-vr-setup-complete');
-        setSystemState(setupFlag ? 'lock' : 'setup');
-    }, []);
+
+        if (!accountKey) {
+            setSystemState(setupFlag ? 'login' : 'setup');
+            return;
+        }
+        if (!setupFlag) {
+            setSystemState('wizard');
+            return;
+        }
+        if (await hasPasscode(accountKey)) {
+            setSystemState('lock');
+            return;
+        }
+
+        // No passcode means nothing to lock. Offer to create one, but only
+        // once: if it was declined, boot straight through from then on.
+        const declined = await get<boolean>(PASSCODE_DECLINED_KEY);
+        setSystemState(declined ? 'desktop' : 'passcode');
+    }, [accountKey]);
+
+    useEffect(() => {
+        if (isAuthLoading) return;
+        enterShell();
+    }, [isAuthLoading, enterShell]);
+
+    // Adopt the Google display name until the user picks their own.
+    useEffect(() => {
+        if (currentUser && username === 'User') {
+            setUsername(currentUser.displayName);
+        }
+    }, [currentUser, username, setUsername]);
 
     // Resolve whether this boot is a normal boot, the start of an update, or an
     // update that was interrupted by a refresh.
@@ -168,16 +208,23 @@ function DesktopContent() {
 
     const handleSetupComplete = async () => {
         await set('orbitus-vr-setup-complete', true);
+        setSystemState('passcode');
+    };
+
+    const handlePasscodeCreated = async () => {
+        await del(PASSCODE_DECLINED_KEY);
         setSystemState('desktop');
     };
 
-    const handleLoginSuccess = async () => {
-        await set('orbitus-vr-setup-complete', true);
+    const handlePasscodeDeclined = async () => {
+        await set(PASSCODE_DECLINED_KEY, true);
         setSystemState('desktop');
     };
-    
+
+    // Ends the Google session and reloads, which lands back on the auth screen
+    // through the normal boot path.
     const handleSignOut = () => {
-        setSystemState('lock');
+        signOut({ callbackUrl: window.location.href });
     };
 
     const handleRestart = () => {
@@ -263,17 +310,38 @@ function DesktopContent() {
         );
     }
     
-    if (systemState === 'setup') {
-        return <OsSetup onComplete={handleSetupComplete} onSwitchToLogin={() => setSystemState('login')} />;
-    }
+      if (systemState === 'setup' || systemState === 'login') {
+          return (
+              <GoogleAuthScreen
+                  mode={systemState === 'setup' ? 'signup' : 'signin'}
+                  onSwitchMode={() => setSystemState(systemState === 'setup' ? 'login' : 'setup')}
+              />
+          );
+      }
 
-    if (systemState === 'lock') {
-        return <LockScreen onUnlock={() => setSystemState('login')} />;
-    }
+      if (systemState === 'wizard' && accountKey) {
+          return (
+              <OsSetup
+                  onComplete={handleSetupComplete}
+                  displayName={currentUser?.displayName ?? username}
+              />
+          );
+      }
 
-    if (systemState === 'login') {
-        return <LoginScreen onLoginSuccess={handleLoginSuccess} onSwitchToSignUp={() => setSystemState('setup')} />;
-    }
+      if (systemState === 'passcode' && accountKey) {
+          return (
+              <PasscodeSetup
+                  accountKey={accountKey}
+                  displayName={currentUser?.displayName ?? username}
+                  onComplete={handlePasscodeCreated}
+                  onSkip={handlePasscodeDeclined}
+              />
+          );
+      }
+
+      if (systemState === 'lock' && accountKey) {
+          return <LockScreen accountKey={accountKey} onUnlock={() => setSystemState('desktop')} />;
+      }
     
     const fullscreenApps = ["Browser", "Minecraft", "Geometry Dash", "Flappy Bird", "2048", "Hextris", "PAC-MAN", "OrbitusVM"];
     const isFullscreenApp = selectedApp && fullscreenApps.includes(selectedApp.name);
