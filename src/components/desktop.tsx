@@ -50,7 +50,7 @@ function DesktopContent() {
     const [progress, setProgress] = useState(0);
     const [bootPhase, setBootPhase] = useState<BootPhase>('checking');
     const [isVerifying, setIsVerifying] = useState(false);
-    const { currentUser, isLoading: isAuthLoading } = useAuth();
+    const { currentUser } = useAuth();
     const { username, setUsername } = useSettings();
 
     // Local accounts live in this browser's IndexedDB, so identity resolves
@@ -60,10 +60,9 @@ function DesktopContent() {
         setSystemState(setupFlag ? 'lock' : 'setup');
     }, []);
 
-    useEffect(() => {
-        if (isAuthLoading) return;
-        enterShell();
-    }, [isAuthLoading, enterShell]);
+    // NOTE: enterShell() must stay gated on bootPhase below. Calling it from an
+    // auth-hydration effect tears down the 'loading' screen that the updating
+    // and failed phases render into, so the update progress never appears.
 
     // Adopt the account's display name until the user picks their own.
     useEffect(() => {
