@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { ImportModelDialog } from '@/components/settings-panel';
 import { useSettings, type NotificationPosition, type WidgetName } from '@/contexts/settings-context';
 import { clearAll } from '@/lib/idb';
+import { updateProfile } from '@/lib/local-auth';
 import { Trash2, Maximize, Save, Loader2, LayoutDashboard, Download } from 'lucide-react';
 import {
   Select,
@@ -52,17 +53,17 @@ export function SettingsApp() {
   const { openApp } = useDesktopActions();
   const { updateAvailable, startUpdate } = useUpdate();
 
-  const handleUsernameSave = () => {
+  const handleUsernameSave = async () => {
     const nextUsername = newUsername.trim();
     if (!nextUsername || nextUsername === currentUsername) {
       return;
     }
-    // Identity lives at Google, so the display name is just a local setting
-    // now: there is no profile record on a server to write it back to.
+    // Writes back to the local account record in IndexedDB.
+    await updateProfile({ displayName: nextUsername });
     setContextUsername(nextUsername);
     toast({
       title: 'Success',
-      description: `Your username has been updated to ${nextUsername} on this device.`,
+      description: `Your username has been updated to ${nextUsername}.`,
     });
   };
 

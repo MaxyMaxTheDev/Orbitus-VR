@@ -4,24 +4,28 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '@/contexts/settings-context';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight, Check, Loader2, Maximize, AppWindow, Download } from 'lucide-react';
+import { ArrowRight, Check, Loader2, Maximize, AppWindow, Download, CloudOff, HardDrive, User, Eye, EyeOff } from 'lucide-react';
 import { OrbitusVRLogo } from './icons/logo';
 import { Slider } from './ui/slider';
 import { downloadProjectZip } from '@/lib/export-action';
+import { signUp, AuthError } from '@/lib/local-auth';
 import { useToast } from '@/hooks/use-toast';
 
 type SetupProps = {
   onComplete: () => void;
-  displayName: string;
+  onSwitchToLogin: () => void;
 };
 
-// Identity is handled by Google before this wizard is reached, so everything
-// here is local preference setup with no network calls and no account state.
-export function OsSetup({ onComplete, displayName }: SetupProps) {
+export function OsSetup({ onComplete, onSwitchToLogin }: SetupProps) {
   const [step, setStep] = useState(0);
-  const { showAppBanners, setShowAppBanners, uiScale, setUiScale } = useSettings();
+  const { username, setUsername, showAppBanners, setShowAppBanners, uiScale, setUiScale } = useSettings();
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
   const { toast } = useToast();
@@ -55,6 +59,27 @@ export function OsSetup({ onComplete, displayName }: SetupProps) {
     }
   };
 
+  // Local accounts are created in this browser's IndexedDB, so there is no
+  // server call and no user file anywhere.
+  const handleCreateLocalAccount = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!username.trim() || !password) return;
+
+    setIsCreating(true);
+    setSignupError(null);
+
+    try {
+      await signUp(username, password);
+      handleNext();
+    } catch (error) {
+      setSignupError(
+        error instanceof AuthError ? error.message : 'Could not create the local account.'
+      );
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const variants = {
     enter: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 },
@@ -63,17 +88,38 @@ export function OsSetup({ onComplete, displayName }: SetupProps) {
 
   const renderStep = () => {
     switch (step) {
-      case 0: // Welcome
+      case 0: // Welcome + account type
         return (
-          <motion.div key={0} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
+          <motion.div key={0} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6 w-full max-w-sm">
             <OrbitusVRLogo className="w-24 h-24 mx-auto text-primary" />
             <h1 className="text-4xl font-bold font-headline tracking-wider">Welcome to OrbitusVR</h1>
             <p className="text-muted-foreground text-lg">made by MaxyMax</p>
-            
-            <div className="flex flex-col gap-3 max-w-xs mx-auto mt-4">
-                <Button size="lg" onClick={handleNext} className="w-full">
-                Begin Setup <ArrowRight className="ml-2" />
-                </Button>
+
+            <div className="space-y-3 pt-2">
+              <Button
+                size="lg"
+                onClick={() => setStep(1)}
+                className="w-full h-12 rounded-xl font-bold tracking-wide"
+              >
+                <HardDrive className="mr-2 w-5 h-5" />
+                Create a Local Account
+              </Button>
+
+              <Button
+                size="lg"
+                disabled
+                title="Orbitus accounts need a server to sync to, which is not available yet."
+                className="w-full h-12 rounded-xl font-bold tracking-wide"
+              >
+                <CloudOff className="mr-2 w-5 h-5" />
+                Orbitus Account
+              </Button>
+              <p className="text-[10px] text-muted-foreground -mt-1">
+                Unavailable &mdash; needs an online account service.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2">
                 <Button 
                     variant="outline" 
                     size="lg" 
@@ -86,11 +132,78 @@ export function OsSetup({ onComplete, displayName }: SetupProps) {
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic">ok fine download the source code matter of fact its open source on github.com/MaxyMaxTheDev/Orbitus-VR</p>
+
+            <p className="text-sm text-muted-foreground">
+              Already have an account? <Button variant="link" className="p-0" onClick={onSwitchToLogin}>Sign in</Button>
+            </p>
           </motion.div>
         );
-      case 1: // Preferences
+      case 1: // Local account creation
         return (
-          <motion.div key={1} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
+          <motion.div key={1} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-6">
+            <div className="flex items-center gap-3 justify-center">
+              <User className="w-8 h-8 text-accent" />
+              <h1 className="text-3xl font-bold font-headline">Create Your Account</h1>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Stored in this browser only. No server, no account file.
+            </p>
+
+            <form onSubmit={handleCreateLocalAccount} className="space-y-4 text-left">
+              <div>
+                <Label htmlFor="username-reg">Username</Label>
+                <Input
+                  id="username-reg"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
+                  autoFocus
+                  className="bg-black/20 border-primary/20 focus:ring-accent"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password-reg">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password-reg"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 4 characters"
+                    className="bg-black/20 border-primary/20 focus:ring-accent pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              {signupError && <p className="text-sm text-destructive">{signupError}</p>}
+
+              <Button
+                size="lg"
+                type="submit"
+                className="w-full"
+                disabled={!username.trim() || !password || isCreating}
+              >
+                {isCreating ? <Loader2 className="animate-spin" /> : 'Create Account & Continue'}
+              </Button>
+            </form>
+
+            <p className="text-sm text-muted-foreground">
+              Already have an account? <Button variant="link" className="p-0" onClick={onSwitchToLogin}>Sign in</Button>
+            </p>
+          </motion.div>
+        );
+      case 2: // Preferences
+        return (
+          <motion.div key={2} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center w-full max-w-sm space-y-8">
             <h1 className="text-3xl font-bold font-headline">Personalize Your Experience</h1>
             <p className="text-muted-foreground">Choose how you want your app library to look.</p>
             <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-border">
@@ -110,9 +223,9 @@ export function OsSetup({ onComplete, displayName }: SetupProps) {
             </Button>
           </motion.div>
         );
-      case 2: // UI Scale
+      case 3: // UI Scale
         return (
-            <motion.div key={2} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-md space-y-8">
+            <motion.div key={3} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="w-full max-md space-y-8">
               <div className="text-center">
                 <h1 className="text-3xl font-bold font-headline">UI Scale Calibration</h1>
                 <p className="text-sm text-muted-foreground">Adjust the slider for comfortable readability.</p>
@@ -158,14 +271,14 @@ export function OsSetup({ onComplete, displayName }: SetupProps) {
               </Button>
             </motion.div>
           );
-      case 3: // Finish
+      case 4: // Finish
         return (
-          <motion.div key={3} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
+          <motion.div key={4} initial="initial" animate="enter" exit="exit" variants={variants} transition={{ duration: 0.5, ease: "easeInOut" }} className="text-center space-y-6">
             <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
               <Check className="w-12 h-12 text-green-400" />
             </div>
             <h1 className="text-4xl font-bold font-headline">Setup Complete!</h1>
-            <p className="text-muted-foreground text-lg">Welcome, <span className="text-accent font-bold">{displayName}</span>. Your virtual desktop is ready.</p>
+            <p className="text-muted-foreground text-lg">Welcome, <span className="text-accent font-bold">{username}</span>. Your virtual desktop is ready.</p>
             <Button size="lg" onClick={onComplete} className="bg-green-600 hover:bg-green-700 w-full">
               Enter OrbitusVR
             </Button>
