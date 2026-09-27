@@ -70,3 +70,34 @@
     display: none !important;
   }
 }
+
+/* OrbitusVR boot mark: sketch the strokes on instead of fading them in.
+   pathLength=1 on each path normalises the dash maths, so the offsets
+   below are fractions of a stroke rather than pixel lengths. */
+@keyframes orbitus-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+.orbitus-draw {
+  /* Static hidden state, so the finished mark never flashes for a frame
+     before the animation takes over. */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: orbitus-draw var(--orbitus-draw-duration, 0.72s) ease-in-out both;
+  animation-delay: var(--orbitus-draw-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbitus-draw {
+    /* Skip the sketch, but the mark must still be visible. */
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

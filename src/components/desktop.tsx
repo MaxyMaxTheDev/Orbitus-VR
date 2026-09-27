@@ -197,9 +197,19 @@ function DesktopContent() {
         setTimeout(() => window.location.reload(), 1500);
     };
 
+    // Browsers refuse a plain window.close() on a tab they didn't open
+    // themselves. Swapping the tab to about:blank first gives the following
+    // close() a chance to take effect.
+    const handleForceClose = () => {
+        if (typeof window !== 'undefined') {
+            window.open('about:blank', '_self');
+            window.close();
+        }
+    };
+
     const handleShutdown = () => {
         setSystemAction('shutdown');
-        setTimeout(() => window.close(), 1500);
+        setTimeout(handleForceClose, 1500);
     };
 
     const openApp = async (appName: string) => {
@@ -228,12 +238,14 @@ function DesktopContent() {
         return (
             <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
                     transition={{ duration: 1, ease: "easeInOut" }}
                     className="flex flex-col items-center gap-6 w-full max-w-xs"
                 >
-                    <OrbitusVRLogo className="w-24 h-24 text-primary" />
+                    {/* No opacity gate here: the mark sketches itself on, and a
+                        fade would hide the first stretch of that draw. */}
+                    <OrbitusVRLogo className="w-24 h-24 text-primary" draw />
                     <Progress value={progress} className="w-full h-2" />
                     {bootPhase === 'updating' && (
                         <motion.p
