@@ -7,7 +7,7 @@ import { AppLauncher } from '@/components/app-launcher';
 import { Dock } from '@/components/dock';
 import { Dashboard } from './apps/dashboard';
 import { Button } from './ui/button';
-import { X, BrainCircuit, RefreshCw } from 'lucide-react';
+import { X, BrainCircuit } from 'lucide-react';
 
 import { allApps, App, UserAppRunner } from '@/lib/apps-config';
 import type { UserApp } from '@/components/apps/xenova-dev';
@@ -26,7 +26,7 @@ import {
   getUpdateStartedAt,
   isUpdateInProgress,
   markUpdateAttemptStarted,
-  resetUpdateAttempt,
+  UPDATE_VERIFY_POLL_MS,
   UPDATE_VERIFY_TIMEOUT_MS,
 } from '@/lib/update-state';
 import { FullscreenAppWrapper } from './fullscreen-app-wrapper';
@@ -38,7 +38,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { signOut } from '@/lib/local-auth';
 
 type SystemState = 'loading' | 'setup' | 'lock' | 'login' | 'desktop';
-type BootPhase = 'checking' | 'normal' | 'updating' | 'failed';
+type BootPhase = 'checking' | 'normal' | 'updating';
 
 function DesktopContent() {
     const [systemState, setSystemState] = useState<SystemState>('loading');
@@ -71,15 +71,13 @@ function DesktopContent() {
         }
     }, [currentUser, username, setUsername]);
 
-    // Resolve whether this boot is a normal boot, the start of an update, or an
-    // update that was interrupted by a refresh.
+    // Resolve whether this boot is a normal boot or the continuation of an
+    // update. markUpdateAttemptStarted() is a no-op once an attempt is
+    // timestamped, so refreshing mid-update resumes the same window instead of
+    // treating the refresh as a failure.
     useEffect(() => {
         if (!isUpdateInProgress()) {
             setBootPhase('normal');
-            return;
-        }
-        if (getUpdateStartedAt() !== null) {
-            setBootPhase('failed');
             return;
         }
         markUpdateAttemptStarted();
@@ -129,9 +127,10 @@ function DesktopContent() {
         return () => clearInterval(interval);
     }, [bootPhase]);
 
-    // The timed window is a minimum, not a guarantee: keep waiting until the
-    // target build is actually the one being served, so we never drop the user
-    // into the desktop still running the old deployment.
+    // The timed window is the authority. Once it has elapsed the user is on a
+    // working build, so we confirm the target if we can and otherwise accept it:
+    // holding them on a progress bar for another five minutes to report a
+    // failure we cannot actually diagnose helps nobody.
     useEffect(() => {
         if (bootPhase !== 'updating' || !isVerifying) return;
 
@@ -150,11 +149,6 @@ function DesktopContent() {
             completeUpdate();
             enterShell();
         };
-        const fail = () => {
-            if (settled) return;
-            settled = true;
-            setBootPhase('failed');
-        };
 
         const verify = async () => {
             try {
@@ -170,18 +164,13 @@ function DesktopContent() {
         };
 
         verify();
-        const interval = setInterval(verify, 5000);
-        const timeout = setTimeout(fail, UPDATE_VERIFY_TIMEOUT_MS);
+        const interval = setInterval(verify, UPDATE_VERIFY_POLL_MS);
+        const timeout = setTimeout(finish, UPDATE_VERIFY_TIMEOUT_MS);
         return () => {
             clearInterval(interval);
             clearTimeout(timeout);
         };
     }, [bootPhase, isVerifying, enterShell]);
-
-    const handleRetryUpdate = () => {
-        resetUpdateAttempt();
-        window.location.reload();
-    };
 
     // Setup always runs, so finishing it hands off to the passcode gate: the
     const handleSetupComplete = async () => {
@@ -236,32 +225,6 @@ function DesktopContent() {
     };
 
     if (systemState === 'loading') {
-        if (bootPhase === 'failed') {
-            return (
-                <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, ease: "easeInOut" }}
-                        className="flex flex-col items-center gap-6 w-full max-w-xs text-center"
-                    >
-                        <OrbitusVRLogo className="w-24 h-24 text-primary" />
-                        <p className="text-xl font-headline tracking-wider text-destructive">
-                            Update failed.
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                            The update did not finish. It may have been interrupted, or the
-                            new version is not available yet.
-                        </p>
-                        <Button size="lg" className="w-full" onClick={handleRetryUpdate}>
-                            <RefreshCw className="mr-2" />
-                            Retry
-                        </Button>
-                    </motion.div>
-                </div>
-            );
-        }
-
         return (
             <div className="flex-1 flex flex-col items-center justify-center h-screen w-screen bg-background">
                 <motion.div

@@ -10,7 +10,7 @@ import { SystemOverlay } from '@/components/system-overlay';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
 import { beginUpdate, getStoredBuildId, setStoredBuildId } from '@/lib/update-state';
 
-const POLL_INTERVAL_MS = 60 * 1000;
+const POLL_INTERVAL_MS = 1000;
 const RESTART_DELAY_MS = 1500;
 
 type UpdateContextType = {

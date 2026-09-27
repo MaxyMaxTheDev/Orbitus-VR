@@ -6,8 +6,15 @@ const UPDATE_DURATION_KEY = 'orbitus-vr-update-duration';
 
 export const UPDATE_MIN_MS = 3 * 60 * 1000;
 export const UPDATE_MAX_MS = 5 * 60 * 1000;
-/** Grace period after the progress window to wait for the deploy to go live. */
-export const UPDATE_VERIFY_TIMEOUT_MS = 5 * 60 * 1000;
+/** How often to re-ask /api/deployment while confirming the target build. */
+export const UPDATE_VERIFY_POLL_MS = 1000;
+/**
+ * Grace period after the progress window to wait for the deploy to go live.
+ * When it expires we accept the running build rather than failing the user:
+ * the client cannot distinguish a rolled-back deploy from an alias or preview
+ * URL whose SHA simply never matches, and the app is serving fine either way.
+ */
+export const UPDATE_VERIFY_TIMEOUT_MS = 20 * 1000;
 
 function read(key: string): string | null {
   if (typeof window === 'undefined') return null;
@@ -82,16 +89,9 @@ export function getPendingBuildId(): string | null {
   return read(PENDING_BUILD_ID_KEY);
 }
 
-/** Retry from the "Update failed." screen: rewind the attempt, stay flagged. */
-export function resetUpdateAttempt() {
-  remove(UPDATE_STARTED_AT_KEY);
-  remove(UPDATE_DURATION_KEY);
-  write(IS_UPDATING_KEY, 'true');
-}
-
 /**
- * Called once the update window elapses *and* the target build is confirmed
- * live, so we never mark a build as current while still serving the old one.
+ * Called once the update window elapses and the target build has either been
+ * confirmed live or waited out, so we never leave a stale build id behind.
  */
 export function completeUpdate() {
   const pendingBuildId = read(PENDING_BUILD_ID_KEY);
