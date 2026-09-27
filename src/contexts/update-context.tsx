@@ -8,10 +8,19 @@ import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { SystemOverlay } from '@/components/system-overlay';
 import { useDesktopActions } from '@/contexts/desktop-actions-context';
-import { beginUpdate, getStoredBuildId, setStoredBuildId } from '@/lib/update-state';
+import { beginUpdate } from '@/lib/update-state';
 
 const POLL_INTERVAL_MS = 1000;
 const RESTART_DELAY_MS = 1500;
+
+/**
+ * The build id of the JavaScript this tab is actually executing, baked in by
+ * next.config.js at build time. Comparing this against the id the server
+ * reports answers the only question that matters -- "is my code stale?" --
+ * without trusting anything the browser remembered on a previous visit, so a
+ * plain reload can never raise a false alarm.
+ */
+const RUNNING_BUILD_ID = process.env.NEXT_PUBLIC_BUILD_SHA;
 
 type UpdateContextType = {
   updateAvailable: boolean;
@@ -30,24 +39,21 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
   const notifiedRef = useRef(false);
 
   const checkForUpdate = useCallback(async () => {
+    // No build id was stamped in (local dev, or a build made outside Vercel),
+    // so there is nothing meaningful to compare and we stay quiet.
+    if (!RUNNING_BUILD_ID) return;
+
     try {
       const response = await fetch('/api/deployment', { cache: 'no-store' });
       if (!response.ok) return;
 
       const data: { buildId?: string | null } = await response.json();
-      const buildId = data.buildId?.trim();
-      // No build id (local dev, or a non-Vercel host) means nothing to compare.
-      if (!buildId) return;
+      const serverBuildId = data.buildId?.trim();
+      // No build id (non-Vercel host) means nothing to compare.
+      if (!serverBuildId) return;
 
-      const storedBuildId = getStoredBuildId();
-      // First run on this device: adopt the current build silently.
-      if (!storedBuildId) {
-        setStoredBuildId(buildId);
-        return;
-      }
-
-      if (buildId !== storedBuildId) {
-        setLatestBuildId(buildId);
+      if (serverBuildId !== RUNNING_BUILD_ID) {
+        setLatestBuildId(serverBuildId);
         setUpdateAvailable(true);
       }
     } catch {

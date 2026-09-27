@@ -1,5 +1,4 @@
 const IS_UPDATING_KEY = 'orbitus-vr-is-updating';
-const BUILD_ID_KEY = 'orbitus-vr-build-id';
 const PENDING_BUILD_ID_KEY = 'orbitus-vr-pending-build-id';
 const UPDATE_STARTED_AT_KEY = 'orbitus-vr-update-started-at';
 const UPDATE_DURATION_KEY = 'orbitus-vr-update-duration';
@@ -29,14 +28,6 @@ function write(key: string, value: string) {
 function remove(key: string) {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(key);
-}
-
-export function getStoredBuildId(): string | null {
-  return read(BUILD_ID_KEY);
-}
-
-export function setStoredBuildId(buildId: string) {
-  write(BUILD_ID_KEY, buildId);
 }
 
 export function isUpdateInProgress(): boolean {
@@ -94,10 +85,6 @@ export function getPendingBuildId(): string | null {
  * confirmed live or waited out, so we never leave a stale build id behind.
  */
 export function completeUpdate() {
-  const pendingBuildId = read(PENDING_BUILD_ID_KEY);
-  if (pendingBuildId) {
-    setStoredBuildId(pendingBuildId);
-  }
   remove(IS_UPDATING_KEY);
   remove(PENDING_BUILD_ID_KEY);
   remove(UPDATE_STARTED_AT_KEY);
